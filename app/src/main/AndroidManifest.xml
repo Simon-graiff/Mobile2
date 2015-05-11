@@ -63,6 +63,14 @@
                 "keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:label="@string/app_name" />
+        <activity
+            android:name=".ParticipatorsListActivity"
+            android:label="@string/title_activity_participators_list"
+            android:parentActivityName=".EventDetailActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="dhbw.mobile2.EventDetailActivity" />
+        </activity>
     </application>
 
 </manifest>

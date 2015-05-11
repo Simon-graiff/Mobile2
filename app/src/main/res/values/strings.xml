@@ -7,6 +7,14 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_create_event">CreateEventActivity</string>
 
+    //eventDetail
+    <string name="detail_title">Title: </string>
+    <string name="detail_category">Category: </string>
+    <string name="detail_description">Description: </string>
+    <string name="detail_location">Location: </string>
+    <string name="detail_creation_time">Created: </string>
+    <string name="teilnehmer">Teilnehmer:</string>
+
     //CreateEvent
     <string name="create_name">Whats its name?</string>
     <string name="create_location">Where is it?</string>
@@ -20,6 +28,8 @@
     <string name="category3">Chilling</string>
     <string name="category4">Drinking</string>
     <string name="title_activity_log_in">LogIn</string>
+    <string name="title_activity_participator_display">ParticipatorDisplayActivity</string>
+    <string name="title_activity_participators_list">ParticipatorsListActivity</string>
 
     //Login
     <string name="facebook_app_id">1413961288925759</string>
