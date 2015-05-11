@@ -20,4 +20,9 @@
     <string name="category3">Chilling</string>
     <string name="category4">Drinking</string>
     <string name="title_activity_log_in">LogIn</string>
+
+    //Login
+    <string name="facebook_app_id">1413961288925759</string>
+
+
 </resources>
