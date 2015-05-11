@@ -3,15 +3,17 @@ package dhbw.mobile2;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.View;
 
+import com.facebook.FacebookSdk;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.Parse;
 import com.parse.ParseFacebookUtils;
-import com.parse.ParseObject;
+import com.parse.ParseUser;
 
 public class MainScreen extends FragmentActivity {
 
@@ -21,14 +23,6 @@ public class MainScreen extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
-        //setUpMapIfNeeded();
-
-        // Set up Parse Connection
-        // Enable Local Datastore.
-        Parse.enableLocalDatastore(this);
-        Parse.initialize(this, "XtayL1TkW4GF7OyZPikWIRvdWlr4LrnOs1OjsFCO", "Z29mPZXCfSFlJfk8UcqG6AMouPKgckuzE7sfl2XV");
-        ParseFacebookUtils.initialize(this);
-
 
     }
 
@@ -36,6 +30,17 @@ public class MainScreen extends FragmentActivity {
     protected void onResume() {
         super.onResume();
         setUpMapIfNeeded();
+
+
+        if(ParseUser.getCurrentUser() == null){
+            Log.d("MyApp", "No user logged in");
+            Intent intent = new Intent(this, LogInActivity.class);
+            startActivity(intent);
+
+        }else{
+            Log.d("MyApp", "Logged in with: " + ParseUser.getCurrentUser().getUsername());
+
+        }
 
 
     }
