@@ -1,21 +1,15 @@
 package dhbw.mobile2;
 
-import android.app.ListActivity;
-import android.content.Context;
 import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.parse.GetCallback;
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -104,9 +98,10 @@ public class EventDetailActivity extends ActionBarActivity {
     }
 
     public void createExampleEventData(){
+
         ParseObject event = new ParseObject("Event");
         event.put("title", "Runde Flunkiball auf dem Campus");
-        event.put("description", "Wir wollten eine Runde Flunkiball auf dem Campus zocken. Dafür brauchen wir mindestens 10 Leute.");
+        event.put("description", "Wir wollten eine Runde Flunkiball auf dem Campus zocken. DafÃ¼r brauchen wir mindestens 10 Leute.");
         event.put("category", "sport");
         event.put("locationName", "Uni Mannheim");
         event.put("longitude", 8.46181);
