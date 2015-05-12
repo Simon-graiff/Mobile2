@@ -17,7 +17,6 @@ import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
 import com.parse.ParseUser;
-import com.facebook.HttpMethod;
 
 import org.json.JSONObject;
 
