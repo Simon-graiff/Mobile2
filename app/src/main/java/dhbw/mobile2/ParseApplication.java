@@ -10,6 +10,7 @@ import com.facebook.FacebookSdk;
 import com.parse.Parse;
 import com.parse.ParseFacebookUtils;
 
+
 public class ParseApplication extends Application {
 
     @Override
@@ -20,5 +21,6 @@ public class ParseApplication extends Application {
         Parse.initialize(this, "XtayL1TkW4GF7OyZPikWIRvdWlr4LrnOs1OjsFCO", "Z29mPZXCfSFlJfk8UcqG6AMouPKgckuzE7sfl2XV");
         FacebookSdk.sdkInitialize(getApplicationContext());
         ParseFacebookUtils.initialize(getApplicationContext());
+
     }
 }
