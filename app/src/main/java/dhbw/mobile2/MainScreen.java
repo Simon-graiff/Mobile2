@@ -3,16 +3,12 @@ package dhbw.mobile2;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.view.View;
 
-import com.facebook.FacebookSdk;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.parse.Parse;
-import com.parse.ParseFacebookUtils;
 import com.parse.ParseUser;
 
 public class MainScreen extends FragmentActivity {
@@ -31,15 +27,11 @@ public class MainScreen extends FragmentActivity {
         super.onResume();
         setUpMapIfNeeded();
 
-
+        //Check if a User is logged in
         if(ParseUser.getCurrentUser() == null){
-            Log.d("MyApp", "No user logged in");
+            //If the user is not logged in call the loginActiviy
             Intent intent = new Intent(this, LogInActivity.class);
             startActivity(intent);
-
-        }else{
-            Log.d("MyApp", "Logged in with: " + ParseUser.getCurrentUser().getUsername());
-
         }
 
 
