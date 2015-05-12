@@ -13,7 +13,9 @@
     <string name="detail_description">Description: </string>
     <string name="detail_location">Location: </string>
     <string name="detail_creation_time">Created: </string>
-    <string name="teilnehmer">Teilnehmer:</string>
+    <string name="detail_participators">Teilnehmer:</string>
+    <string name="detail_button_participate_false">I Participate</string>
+    <string name="detail_button_participate_true">I Don\'t Participate</string>
 
     //CreateEvent
     <string name="create_name">Whats its name?</string>
