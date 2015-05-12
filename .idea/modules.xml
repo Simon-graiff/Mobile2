@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ProjectModuleManager">
+<<<<<<< HEAD
     <modules />
+=======
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Mobile2.iml" filepath="$PROJECT_DIR$/Mobile2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/WhereU.iml" filepath="$PROJECT_DIR$/WhereU.iml" />
+      <module fileurl="file://$PROJECT_DIR$/WhereU.iml" filepath="$PROJECT_DIR$/WhereU.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+    </modules>
+>>>>>>> parent of 0fe2447... Back Button Solving
   </component>
 </project>

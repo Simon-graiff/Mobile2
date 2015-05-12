@@ -68,8 +68,6 @@ public class ParticipatorsListActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
-
     private void createParticipatorsList(){
         participatorsListView = (ListView) findViewById(R.id.participatorsListView);
         final ArrayList<String> arrayListParticipators = new ArrayList<String>();
