@@ -46,7 +46,9 @@
         <activity
             android:name=".EventDetailActivity"
             android:label="@string/title_activity_event_detail"
-            android:parentActivityName=".MainScreen" >
+            android:parentActivityName=".MainScreen"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="dhbw.mobile2.MainScreen" />
@@ -67,7 +69,9 @@
         <activity
             android:name=".ParticipatorsListActivity"
             android:label="@string/title_activity_participators_list"
-            android:parentActivityName=".EventDetailActivity" >
+            android:parentActivityName=".EventDetailActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="dhbw.mobile2.EventDetailActivity" />
