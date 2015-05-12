@@ -58,7 +58,7 @@ public class EventDetailActivity extends ActionBarActivity {
     private TextView detailCreatorNameDynamic;
     private TextView detailCreationTimeDynamic;
     private TextView detailParticipantsDynamic;
-    private Button detailButtonParicipate;
+    private Button detailButtonParticipate;
 
 
     @Override
@@ -68,14 +68,10 @@ public class EventDetailActivity extends ActionBarActivity {
 
         intent = getIntent();
         eventId = intent.getStringExtra("eventId");
+        //createExampleEventData();
         retrieveParseData();
 
-        Context context = getApplicationContext();
-        CharSequence text = eventId;
-        int duration = Toast.LENGTH_SHORT;
 
-        Toast toast = Toast.makeText(context, text, duration);
-        toast.show();
     }
 
     @Override
@@ -115,16 +111,8 @@ public class EventDetailActivity extends ActionBarActivity {
 
     public void retrieveParseData() {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
-        query.fromLocalDatastore();
-        query.getInBackground(eventId, new GetCallback<ParseObject>() {
-            public void done(ParseObject object, ParseException e) {
-                if (e == null) {
-                    eventObject = object;
-                    eventId = object.getObjectId();
-                    listParticipants = eventObject.getList("participants");
-                    fillDynamicData(object);
-                } else {
-                    ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
+
+
                     query.getInBackground(eventId, new GetCallback<ParseObject>() {
                         public void done(ParseObject object, ParseException queryException) {
                             if (queryException == null) {
@@ -135,13 +123,11 @@ public class EventDetailActivity extends ActionBarActivity {
                                 listParticipants = eventObject.getList("participants");
 
                                 fillDynamicData(object);
-
+                                checkParticipationStatus(object);
                             } else {
                                 System.out.print("Object could not be received");
                             }
-                        }
-                    });
-                }
+
 
 
 
@@ -152,18 +138,16 @@ public class EventDetailActivity extends ActionBarActivity {
                 private void fillDynamicData(ParseObject object){
         declarateViews();
 
-        fillCategory(object);
-        fillDescription(object);
+                    fillCategory(object);
+                    fillDescription(object);
         fillTitle(object);
-        fillLocationName(object);
-        fillCreatorName(object);
-        fillCreationTime(object);
+                    fillLocationName(object);
+                    fillCreatorName(object);
+                    fillCreationTime(object);
         fillParticipants(object);
         longitude = object.getInt("longitude");
-        latitude = object.getInt("latitude");
-        duration = object.getString("duration");
-        maxMembers = object.getInt("maxMembers");
-        checkParticipationStatus();
+                    latitude = object.getInt("latitude");
+                    duration = object.getString("duration");
     }
 
 
@@ -175,8 +159,8 @@ public class EventDetailActivity extends ActionBarActivity {
         detailLocationNameDynamic = (TextView) (findViewById(R.id.detail_location_name_dynamic));
         detailCreatorNameDynamic = (TextView) (findViewById(R.id.detail_creator_dynamic));
         detailCreationTimeDynamic = (TextView) (findViewById(R.id.detail_creation_time_dynamic));
-        detailParticipantsDynamic = (TextView) (findViewById(R.id.detail_participators_dynamic));
-        detailButtonParicipate = (Button) (findViewById(R.id.detail_button_participate));
+        detailParticipantsDynamic = (TextView) (findViewById(R.id.detail_participants_dynamic));
+        detailButtonParticipate = (Button) (findViewById(R.id.detail_button_participate));
     }
 
     private void fillCategory (ParseObject object){
@@ -225,17 +209,21 @@ public class EventDetailActivity extends ActionBarActivity {
     }
 
     private void fillParticipants(ParseObject object){
+        maxMembers = object.getInt("maxMembers");
         try {
-            detailParticipantsDynamic.setText(listParticipants.size() + " participants");
+            String textParticipants = listParticipants.size() + "/" + maxMembers + " participants";
+
+            detailParticipantsDynamic.setText(textParticipants);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void checkParticipationStatus(){
+    private void checkParticipationStatus(ParseObject object){
+        List<ParseUser> listParticipants = object.getList("participants");
         for (int i=0; i < listParticipants.size(); i++){
             try {
-                if (listParticipants.get(i).fetchIfNeeded().getObjectId() == currentUser.getObjectId()){
+                if (listParticipants.get(i).fetchIfNeeded().getObjectId().equals(currentUser.getObjectId())){
                     changeParticipationToTrue();
                 }
             }catch (Exception e){
@@ -248,12 +236,21 @@ public class EventDetailActivity extends ActionBarActivity {
         //add CurrentUser to ParseObject
 
 
-        if (statusParticipation == false) {
-            listParticipants.add(currentUser);
-            eventObject.put("participants", listParticipants);
-            eventObject.saveInBackground();
+        if (!statusParticipation) {
+            if (listParticipants.size() <= maxMembers) {
+                listParticipants.add(currentUser);
+                eventObject.put("participants", listParticipants);
+                eventObject.saveInBackground();
 
-            changeParticipationToTrue();
+                changeParticipationToTrue();
+            } else {
+                Context context = getApplicationContext();
+                CharSequence text = "Sorry, but you cannot participate in this event. The maximum amount of participants has already been reached.";
+                int duration = Toast.LENGTH_LONG;
+
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
+            }
         }
 
 
@@ -261,22 +258,24 @@ public class EventDetailActivity extends ActionBarActivity {
 
     private void changeParticipationToTrue(){
         statusParticipation = true;
-        detailButtonParicipate.setText("I don\'t participate");
-        detailButtonParicipate.setOnClickListener(new View.OnClickListener() {
+        fillParticipants(eventObject);
+        detailButtonParticipate.setText("I don\'t participate");
+        detailButtonParticipate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                deactivateParticipation(detailButtonParicipate);
+                deactivateParticipation(detailButtonParticipate);
             }
         });
     }
 
     private void changeParticipationToFalse(){
         statusParticipation = false;
-        detailButtonParicipate.setText("I do participate");
-        detailButtonParicipate.setOnClickListener(new View.OnClickListener() {
+        fillParticipants(eventObject);
+        detailButtonParticipate.setText("I do participate");
+        detailButtonParticipate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                activateParticipation(detailButtonParicipate);
+                activateParticipation(detailButtonParticipate);
             }
         });
     }
@@ -315,8 +314,8 @@ public class EventDetailActivity extends ActionBarActivity {
         });
     }
 
-    public void linkParticipatorList(View view){
-        Intent intent = new Intent(this, ParticipatorsListActivity.class);
+    public void linkParticipantsActivity(View view){
+        Intent intent = new Intent(this, ParticipantsListActivity.class);
         intent.putExtra("id", eventId);
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);

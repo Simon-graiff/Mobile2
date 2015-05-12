@@ -1,13 +1,13 @@
 package dhbw.mobile2;
 
 import android.content.Intent;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.parse.GetCallback;
 import com.parse.ParseException;
@@ -19,15 +19,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class ParticipatorsListActivity extends ActionBarActivity {
-    ListView participatorsListView;
+public class ParticipantsListActivity extends ActionBarActivity {
+    ListView participantsListView;
     String eventId;
-    List<ParseUser> listParticipators;
+    List<ParseUser> listParticipants;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_participators_list);
+        setContentView(R.layout.activity_participants_list);
 
         Intent intent = getIntent();
         eventId = intent.getStringExtra("id");
@@ -37,8 +37,8 @@ public class ParticipatorsListActivity extends ActionBarActivity {
         query.getInBackground(eventId, new GetCallback<ParseObject>() {
             public void done(ParseObject object, ParseException e) {
                 if (e == null) {
-                    listParticipators = object.getList("participators");
-                    createParticipatorsList();
+                    listParticipants = object.getList("participants");
+                    createParticipantsList();
                 } else {
                     // something went wrong
                 }
@@ -49,20 +49,20 @@ public class ParticipatorsListActivity extends ActionBarActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_participators_list, menu);
+        getMenuInflater().inflate(R.menu.menu_participants_list, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+            case R.id.action_settings:
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -70,18 +70,20 @@ public class ParticipatorsListActivity extends ActionBarActivity {
 
 
 
-    private void createParticipatorsList(){
-        participatorsListView = (ListView) findViewById(R.id.participatorsListView);
-        final ArrayList<String> arrayListParticipators = new ArrayList<String>();
-        for (int i = 0; i < listParticipators.size(); i++) {
+
+
+    private void createParticipantsList(){
+        participantsListView = (ListView) findViewById(R.id.participatorsListView);
+        final ArrayList<String> arrayListParticipants = new ArrayList<String>();
+        for (int i = 0; i < listParticipants.size(); i++) {
             try {
-                arrayListParticipators.add(listParticipators.get(i).fetchIfNeeded().getUsername());
+                arrayListParticipants.add(listParticipants.get(i).fetchIfNeeded().getUsername());
             } catch (Exception e){
                 e.printStackTrace();
             }
             }
         ArrayAdapter adapter = new ArrayAdapter(this,
-                android.R.layout.simple_list_item_1, arrayListParticipators);
-        participatorsListView.setAdapter(adapter);
+                android.R.layout.simple_list_item_1, arrayListParticipants);
+        participantsListView.setAdapter(adapter);
     }
 }

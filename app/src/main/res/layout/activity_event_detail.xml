@@ -112,9 +112,9 @@
         android:paddingStart="20sp"
         android:paddingEnd="10sp"/>
 
-    //Participators
+    //Participants
     <TextView
-        android:id="@+id/detail_participators_static"
+        android:id="@+id/detail_participants_static"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/detail_creation_time"
@@ -125,20 +125,20 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/detail_participators_dynamic"
+        android:id="@+id/detail_participants_dynamic"
         android:layout_below="@id/detail_creation_time_dynamic"
-        android:layout_toEndOf="@id/detail_participators_static"
+        android:layout_toEndOf="@id/detail_participants_static"
         android:layout_alignParentEnd="true"
         android:paddingStart="20sp"
         android:paddingEnd="10sp"
-        android:onClick="linkParticipatorList" />
+        android:onClick="linkParticipantsActivity" />
 
     //Button: Participate
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/detail_button_participate"
-        android:layout_below="@id/detail_participators_dynamic"
+        android:layout_below="@id/detail_participants_dynamic"
         android:paddingStart="20sp"
         android:paddingEnd="10sp"
         android:text="@string/detail_button_participate_false"

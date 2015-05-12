@@ -13,7 +13,7 @@
     <string name="detail_description">Description: </string>
     <string name="detail_location">Location: </string>
     <string name="detail_creation_time">Created: </string>
-    <string name="detail_participators">Teilnehmer:</string>
+    <string name="detail_participants">Teilnehmer:</string>
     <string name="detail_button_participate_false">I Participate</string>
     <string name="detail_button_participate_true">I Don\'t Participate</string>
 
@@ -30,8 +30,8 @@
     <string name="category3">Chilling</string>
     <string name="category4">Drinking</string>
     <string name="title_activity_log_in">LogIn</string>
-    <string name="title_activity_participator_display">ParticipatorDisplayActivity</string>
-    <string name="title_activity_participators_list">ParticipatorsListActivity</string>
+    <string name="title_activity_participants_display">ParticipantsDisplayActivity</string>
+    <string name="title_activity_participants_list">ParticipantsListActivity</string>
 
     //Login
     <string name="facebook_app_id">1413961288925759</string>

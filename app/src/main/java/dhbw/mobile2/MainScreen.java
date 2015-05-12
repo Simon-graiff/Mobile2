@@ -77,7 +77,7 @@ public class MainScreen extends FragmentActivity {
 
     public void linkDetailEvent(View view){
         Intent intent = new Intent(this, EventDetailActivity.class);
-        intent.putExtra("eventId", "oaoDlaj3PX");
+        intent.putExtra("eventId", "rsmkYSi7ze");
         startActivity(intent);
 
     }
