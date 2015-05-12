@@ -28,7 +28,7 @@ public class CreateEventActivity extends ActionBarActivity {
     private LocationManager lm;
     private Location lastLocation = null;
     static final int TIME_DIFFERENCE_THRESHOLD = 1 * 60 * 1000;
-    private ParseObject event = null;
+    private ParseObject event;
 
 
     private final LocationListener locationListener = new LocationListener() {
@@ -100,6 +100,7 @@ public class CreateEventActivity extends ActionBarActivity {
         event.put("locationName", mEditText_location.getText().toString());
         event.put("duration", mEditText_duration.getText().toString());
         event.put("maxMembers", mEditText_maxMembers.getText().toString());
+
     }
 
     private void setLocationDataInEventObject(Location oldLocation, Location location) {

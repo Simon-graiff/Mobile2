@@ -1,6 +1,5 @@
 package dhbw.mobile2;
 
-import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -9,24 +8,17 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.parse.FindCallback;
 import com.parse.GetCallback;
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
-import org.json.JSONArray;
-
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -43,7 +35,7 @@ public class EventDetailActivity extends ActionBarActivity {
 
     //Relevant Users
     ParseUser currentUser = ParseUser.getCurrentUser();
-    List<ParseUser> listParticipators;
+    List<ParseUser> listParticipants;
 
     //Dynamic Information of Event
     private String category;
@@ -65,7 +57,7 @@ public class EventDetailActivity extends ActionBarActivity {
     private TextView detailLocationNameDynamic;
     private TextView detailCreatorNameDynamic;
     private TextView detailCreationTimeDynamic;
-    private TextView detailParticipatorsDynamic;
+    private TextView detailParticipantsDynamic;
     private Button detailButtonParicipate;
 
 
@@ -129,7 +121,7 @@ public class EventDetailActivity extends ActionBarActivity {
                 if (e == null) {
                     eventObject = object;
                     eventId = object.getObjectId();
-                    listParticipators = eventObject.getList("participators");
+                    listParticipants = eventObject.getList("participants");
                     fillDynamicData(object);
                 } else {
                     ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
@@ -140,7 +132,7 @@ public class EventDetailActivity extends ActionBarActivity {
                                 eventObject = object;
                                 eventId = object.getObjectId();
                                 object.pinInBackground();
-                                listParticipators = eventObject.getList("participators");
+                                listParticipants = eventObject.getList("participants");
 
                                 fillDynamicData(object);
 
@@ -166,7 +158,7 @@ public class EventDetailActivity extends ActionBarActivity {
         fillLocationName(object);
         fillCreatorName(object);
         fillCreationTime(object);
-        fillParticipators(object);
+        fillParticipants(object);
         longitude = object.getInt("longitude");
         latitude = object.getInt("latitude");
         duration = object.getString("duration");
@@ -183,7 +175,7 @@ public class EventDetailActivity extends ActionBarActivity {
         detailLocationNameDynamic = (TextView) (findViewById(R.id.detail_location_name_dynamic));
         detailCreatorNameDynamic = (TextView) (findViewById(R.id.detail_creator_dynamic));
         detailCreationTimeDynamic = (TextView) (findViewById(R.id.detail_creation_time_dynamic));
-        detailParticipatorsDynamic = (TextView) (findViewById(R.id.detail_participators_dynamic));
+        detailParticipantsDynamic = (TextView) (findViewById(R.id.detail_participators_dynamic));
         detailButtonParicipate = (Button) (findViewById(R.id.detail_button_participate));
     }
 
@@ -232,19 +224,18 @@ public class EventDetailActivity extends ActionBarActivity {
         detailCreationTimeDynamic.setText(creationTimeString);
     }
 
-    private void fillParticipators(ParseObject object){
-        List<ParseUser> listParticipators = object.getList("participators");
+    private void fillParticipants(ParseObject object){
         try {
-            detailParticipatorsDynamic.setText(listParticipators.size() + " participators");
+            detailParticipantsDynamic.setText(listParticipants.size() + " participants");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void checkParticipationStatus(){
-        for (int i=0; i < listParticipators.size(); i++){
+        for (int i=0; i < listParticipants.size(); i++){
             try {
-                if (listParticipators.get(i).fetchIfNeeded().getObjectId() == currentUser.getObjectId()){
+                if (listParticipants.get(i).fetchIfNeeded().getObjectId() == currentUser.getObjectId()){
                     changeParticipationToTrue();
                 }
             }catch (Exception e){
@@ -258,8 +249,8 @@ public class EventDetailActivity extends ActionBarActivity {
 
 
         if (statusParticipation == false) {
-            listParticipators.add(currentUser);
-            eventObject.put("participators", listParticipators);
+            listParticipants.add(currentUser);
+            eventObject.put("participants", listParticipants);
             eventObject.saveInBackground();
 
             changeParticipationToTrue();
@@ -292,8 +283,8 @@ public class EventDetailActivity extends ActionBarActivity {
 
     private void deactivateParticipation(View view){
         if (statusParticipation == true) {
-            listParticipators.remove(currentUser);
-            eventObject.put("participators", listParticipators);
+            listParticipants.remove(currentUser);
+            eventObject.put("participants", listParticipants);
             eventObject.saveInBackground();
 
             changeParticipationToFalse();
@@ -317,8 +308,8 @@ public class EventDetailActivity extends ActionBarActivity {
                 event.put("duration", "3 hours");
                 event.put("maxMembers", 30);
                 event.put("creator", list.get(0));
-                List<ParseUser> ListParticipators = list;
-                event.put("participators", list);
+                List<ParseUser> ListParticipants = list;
+                event.put("participants", list);
                 event.saveInBackground();
             }
         });
