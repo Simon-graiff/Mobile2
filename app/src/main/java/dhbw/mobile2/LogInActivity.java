@@ -37,6 +37,8 @@ public class LogInActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
+
+        //Hide the ActionBar for the Login Screen
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
 
@@ -71,6 +73,7 @@ public class LogInActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    //Is called by the User if he hits the Button FacebookLogin
     public void linkFacebookLogIn(View view) {
         final List<String> permissions = Arrays.asList("public_profile", "email");
 
