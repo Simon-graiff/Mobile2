@@ -1,6 +1,7 @@
 package dhbw.mobile2;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
@@ -16,10 +17,16 @@ import com.facebook.GraphResponse;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
+import com.parse.ParseFile;
 import com.parse.ParseUser;
 
+import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,6 +37,8 @@ public class LogInActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
+
+        //Hide the ActionBar for the Login Screen
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
 
@@ -64,10 +73,9 @@ public class LogInActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void linkFacebookLogIn(View view){
+    //Is called by the User if he hits the Button FacebookLogin
+    public void linkFacebookLogIn(View view) {
         final List<String> permissions = Arrays.asList("public_profile", "email");
-
-
 
 
         ParseFacebookUtils.logInWithReadPermissionsInBackground(LogInActivity.this, permissions, new LogInCallback() {
@@ -79,7 +87,7 @@ public class LogInActivity extends ActionBarActivity {
                     ParseUser.logOut();
                 } else if (user.isNew()) {
                     Log.d("MyApp", "User signed up and logged in through Facebook!");
-                    transferFacebook();
+                    retriveFacebookData();
                     Intent intent = new Intent(LogInActivity.this, MainScreen.class);
                     startActivity(intent);
                 } else {
@@ -91,10 +99,13 @@ public class LogInActivity extends ActionBarActivity {
         });
     }
 
-    public void transferFacebook(){
-        // make request to the /me API
+    public void retriveFacebookData() {
+        //Retrive Facebook ProfilePicutre from Facebook API & Save it to Parse
+        saveFacebookProfilePicture();
+
+        // make request to the /me API retrive and save Facebook User infos to Parse
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
-      GraphRequest.newMeRequest(accessToken, new GraphRequest.GraphJSONObjectCallback() {
+        GraphRequest.newMeRequest(accessToken, new GraphRequest.GraphJSONObjectCallback() {
             @Override
             public void onCompleted(JSONObject user, GraphResponse response) {
                 if (user != null) {
@@ -102,8 +113,7 @@ public class LogInActivity extends ActionBarActivity {
                         ParseUser.getCurrentUser().put("username", user.getString("name"));
                         ParseUser.getCurrentUser().put("gender", user.getString("gender"));
                         ParseUser.getCurrentUser().saveInBackground();
-
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         Log.e("Error from FB Data", e.getMessage());
                     }
                 }
@@ -113,6 +123,65 @@ public class LogInActivity extends ActionBarActivity {
 
     }
 
+    private void saveFacebookProfilePicture() {
+        // make request to the /me API
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        GraphRequest graph = GraphRequest.newMeRequest(accessToken, new GraphRequest.GraphJSONObjectCallback() {
+            @Override
+            public void onCompleted(JSONObject user, GraphResponse response) {
+                if (user != null) {
+                    try {
+                        //Retrive URL from Facebook profile picture
+                        String pictureURL = user.getJSONObject("picture").getJSONObject("data").getString("url");
+                        URL url = new URL(pictureURL);
+                        //Download the Picture from provided URL and Save it as ByteArray to Parse
+                        new DownloadPictureTask().execute(url);
+                    } catch (Exception e) {
+                        Log.e("Error from FB Data", e.getMessage());
+                    }
+                }
+            }
+        });
+
+        // Set paramaters for MeRequest to retrive the profile pricutre in correct size.
+        Bundle bundle = new Bundle();
+        bundle.putString("fields", "name,picture.width(" + getResources().getString(R.string.profil_picture_with_px) +
+                        ").height(" + getResources().getString(R.string.profil_picture_height_px)+")");
+                graph.setParameters(bundle);
+        graph.executeAsync();
+
+
+    }
+
+    /**
+     * This Method starts a Thread to download the pictures from the provided URLs and saves
+     * them as a File attached to the ParseUser.
+     */
+    private class DownloadPictureTask extends AsyncTask<URL, Void, Void> {
+        @Override
+        protected Void doInBackground(URL... urls) {
+            int count = urls.length;
+            for (int i = 0; i < count; i++) {
+
+                InputStream in = null;
+                try {
+                    in = new BufferedInputStream(urls[i].openStream());
+                    //Transfer InputStream in ByteArray
+                    byte[] data = IOUtils.toByteArray(in);
+
+                    //Saves the ByteArray to Parse as a File
+                    ParseFile file = new ParseFile("profilepicture.jpg", data);
+                    ParseUser.getCurrentUser().put("profilepicrure", file);
+                    ParseUser.getCurrentUser().saveInBackground();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (isCancelled()) break;
+            }
+            return null;
+        }
+    }
 
 
 }
