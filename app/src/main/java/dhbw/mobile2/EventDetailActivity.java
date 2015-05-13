@@ -29,7 +29,6 @@ public class EventDetailActivity extends ActionBarActivity {
 
     Intent intent;
 
-
     //EventObject
     ParseObject eventObject;
 
@@ -38,14 +37,9 @@ public class EventDetailActivity extends ActionBarActivity {
     List<ParseUser> listParticipants;
 
     //Dynamic Information of Event
-    private String category;
-    private String description;
-    private String duration;
     private int latitude;
-    private String locationName;
     private int longitude;
     private int maxMembers;
-    private String title;
     private ParseUser creator;
     private Date creationTime;
     private String eventId;
@@ -128,31 +122,31 @@ public class EventDetailActivity extends ActionBarActivity {
                                 System.out.print("Object could not be received");
                             }
 
-
-
-
-                } });
+                        }
+                    });
     }
 
 
                 private void fillDynamicData(ParseObject object){
-        declarateViews();
+                declareViews();
 
-                    fillCategory(object);
-                    fillDescription(object);
-        fillTitle(object);
-                    fillLocationName(object);
+                    //simple Types
+                fillSimpleType("category", detailCategoryDynamic);
+                fillSimpleType("description", detailDescriptionDynamic);
+                fillSimpleType("locationName", detailLocationNameDynamic);
+                fillSimpleType("title", detailTitleDynamic);
+
+
                     fillCreatorName(object);
                     fillCreationTime(object);
         fillParticipants(object);
         longitude = object.getInt("longitude");
                     latitude = object.getInt("latitude");
-                    duration = object.getString("duration");
     }
 
 
 
-    private void declarateViews(){
+    private void declareViews(){
         detailCategoryDynamic = (TextView) (findViewById(R.id.detail_category_dynamic));
         detailDescriptionDynamic = (TextView) (findViewById(R.id.detail_description_dynamic));
         detailTitleDynamic = (TextView) (findViewById(R.id.detail_title_dynamic));
@@ -163,25 +157,11 @@ public class EventDetailActivity extends ActionBarActivity {
         detailButtonParticipate = (Button) (findViewById(R.id.detail_button_participate));
     }
 
-    private void fillCategory (ParseObject object){
-        category = object.getString("category");
-        detailCategoryDynamic.setText(category);
+    public void fillSimpleType (String dynamicField, TextView textViewToFill){
+        runOnUiThread(new UIRunnable(dynamicField, textViewToFill, eventObject)
+        );
     }
 
-    private void fillDescription(ParseObject object){
-        description = object.getString("description");
-        detailDescriptionDynamic.setText(description);
-    }
-
-    private void fillTitle(ParseObject object){
-        title = object.getString("title");
-        detailTitleDynamic.setText(title);
-    }
-
-    private void fillLocationName(ParseObject object){
-        locationName = object.getString("locationName");
-        detailLocationNameDynamic.setText(locationName);
-    }
 
     private void fillCreatorName(ParseObject object){
         try {
@@ -320,5 +300,9 @@ public class EventDetailActivity extends ActionBarActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
 
+    }
+
+    public void setEventObject(ParseObject eventObject) {
+        this.eventObject = eventObject;
     }
 }

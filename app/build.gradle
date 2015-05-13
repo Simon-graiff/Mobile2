@@ -10,6 +10,7 @@ android {
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
+        testApplicationId "com.whereu.eventdetail.unittesting.tests"
     }
 
     buildTypes {
@@ -17,6 +18,9 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    sourceSets {
+        main { java.srcDirs = ['src/main/java', 'src/instrumentTest', 'src/instrumentTest/java'] }
     }
 }
 

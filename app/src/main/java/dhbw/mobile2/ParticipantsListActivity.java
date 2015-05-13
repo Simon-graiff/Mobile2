@@ -82,7 +82,7 @@ public class ParticipantsListActivity extends ActionBarActivity {
                 e.printStackTrace();
             }
             }
-        ArrayAdapter adapter = new ArrayAdapter(this,
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, arrayListParticipants);
         participantsListView.setAdapter(adapter);
     }
