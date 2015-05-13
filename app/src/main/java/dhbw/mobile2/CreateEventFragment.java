@@ -1,13 +1,13 @@
 package dhbw.mobile2;
 
 import android.app.Fragment;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,13 +15,19 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.LocationServices;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
 
 import java.util.ArrayList;
 
 
-public class CreateEventFragment extends Fragment {
+public class CreateEventFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status> {
 
     private EditText mEditText_title;
     private EditText mEditText_duration;
@@ -33,6 +39,9 @@ public class CreateEventFragment extends Fragment {
     private Location lastLocation = null;
     static final int TIME_DIFFERENCE_THRESHOLD = 1 * 60 * 1000;
     private ParseObject event = null;
+    private GoogleApiClient mGoogleApiClient;
+    private ArrayList<Geofence> mGeofenceList = new ArrayList<>();
+    private PendingIntent mGeofencePendingIntent;
 
 
     private final LocationListener locationListener = new LocationListener() {
@@ -69,7 +78,11 @@ public class CreateEventFragment extends Fragment {
         mEditText_description = (EditText) getActivity().findViewById(R.id.editText_FeedbackBody);
         mSpinner_category = (Spinner) getActivity().findViewById(R.id.SpinnerFeedbackType);
         lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-
+        mGoogleApiClient = new GoogleApiClient.Builder(getActivity().getBaseContext())
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -118,6 +131,29 @@ public class CreateEventFragment extends Fragment {
         event.put("creator", user);
     }
 
+    public void createGeofence(View w){
+        mGeofenceList.add(new Geofence.Builder()
+                .setRequestId("Test")
+                .setCircularRegion(10, 10, 250) //long,lat,radius
+                .setExpirationDuration(10000000)//millis
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                .build());
+
+        LocationServices.GeofencingApi.addGeofences(
+                mGoogleApiClient,
+                mGeofenceList,
+                getGeofencePendingIntent()
+        ).setResultCallback(this);
+    }
+
+    private PendingIntent getGeofencePendingIntent(){
+        if( mGeofencePendingIntent != null){
+            return mGeofencePendingIntent;
+        }
+        Intent intent = new Intent(getActivity().getBaseContext(), GeofenceTransitionsIntentService.class);
+        return PendingIntent.getService(getActivity().getBaseContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
     private void setLocationDataInEventObject(Location oldLocation, Location location) {
         Toast.makeText(getActivity().getBaseContext(), location.toString(), Toast.LENGTH_LONG).show();
         if(isBetterLocation(oldLocation, location)) {
@@ -162,5 +198,25 @@ public class CreateEventFragment extends Fragment {
             }
         }
         return false;
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        Toast.makeText(getActivity().getBaseContext(),"Connected", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Toast.makeText(getActivity().getBaseContext(),"Connection Suspended", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Toast.makeText(getActivity().getBaseContext(), "Connection Failed", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onResult(Status status) {
+        Toast.makeText(getActivity().getBaseContext(), "Result: "+status.toString(), Toast.LENGTH_LONG).show();
     }
 }

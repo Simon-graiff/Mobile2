@@ -58,5 +58,13 @@
             android:onClick="createEvent"
             android:layout_gravity="bottom" />
 
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/createGeofence_button"
+            android:id="@+id/button_createGeofence"
+            android:onClick="createGeofence"
+            android:layout_gravity="bottom" />
+
     </LinearLayout>
 </ScrollView>

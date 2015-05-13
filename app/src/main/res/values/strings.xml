@@ -39,6 +39,7 @@
     //User
     <string name="profil_picture_with_px">100</string>
     <string name="profil_picture_height_px">100</string>
+    <string name="createGeofence_button">Notify me for Events here!</string>
 
 
 </resources>
