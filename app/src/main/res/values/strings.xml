@@ -24,10 +24,10 @@
     <!--Icons list entries-->
     <array name="nav_drawer_icons">
         <item>@drawable/ic_home</item>
-        <item>@drawable/ic_people</item>
-        <item>@drawable/ic_communities</item>
-        <item>@drawable/ic_pages</item>
-        <item>@drawable/ic_whats_hot</item>
+        <item>abc</item>
+        <item>def</item>
+        <item>ghi</item>
+        <item>jkl</item>
     </array>
 
     <!-- Content Description -->

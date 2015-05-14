@@ -18,8 +18,6 @@ import android.widget.ListView;
 
 import java.util.ArrayList;
 
-import dhbw.mobile2.R;
-
 public class MainScreen extends Activity {
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
@@ -82,7 +80,7 @@ public class MainScreen extends Activity {
         getActionBar().setHomeButtonEnabled(true);
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                R.drawable.ic_drawer, //nav menu toggle icon
+                R.drawable.ic_home, //nav menu toggle icon  war mal ic_drawer
                 R.string.app_name, // nav drawer open - description for accessibility
                 R.string.app_name // nav drawer close - description for accessibility
         ) {

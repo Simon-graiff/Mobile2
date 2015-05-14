@@ -12,7 +12,9 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -29,7 +31,8 @@ import com.parse.ParseUser;
 import java.util.ArrayList;
 
 
-public class CreateEventFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status> {
+public class CreateEventFragment extends Fragment
+        implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status>, OnClickListener {
 
     private EditText mEditText_title;
     private EditText mEditText_duration;
@@ -37,6 +40,8 @@ public class CreateEventFragment extends Fragment implements GoogleApiClient.Con
     private EditText mEditText_maxMembers;
     private EditText mEditText_description;
     private Spinner mSpinner_category;
+    private Button mButton_createEvent;
+    private Button mButton_creteGeofence;
     private LocationManager lm;
     private Location lastLocation = null;
     static final int TIME_DIFFERENCE_THRESHOLD = 1 * 60 * 1000;
@@ -44,6 +49,7 @@ public class CreateEventFragment extends Fragment implements GoogleApiClient.Con
     private GoogleApiClient mGoogleApiClient;
     private ArrayList<Geofence> mGeofenceList = new ArrayList<>();
     private PendingIntent mGeofencePendingIntent;
+    private View rootView;
 
 
     private final LocationListener locationListener = new LocationListener() {
@@ -71,22 +77,19 @@ public class CreateEventFragment extends Fragment implements GoogleApiClient.Con
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        View rootView = inflater.inflate(R.layout.fragment_create_event, container, false);
+        rootView = inflater.inflate(R.layout.fragment_create_event, container, false);
 
-        //Die beiden Zeilen verhindern das Laden des Menüs => man kommt von Deiner Seite
-        //nicht mehr weg. Meines Wissens nach kommen die nur in Activities rein,
-        //bei Fragments solltest Du die nicht brauchen. Für den Fall dass ich mich irre habe ich
-        //sie Dir aber drin gelassen, damit Du Bescheid weißt. - Simon
+        mEditText_title = (EditText) rootView.findViewById(R.id.editText_title);
+        mEditText_duration = (EditText) rootView.findViewById(R.id.editText_duration);
+        mEditText_location = (EditText) rootView.findViewById(R.id.editText_location);
+        mEditText_maxMembers = (EditText) rootView.findViewById(R.id.editText_maxMembers);
+        mEditText_description = (EditText) rootView.findViewById(R.id.editText_FeedbackBody);
+        mButton_createEvent = (Button) rootView.findViewById(R.id.button_CreateEvent);
+        mButton_createEvent.setOnClickListener(this);
+        mButton_creteGeofence = (Button) rootView.findViewById(R.id.button_createGeofence);
+        mButton_creteGeofence.setOnClickListener(this);
 
-        //super.onCreate(savedInstanceState);
-        //getActivity().setContentView(R.layout.activity_create_event);
-
-        mEditText_title = (EditText) getActivity().findViewById(R.id.editText_title);
-        mEditText_duration = (EditText) getActivity().findViewById(R.id.editText_duration);
-        mEditText_location = (EditText) getActivity().findViewById(R.id.editText_location);
-        mEditText_maxMembers = (EditText) getActivity().findViewById(R.id.editText_maxMembers);
-        mEditText_description = (EditText) getActivity().findViewById(R.id.editText_FeedbackBody);
-        mSpinner_category = (Spinner) getActivity().findViewById(R.id.SpinnerFeedbackType);
+        mSpinner_category = (Spinner) rootView.findViewById(R.id.SpinnerFeedbackType);
         lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         mGoogleApiClient = new GoogleApiClient.Builder(getActivity().getBaseContext())
                 .addConnectionCallbacks(this)
@@ -144,18 +147,7 @@ public class CreateEventFragment extends Fragment implements GoogleApiClient.Con
     }
 
     public void createGeofence(View w){
-        mGeofenceList.add(new Geofence.Builder()
-                .setRequestId("Test")
-                .setCircularRegion(10, 10, 250) //long,lat,radius
-                .setExpirationDuration(10000000)//millis
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-                .build());
-
-        LocationServices.GeofencingApi.addGeofences(
-                mGoogleApiClient,
-                mGeofenceList,
-                getGeofencePendingIntent()
-        ).setResultCallback(this);
+        mGoogleApiClient.connect();
     }
 
     private PendingIntent getGeofencePendingIntent(){
@@ -214,7 +206,18 @@ public class CreateEventFragment extends Fragment implements GoogleApiClient.Con
 
     @Override
     public void onConnected(Bundle bundle) {
-        Toast.makeText(getActivity().getBaseContext(),"Connected", Toast.LENGTH_LONG).show();
+        mGeofenceList.add(new Geofence.Builder()
+                .setRequestId("Test")
+                .setCircularRegion(10, 10, 250) //long,lat,radius
+                .setExpirationDuration(10000000)//millis
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                .build());
+
+        LocationServices.GeofencingApi.addGeofences(
+                mGoogleApiClient,
+                mGeofenceList,
+                getGeofencePendingIntent()
+        ).setResultCallback(this);
     }
 
     @Override
@@ -224,11 +227,20 @@ public class CreateEventFragment extends Fragment implements GoogleApiClient.Con
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        Toast.makeText(getActivity().getBaseContext(), "Connection Failed", Toast.LENGTH_LONG).show();
+        Toast.makeText(getActivity().getBaseContext(), "Connection Failed: "+connectionResult, Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void onResult(Status status) {
         Toast.makeText(getActivity().getBaseContext(), "Result: "+status.toString(), Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onClick(View view) {
+        if (view == mButton_createEvent){
+            createEvent(view);
+        }else if(view == mButton_creteGeofence){
+            createGeofence(view);
+        }
     }
 }

@@ -55,7 +55,6 @@
             android:layout_height="wrap_content"
             android:text="@string/create_button"
             android:id="@+id/button_CreateEvent"
-            android:onClick="createEvent"
             android:layout_gravity="bottom" />
 
         <Button
