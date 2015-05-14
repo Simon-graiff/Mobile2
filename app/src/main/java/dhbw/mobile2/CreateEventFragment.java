@@ -8,9 +8,11 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -67,9 +69,17 @@ public class CreateEventFragment extends Fragment implements GoogleApiClient.Con
     };
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        getActivity().setContentView(R.layout.activity_create_event);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        View rootView = inflater.inflate(R.layout.fragment_create_event, container, false);
+
+        //Die beiden Zeilen verhindern das Laden des Menüs => man kommt von Deiner Seite
+        //nicht mehr weg. Meines Wissens nach kommen die nur in Activities rein,
+        //bei Fragments solltest Du die nicht brauchen. Für den Fall dass ich mich irre habe ich
+        //sie Dir aber drin gelassen, damit Du Bescheid weißt. - Simon
+
+        //super.onCreate(savedInstanceState);
+        //getActivity().setContentView(R.layout.activity_create_event);
 
         mEditText_title = (EditText) getActivity().findViewById(R.id.editText_title);
         mEditText_duration = (EditText) getActivity().findViewById(R.id.editText_duration);
@@ -83,6 +93,8 @@ public class CreateEventFragment extends Fragment implements GoogleApiClient.Con
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
+
+        return rootView;
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {

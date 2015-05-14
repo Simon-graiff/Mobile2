@@ -1,0 +1,70 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        tools:context="dhbw.mobile2.CreateEventActivity"
+        android:orientation="vertical">
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editText_title"
+            android:hint="@string/create_name" />
+
+        <EditText
+            android:id="@+id/editText_FeedbackBody"
+            android:layout_height="wrap_content"
+            android:hint="@string/create_description"
+            android:inputType="textMultiLine"
+            android:lines="5"
+            android:layout_width="fill_parent" />
+
+        <Spinner
+            android:id="@+id/SpinnerFeedbackType"
+            android:layout_height="wrap_content"
+            android:prompt="@string/create_category"
+            android:layout_width="fill_parent"
+            android:entries="@array/categorylist" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editText_location"
+            android:hint="@string/create_location" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editText_duration"
+            android:hint="@string/create_duration" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editText_maxMembers"
+            android:hint="@string/create_maxMembers" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/create_button"
+            android:id="@+id/button_CreateEvent"
+            android:onClick="createEvent"
+            android:layout_gravity="bottom" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/createGeofence_button"
+            android:id="@+id/button_createGeofence"
+            android:onClick="createGeofence"
+            android:layout_gravity="bottom" />
+
+    </LinearLayout>
+</ScrollView>

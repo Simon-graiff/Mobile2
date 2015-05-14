@@ -17,14 +17,13 @@
          Google Maps Android API v2, but are recommended.
     -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:name="dhbw.mobile2.ParseApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@android:style/Theme.Holo.Light">
         <service android:name="dhbw.mobile2.GeofenceTransitionsIntentService"/>
         <meta-data
             android:name="com.google.android.gms.version"
@@ -54,10 +53,6 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="dhbw.mobile2.MainScreen" />
-        </activity>
-        <activity
-            android:name=".CreateEventActivity"
-            android:label="@string/title_activity_create_event" >
         </activity>
         <activity
             android:name=".LogInActivity"
