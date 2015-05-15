@@ -80,7 +80,7 @@ public class MainScreen extends Activity {
         getActionBar().setHomeButtonEnabled(true);
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                R.drawable.ic_home, //nav menu toggle icon  war mal ic_drawer
+                R.drawable.ic_drawer, //nav menu toggle icon  war mal ic_drawer
                 R.string.app_name, // nav drawer open - description for accessibility
                 R.string.app_name // nav drawer close - description for accessibility
         ) {
