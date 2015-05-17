@@ -46,7 +46,7 @@ public class HomeFragment extends Fragment implements GoogleMap.OnMapLongClickLi
 
             CameraPosition cameraPosition = new CameraPosition.Builder()
                     .target(position)
-                    .zoom(1)
+                    .zoom(16)
                     .bearing(13)
                     .tilt(40)
                     .build();
@@ -77,8 +77,8 @@ public class HomeFragment extends Fragment implements GoogleMap.OnMapLongClickLi
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_home, container, false);
-        setUpMapIfNeeded();
-        map.setOnMapLongClickListener(this);
+        //setUpMapIfNeeded();
+        //map.setOnMapLongClickListener(this);
 
         return rootView;
     }
@@ -155,13 +155,13 @@ public class HomeFragment extends Fragment implements GoogleMap.OnMapLongClickLi
     @Override
     public void onMapLongClick(LatLng point){
         Log.d("Main", "Map was tapped on:"+point);
-        //setMarker(point);
-        setGeoFence(point);
+        String s = "For test purpose only";
+        drawMarker(point, s);
     }
 
-    private void setMarker(LatLng position){
+    private void drawMarker(LatLng position, String title){
         map.addMarker(new MarkerOptions()
-                        .title("Testmarker")
+                        .title(title)
                         .position(position)
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
         );
