@@ -66,17 +66,19 @@ public class MainScreen extends ActionBarActivity {
         navDrawerItems = new ArrayList<NavDrawerItem>();
 
         //Adding items to array, counter is deactivated:
-        //0 = Home
-        //1 = Create new Event
-        //2 = My event
-        //3 = Settings
-        //4 = Logout
+        //0 = Profile
+        //1 = Map
+        //2 = Create new Event
+        //3 = My event
+        //4 = Settings
+        //5 = Logout
 
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[0], navMenuIcons.getResourceId(0, -1)));
-        navDrawerItems.add(new NavDrawerItem(navMenuTitles[1], navMenuIcons.getResourceId(1, -1)));
+        navDrawerItems.add(new NavDrawerItem(navMenuTitles[1], navMenuIcons.getResourceId(0, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[2], navMenuIcons.getResourceId(2, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[3], navMenuIcons.getResourceId(3, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[4], navMenuIcons.getResourceId(4, -1)));
+        navDrawerItems.add(new NavDrawerItem(navMenuTitles[5], navMenuIcons.getResourceId(5, -1)));
 
         //Recycle the typed array
         navMenuIcons.recycle();
@@ -111,7 +113,7 @@ public class MainScreen extends ActionBarActivity {
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
         if (savedInstanceState == null) {
-            //Setting HomeFragment as default fragment
+            //Setting MapFragment as default fragment
             Fragment fragment = new CreateEventFragment();
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
@@ -131,15 +133,17 @@ public class MainScreen extends ActionBarActivity {
 
         Fragment fragment = null;
 
-        if(position==0){
-            fragment = new HomeFragment();
+        if(position==0) {
+            //Christian's code
         }else if(position==1){
-            fragment = new CreateEventFragment();
+            fragment = new MapFragment();
         }else if(position==2){
-            fragment = new MyEventFragment();
+            fragment = new CreateEventFragment();
         }else if(position==3){
-            fragment = new SettingsFragment();
+            fragment = new MyEventFragment();
         }else if(position==4){
+            fragment = new SettingsFragment();
+        }else if(position==5){
             fragment = new LogoutFragment();
         }
 

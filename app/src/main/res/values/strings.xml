@@ -14,7 +14,8 @@
 
     <!--List entries-->
     <string-array name="nav_drawer_items">
-        <item >Home</item>
+        <item>Profile</item>
+        <item >Map</item>
         <item >Create new event</item>
         <item >My event</item>
         <item >Settings</item>
@@ -23,6 +24,7 @@
 
     <!--Icons list entries-->
     <array name="nav_drawer_icons">
+        <item>@drawable/ic_home</item>
         <item>@drawable/ic_home</item>
         <item>@drawable/ic_people</item>
         <item>@drawable/ic_communities</item>

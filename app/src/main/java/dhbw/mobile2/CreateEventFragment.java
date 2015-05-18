@@ -196,7 +196,7 @@ public class CreateEventFragment extends Fragment
             event.saveInBackground();
             Toast.makeText(getActivity().getBaseContext(), "Event saved: " + event.toString(), Toast.LENGTH_LONG).show();
 
-            Fragment fragment = new HomeFragment();
+            Fragment fragment = new MapFragment();
             getFragmentManager().beginTransaction().replace(R.id.frame_container, fragment).commit();
             mCreatingEventObject = false;
         }
