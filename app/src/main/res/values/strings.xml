@@ -20,6 +20,7 @@
         <item >My event</item>
         <item >Settings</item>
         <item >Logout</item>
+        <item> Event Detail</item>
     </string-array>
 
     <!--Icons list entries-->
