@@ -171,7 +171,7 @@ public class LogInActivity extends ActionBarActivity {
 
                     //Saves the ByteArray to Parse as a File
                     ParseFile file = new ParseFile("profilepicture.jpg", data);
-                    ParseUser.getCurrentUser().put("profilepicrure", file);
+                    ParseUser.getCurrentUser().put("profilepicture", file);
                     ParseUser.getCurrentUser().saveInBackground();
 
                 } catch (IOException e) {
