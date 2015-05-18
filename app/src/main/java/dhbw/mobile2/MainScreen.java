@@ -1,6 +1,5 @@
 package dhbw.mobile2;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
@@ -9,6 +8,7 @@ import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,9 +16,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.parse.ParseUser;
+
 import java.util.ArrayList;
 
-public class MainScreen extends Activity {
+public class MainScreen extends ActionBarActivity {
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -42,6 +44,14 @@ public class MainScreen extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
+
+        //Check if User is logged in
+        if(ParseUser.getCurrentUser() == null){
+            //If the user is not logged in call the loginActiviy
+            Intent intent = new Intent(getApplicationContext(), LogInActivity.class);
+            startActivity(intent);
+        }
+
 
         mTitle = mDrawerTitle = getTitle();
 
@@ -76,8 +86,8 @@ public class MainScreen extends Activity {
         mDrawerList.setAdapter(adapter);
 
         //Enabling action bar app icon and behaving it as toggle button
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
                 R.drawable.ic_drawer, //nav menu toggle icon  war mal ic_drawer
@@ -85,14 +95,14 @@ public class MainScreen extends Activity {
                 R.string.app_name // nav drawer close - description for accessibility
         ) {
             public void onDrawerClosed(View view) {
-                getActionBar().setTitle(mTitle);
+                getSupportActionBar().setTitle(mTitle);
 
                 //Is called on onPrepareOptionsMenu() to show action bar icons
                 invalidateOptionsMenu();
             }
 
             public void onDrawerOpened(View drawerView) {
-                getActionBar().setTitle(mDrawerTitle);
+                getSupportActionBar().setTitle(mDrawerTitle);
 
                 //Calling onPrepareOptionsMenu() to hide action bar icons
                 invalidateOptionsMenu();
@@ -102,7 +112,7 @@ public class MainScreen extends Activity {
 
         if (savedInstanceState == null) {
             //Setting HomeFragment as default fragment
-            Fragment fragment = new HomeFragment();
+            Fragment fragment = new CreateEventFragment();
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
         }
@@ -183,7 +193,7 @@ public class MainScreen extends Activity {
     @Override
     public void setTitle(CharSequence title) {
         mTitle = title;
-        getActionBar().setTitle(mTitle);
+        getSupportActionBar().setTitle(mTitle);
     }
 
     /**

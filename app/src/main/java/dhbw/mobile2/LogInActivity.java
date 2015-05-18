@@ -88,11 +88,11 @@ public class LogInActivity extends ActionBarActivity {
                 } else if (user.isNew()) {
                     Log.d("MyApp", "User signed up and logged in through Facebook!");
                     retriveFacebookData();
-                    Intent intent = new Intent(LogInActivity.this, MainScreen.class);
+                    Intent intent = new Intent(getApplicationContext(), MainScreen.class);
                     startActivity(intent);
                 } else {
                     Log.d("MyApp", "User logged in with Facebook!");
-                    Intent intent = new Intent(LogInActivity.this, MainScreen.class);
+                    Intent intent = new Intent(getApplicationContext(), MainScreen.class);
                     startActivity(intent);
                 }
             }
