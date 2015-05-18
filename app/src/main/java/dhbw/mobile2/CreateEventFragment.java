@@ -24,11 +24,17 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
+import com.parse.FunctionCallback;
+import com.parse.ParseCloud;
+import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class CreateEventFragment extends Fragment
@@ -42,6 +48,7 @@ public class CreateEventFragment extends Fragment
     private Spinner mSpinner_category;
     private Button mButton_createEvent;
     private Button mButton_creteGeofence;
+    private Button mButton_callBackend;
     private LocationManager lm;
     private Location lastLocation = null;
     static final int TIME_DIFFERENCE_THRESHOLD = 1 * 60 * 1000;
@@ -51,11 +58,14 @@ public class CreateEventFragment extends Fragment
     private PendingIntent mGeofencePendingIntent;
     private View rootView;
 
+    private Boolean mCreatingEventObject = false;
+    private Boolean mSearchingEvents = false;
+
 
     private final LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            setLocationDataInEventObject(lastLocation, location);
+            handleNewLocation(location);
         }
 
         @Override
@@ -96,9 +106,16 @@ public class CreateEventFragment extends Fragment
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
-
         return rootView;
     }
+
+    private void handleNewLocation(Location location){
+        if(mCreatingEventObject)
+            setLocationDataInEventObject(lastLocation, location);
+        else if(mSearchingEvents)
+            sendEventRequest(location);
+    }
+
 
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -123,6 +140,7 @@ public class CreateEventFragment extends Fragment
 
     public void createEvent(View w){
         //start updating the location with locationListener-Object
+        mCreatingEventObject = true;
         int maxMembers = 0;
         try{
             maxMembers = Integer.parseInt(mEditText_maxMembers.getText().toString());
@@ -158,6 +176,13 @@ public class CreateEventFragment extends Fragment
         return PendingIntent.getService(getActivity().getBaseContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
+    private GeofencingRequest getGeofencingRequest() {
+        GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
+        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
+        builder.addGeofences(mGeofenceList);
+        return builder.build();
+    }
+
     private void setLocationDataInEventObject(Location oldLocation, Location location) {
         Toast.makeText(getActivity().getBaseContext(), location.toString(), Toast.LENGTH_LONG).show();
         if(isBetterLocation(oldLocation, location)) {
@@ -173,6 +198,7 @@ public class CreateEventFragment extends Fragment
 
             Fragment fragment = new HomeFragment();
             getFragmentManager().beginTransaction().replace(R.id.frame_container, fragment).commit();
+            mCreatingEventObject = false;
         }
     }
 
@@ -208,21 +234,21 @@ public class CreateEventFragment extends Fragment
     public void onConnected(Bundle bundle) {
         mGeofenceList.add(new Geofence.Builder()
                 .setRequestId("Test")
-                .setCircularRegion(10, 10, 250) //long,lat,radius
-                .setExpirationDuration(10000000)//millis
+                .setCircularRegion(10, 10, 2000000) //long,lat,radius
+                .setExpirationDuration(Geofence.NEVER_EXPIRE)//millis
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
                 .build());
 
         LocationServices.GeofencingApi.addGeofences(
                 mGoogleApiClient,
-                mGeofenceList,
+                getGeofencingRequest(),
                 getGeofencePendingIntent()
         ).setResultCallback(this);
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-        Toast.makeText(getActivity().getBaseContext(),"Connection Suspended", Toast.LENGTH_LONG).show();
+        Toast.makeText(getActivity().getBaseContext(), "Connection Suspended", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -235,12 +261,38 @@ public class CreateEventFragment extends Fragment
         Toast.makeText(getActivity().getBaseContext(), "Result: "+status.toString(), Toast.LENGTH_LONG).show();
     }
 
+    private void sendEventRequest(Location location){
+
+        Map<String,Object> param = new HashMap<String, Object>();
+        param.put("longitude",location.getLongitude());
+        param.put("latitude",location.getLatitude());
+        param.put("userId",ParseUser.getCurrentUser().getObjectId());
+
+
+        ParseCloud.callFunctionInBackground("getNearEvents", param, new FunctionCallback<Map<String, Object>>() {
+            @Override
+            public void done(Map<String, Object> stringObjectMap, ParseException e) {
+                if (e == null) {
+                    Toast.makeText(getActivity().getBaseContext(), stringObjectMap.get("events").toString(), Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getActivity().getBaseContext(), "error im CloudCode", Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
     @Override
     public void onClick(View view) {
         if (view == mButton_createEvent){
             createEvent(view);
         }else if(view == mButton_creteGeofence){
-            createGeofence(view);
+            //createGeofence(view);
+            mSearchingEvents = true;
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
+        }else if(view==mButton_callBackend){
+            mSearchingEvents = true;
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
         }
     }
 }
