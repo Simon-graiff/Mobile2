@@ -65,8 +65,8 @@
     <string name="facebook_app_id">1413961288925759</string>
     
     //User
-    <string name="profil_picture_with_px">100</string>
-    <string name="profil_picture_height_px">100</string>
+    <string name="profil_picture_with_px">800</string>
+    <string name="profil_picture_height_px">800</string>
     <string name="createGeofence_button">Notify me for Events here!</string>
 
 
