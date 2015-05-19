@@ -3,6 +3,7 @@ package dhbw.mobile2;
 import android.app.Fragment;
 //import android.support.v4.app.Fragment;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -289,7 +290,14 @@ public class AppMapFragment extends Fragment
     public boolean onMarkerClick(final Marker m){
 
         Log.d("Main", "You've tapped a marker at: "+m.getPosition());
-        Log.d("Main", "ID is: "+m.getId());
+        Log.d("Main", "ID is: " + m.getId());
+
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("eventId", "l9lvvbNByv");
+        editor.commit();
+
+        Log.d("Main", "Executed commit");
 
         return true;
     }
