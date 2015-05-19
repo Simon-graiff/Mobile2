@@ -1,6 +1,149 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="dhbw.mobile2.EventDetailActivity">
 
-</LinearLayout>
+
+    //Line: Creator
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/detail_creator_dynamic"
+        android:layout_alignParentTop="true"
+        android:paddingStart="10sp"
+        android:paddingEnd="20sp"/>
+
+    //Line:Title
+    <TextView
+        android:id="@+id/detail_title_static"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/detail_title"
+        android:layout_below="@id/detail_creator_dynamic"
+        android:paddingStart="10sp"
+        android:paddingEnd="20sp"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/detail_title_dynamic"
+        android:text="@string/detail_title"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/detail_creator_dynamic"
+        android:paddingStart="20sp"
+        android:paddingEnd="10sp"
+        />
+
+    //Line: Category
+    <TextView
+        android:id="@+id/detail_category_static"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/detail_category"
+        android:layout_below="@id/detail_title_dynamic"
+        android:paddingStart="10sp"
+        android:paddingEnd="20sp"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/detail_category_dynamic"
+        android:layout_below="@id/detail_title_dynamic"
+        android:layout_alignParentEnd="true"
+        android:paddingStart="20sp"
+        android:paddingEnd="10sp"/>
+
+    //locationName
+    <TextView
+        android:id="@+id/detail_location_name_static"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/detail_location"
+        android:layout_below="@id/detail_category_dynamic"
+        android:paddingStart="10sp"
+        android:paddingEnd="20sp"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/detail_location_name_dynamic"
+        android:layout_below="@id/detail_category_dynamic"
+        android:layout_alignParentEnd="true"
+        android:paddingStart="20sp"
+        android:paddingEnd="10sp"/>
+
+    //description
+    <TextView
+        android:id="@+id/detail_description_static"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/detail_description"
+        android:layout_below="@id/detail_location_name_dynamic"
+        android:paddingStart="10sp"
+        android:paddingEnd="20sp"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/detail_description_dynamic"
+        android:layout_below="@id/detail_location_name_dynamic"
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@id/detail_description_static"
+        android:paddingStart="20sp"
+        android:paddingEnd="10sp"/>
+
+
+    //creation time
+    <TextView
+        android:id="@+id/detail_creation_time_static"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/detail_creation_time"
+        android:layout_below="@id/detail_description_dynamic"
+        android:paddingStart="10sp"
+        android:paddingEnd="20sp"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/detail_creation_time_dynamic"
+        android:layout_below="@id/detail_description_dynamic"
+        android:layout_toEndOf="@id/detail_creation_time_static"
+        android:layout_alignParentEnd="true"
+        android:paddingStart="20sp"
+        android:paddingEnd="10sp"/>
+
+    //Participants
+    <TextView
+        android:id="@+id/detail_participants_static"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/detail_creation_time"
+        android:layout_below="@id/detail_creation_time_static"
+        android:paddingStart="10sp"
+        android:paddingEnd="20sp"
+        android:visibility="invisible"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/detail_participants_dynamic"
+        android:layout_below="@id/detail_creation_time_dynamic"
+        android:layout_toEndOf="@id/detail_participants_static"
+        android:layout_alignParentEnd="true"
+        android:paddingStart="20sp"
+        android:paddingEnd="10sp"
+        android:onClick="linkParticipantsActivity" />
+
+    //Button: Participate
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/detail_button_participate"
+        android:layout_below="@id/detail_participants_dynamic"
+        android:paddingStart="20sp"
+        android:paddingEnd="10sp"
+        android:text="@string/detail_button_participate_false"
+        android:visibility="visible" />
+
+
+</RelativeLayout>

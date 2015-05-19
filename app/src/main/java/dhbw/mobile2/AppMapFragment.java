@@ -226,13 +226,7 @@ public class AppMapFragment extends Fragment
             );
         }
 
-        /*Alle Marker müssten in einer Liste gespeichert werden. Dann kann bei einem Klick
-        darauf referenziert werden, indem der MarkerClickListener nach der ID des Markers
-        sucht.
-        Allerdings müsste die Liste die IDs der ParseObjects UND der Marker enthalten...Deshalb
-        muss vermutlich eine spezielle Liste mit eigens konstruierten Datentypen gehalten werden.
-        Die Datentypen haben nur zwei Attribute: MarkerID & EventID, sowie Getter-Methoden.
-         */
+
     }
 
     private void drawEvents(){

@@ -192,6 +192,8 @@ public class MainScreen extends ActionBarActivity {
         }
     }
 
+
+
     //Called when invalidateOptionsMenu() is triggered
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
@@ -236,6 +238,13 @@ public class MainScreen extends ActionBarActivity {
         intent.putExtra("eventId", "rsmkYSi7ze");
         startActivity(intent);
 
+    }
+
+    public void linkParticipantsActivity(View view){
+
+        Fragment fragment = new ParticipantsListFragment();
+        FragmentManager fragmentManager = getFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
     }
 
    /* public void linkCreateEvent(View view){
