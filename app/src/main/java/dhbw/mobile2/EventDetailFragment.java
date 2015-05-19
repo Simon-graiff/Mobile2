@@ -75,7 +75,7 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
 
         return rootView;
     }
-    
+
 
     //Standardkonstruktor
     public EventDetailFragment(){}

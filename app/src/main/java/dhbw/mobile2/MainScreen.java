@@ -2,7 +2,9 @@ package dhbw.mobile2;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.os.Bundle;
@@ -151,6 +153,11 @@ public class MainScreen extends ActionBarActivity {
         }else if(position==5){
             fragment = new LogoutFragment();
         }else if(position == 6){
+            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString("eventId", "l9lvvbNByv");
+            editor.commit();
+
             fragment = new EventDetailFragment();
         }
 

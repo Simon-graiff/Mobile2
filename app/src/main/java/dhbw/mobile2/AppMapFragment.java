@@ -250,7 +250,7 @@ public class AppMapFragment extends Fragment
         Log.d("Main", "Prepared query and starting execution");
 
         //Executing query
-        final List<ParseObject> list = null;
+        List<ParseObject> list = null;
         query.findInBackground(new FindCallback<ParseObject>() {
             public void done(List<ParseObject> eventList, ParseException e) {
                 if (e == null) {
@@ -262,11 +262,11 @@ public class AppMapFragment extends Fragment
                             //list.add(eventList.get(i));
                             Log.d("Main", "Added an object");
 
-                            double tmpLat = list.get(i).getDouble("latitude");
-                            double tmpLng = list.get(i).getDouble("longitude");
+                            double tmpLat = eventList.get(i).getDouble("latitude");
+                            double tmpLng = eventList.get(i).getDouble("longitude");
                             LatLng tmpLatLng = new LatLng(tmpLat, tmpLng);
 
-                            String tmpTitle = list.get(i).getString("title");
+                            String tmpTitle = eventList.get(i).getString("title");
                             String color = "red";
                             //String eventID = list.get(i).getString("id");
                             drawMarker(tmpLatLng, tmpTitle, color);
