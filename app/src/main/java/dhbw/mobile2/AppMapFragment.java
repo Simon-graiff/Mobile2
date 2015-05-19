@@ -175,10 +175,12 @@ public class AppMapFragment extends Fragment
 
         Location userPosition = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
-        LatLng pos = new LatLng(userPosition.getLatitude(), userPosition.getLongitude());
-        String title = "Your position";
-        String color = "green";
-        drawMarker(pos, title, color);
+        if(userPosition!=null) {
+            LatLng pos = new LatLng(userPosition.getLatitude(), userPosition.getLongitude());
+            String title = "Your position";
+            String color = "green";
+            drawMarker(pos, title, color);
+        }
 
 
         return userPosition;
@@ -225,14 +227,6 @@ public class AppMapFragment extends Fragment
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
             );
         }
-
-        /*Alle Marker müssten in einer Liste gespeichert werden. Dann kann bei einem Klick
-        darauf referenziert werden, indem der MarkerClickListener nach der ID des Markers
-        sucht.
-        Allerdings müsste die Liste die IDs der ParseObjects UND der Marker enthalten...Deshalb
-        muss vermutlich eine spezielle Liste mit eigens konstruierten Datentypen gehalten werden.
-        Die Datentypen haben nur zwei Attribute: MarkerID & EventID, sowie Getter-Methoden.
-         */
     }
 
     private void drawEvents(){
