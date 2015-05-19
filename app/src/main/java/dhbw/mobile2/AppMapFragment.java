@@ -21,6 +21,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -30,7 +31,8 @@ import com.parse.ParseQuery;
 
 import java.util.List;
 
-public class AppMapFragment extends Fragment implements GoogleMap.OnMapLongClickListener {
+public class AppMapFragment extends Fragment
+        implements GoogleMap.OnMapLongClickListener, GoogleMap.OnMarkerClickListener {
 
     public LocationManager locationManager;
     private SupportMapFragment supportMapFragment;
@@ -51,7 +53,6 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMapLongClick
             CameraPosition cameraPosition = new CameraPosition.Builder()
                     .target(position)
                     .zoom(16)
-                    .bearing(13)
                     .tilt(40)
                     .build();
 
@@ -85,12 +86,20 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMapLongClick
         myMapView.onCreate(savedInstanceState);
 
         map = myMapView.getMap();
-        map.getUiSettings().setMyLocationButtonEnabled(true);
+        map.getUiSettings().setMyLocationButtonEnabled(false);
+
         map.setMyLocationEnabled(true);
         map.setOnMapLongClickListener(this);
+        map.setOnMarkerClickListener(this);
 
         MapsInitializer.initialize(this.getActivity());
+
+        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,500,0,locationListener);
+
         setUpMap();
+
 
         /*try{
             MapsInitializer.initialize(this.getActivity());
@@ -163,13 +172,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMapLongClick
 
         Log.d("Main", "Getting user's position");
 
-        LocationManager locationManager = (LocationManager) getActivity()
-                .getSystemService(Context.LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
-
-        Location userPosition = locationManager.getLastKnownLocation(
-                locationManager.getBestProvider(criteria, false)
-        );
+        Location userPosition = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
         LatLng pos = new LatLng(userPosition.getLatitude(), userPosition.getLongitude());
         String title = "Your position";
@@ -221,6 +224,14 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMapLongClick
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
             );
         }
+
+        /*Alle Marker müssten in einer Liste gespeichert werden. Dann kann bei einem Klick
+        darauf referenziert werden, indem der MarkerClickListener nach der ID des Markers
+        sucht.
+        Allerdings müsste die Liste die IDs der ParseObjects UND der Marker enthalten...Deshalb
+        muss vermutlich eine spezielle Liste mit eigens konstruierten Datentypen gehalten werden.
+        Die Datentypen haben nur zwei Attribute: MarkerID & EventID, sowie Getter-Methoden.
+         */
     }
 
     private void drawEvents(){
@@ -262,6 +273,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMapLongClick
 
                             String tmpTitle = list.get(i).getString("title");
                             String color = "red";
+                            //String eventID = list.get(i).getString("id");
                             drawMarker(tmpLatLng, tmpTitle, color);
                         }
                     }
@@ -270,24 +282,15 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMapLongClick
                     Log.d("Main", "Error: " + e.getMessage());
                 }
             }
-
         });
-
-        /*Log.d("Main", "Starting to draw events on map");
-
-        //Draw received events on the map
-        for (int j = 1; j < list.size(); j++){
-            double tmpLat = list.get(j).getDouble("latitude");
-            double tmpLng = list.get(j).getDouble("longitude");
-            LatLng tmpLatLng = new LatLng(tmpLat, tmpLng);
-
-            String tmpTitle = list.get(j).getString("title");
-
-            drawMarker(tmpLatLng, tmpTitle);
-        }
-
-        Log.d("Main", "Finished drawing");*/
     }
 
+    @Override
+    public boolean onMarkerClick(final Marker m){
 
+        Log.d("Main", "You've tapped a marker at: "+m.getPosition());
+        Log.d("Main", "ID is: "+m.getId());
+
+        return true;
+    }
 }
