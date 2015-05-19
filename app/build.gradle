@@ -12,9 +12,13 @@ android {
         testApplicationId "com.whereu.eventdetail.unittesting.tests"
     }
     buildTypes {
+        debug {
+            resValue "string", "google_maps_api_key", "AIzaSyDgy1QFJKNnashjDkX1VBkDyt4t1HKtmyU"
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            resValue "string", "google_maps_api_key", "AIzaSyDgy1QFJKNnashjDkX1VBkDyt4t1HKtmyU"
         }
     }
     sourceSets {
@@ -26,10 +30,10 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(dir: 'libs', include: 'Parse*.jar')
     compile 'com.android.support:appcompat-v7:22.1.1'
     compile 'com.google.android.gms:play-services:7.3.0'
     compile 'com.parse.bolts:bolts-android:1.+'
-    compile fileTree(dir: 'libs', include: 'Parse*.jar')
     compile 'com.facebook.android:facebook-android-sdk:4.1.1'
     compile 'commons-io:commons-io:2.4'
     compile 'com.android.support:support-v4:22.1.1'

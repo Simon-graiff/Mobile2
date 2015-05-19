@@ -175,10 +175,12 @@ public class AppMapFragment extends Fragment
 
         Location userPosition = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
-        LatLng pos = new LatLng(userPosition.getLatitude(), userPosition.getLongitude());
-        String title = "Your position";
-        String color = "green";
-        drawMarker(pos, title, color);
+        if(userPosition!=null) {
+            LatLng pos = new LatLng(userPosition.getLatitude(), userPosition.getLongitude());
+            String title = "Your position";
+            String color = "green";
+            drawMarker(pos, title, color);
+        }
 
 
         return userPosition;
@@ -225,8 +227,6 @@ public class AppMapFragment extends Fragment
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
             );
         }
-
-
     }
 
     private void drawEvents(){
