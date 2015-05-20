@@ -30,6 +30,7 @@ import com.google.android.gms.maps.MapFragment;
 import com.parse.FunctionCallback;
 import com.parse.ParseCloud;
 import com.parse.ParseException;
+import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
 
@@ -189,8 +190,10 @@ public class CreateEventFragment extends Fragment
         if(isBetterLocation(oldLocation, location)) {
             Toast.makeText(getActivity().getBaseContext(), "Better location found", Toast.LENGTH_LONG).show();
             lastLocation = location;
-            event.put("longitude", location.getLongitude());
-            event.put("latitude", location.getLatitude());
+            ParseGeoPoint geoPoint = new ParseGeoPoint();
+            geoPoint.setLatitude(location.getLatitude());
+            geoPoint.setLongitude(location.getLongitude());
+            event.put("geoPoint",geoPoint);
         }else {
             lm.removeUpdates(locationListener);
             lastLocation = null;
