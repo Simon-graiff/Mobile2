@@ -189,11 +189,11 @@ public class CreateEventFragment extends Fragment
         Toast.makeText(getActivity().getBaseContext(), location.toString(), Toast.LENGTH_LONG).show();
         if(isBetterLocation(oldLocation, location)) {
             Toast.makeText(getActivity().getBaseContext(), "Better location found", Toast.LENGTH_LONG).show();
-            lastLocation = location;
             ParseGeoPoint geoPoint = new ParseGeoPoint();
             geoPoint.setLatitude(location.getLatitude());
             geoPoint.setLongitude(location.getLongitude());
             event.put("geoPoint",geoPoint);
+            lastLocation = location;
         }else {
             lm.removeUpdates(locationListener);
             lastLocation = null;
