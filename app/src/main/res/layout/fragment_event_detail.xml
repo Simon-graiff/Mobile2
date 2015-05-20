@@ -8,7 +8,7 @@
     tools:context="dhbw.mobile2.EventDetailActivity">
 
 
-    //Line: Creator
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -23,20 +23,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/detail_title"
-        android:layout_below="@id/detail_creator_dynamic"
         android:paddingStart="10sp"
         android:paddingEnd="20sp"
-        />
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/detail_title_dynamic"
-        android:text="@string/detail_title"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@id/detail_creator_dynamic"
+        android:text=""
         android:paddingStart="20sp"
         android:paddingEnd="10sp"
-        />
+        android:layout_alignEnd="@+id/detail_participants_dynamic" />
 
     //Line: Category
     <TextView
@@ -44,17 +42,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/detail_category"
-        android:layout_below="@id/detail_title_dynamic"
         android:paddingStart="10sp"
-        android:paddingEnd="20sp"/>
+        android:paddingEnd="20sp"
+        android:layout_above="@+id/detail_location_name_dynamic"
+        android:layout_alignParentStart="true" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/detail_category_dynamic"
-        android:layout_below="@id/detail_title_dynamic"
-        android:layout_alignParentEnd="true"
         android:paddingStart="20sp"
-        android:paddingEnd="10sp"/>
+        android:paddingEnd="10sp"
+        android:layout_below="@id/detail_title_dynamic"
+        android:layout_alignEnd="@id/detail_title_dynamic" />
 
     //locationName
     <TextView
@@ -62,17 +61,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/detail_location"
-        android:layout_below="@id/detail_category_dynamic"
         android:paddingStart="10sp"
-        android:paddingEnd="20sp"/>
+        android:paddingEnd="20sp"
+        android:layout_below="@+id/detail_category_static"
+        android:layout_alignParentStart="true" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/detail_location_name_dynamic"
-        android:layout_below="@id/detail_category_dynamic"
-        android:layout_alignParentEnd="true"
         android:paddingStart="20sp"
-        android:paddingEnd="10sp"/>
+        android:paddingEnd="10sp"
+        android:layout_below="@+id/detail_category_dynamic"
+        android:layout_alignEnd="@+id/detail_title_dynamic" />
 
     //description
     <TextView
@@ -87,11 +87,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/detail_description_dynamic"
-        android:layout_below="@id/detail_location_name_dynamic"
-        android:layout_alignParentEnd="true"
-        android:layout_toEndOf="@id/detail_description_static"
         android:paddingStart="20sp"
-        android:paddingEnd="10sp"/>
+        android:paddingEnd="10sp"
+        android:layout_below="@+id/detail_location_name_dynamic"
+        android:layout_alignParentEnd="true" />
 
 
     //creation time
@@ -107,11 +106,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/detail_creation_time_dynamic"
-        android:layout_below="@id/detail_description_dynamic"
-        android:layout_toEndOf="@id/detail_creation_time_static"
-        android:layout_alignParentEnd="true"
         android:paddingStart="20sp"
-        android:paddingEnd="10sp"/>
+        android:paddingEnd="10sp"
+        android:layout_below="@+id/detail_description_dynamic"
+        android:layout_alignEnd="@+id/detail_participants_dynamic" />
 
     //Participants
     <TextView
@@ -132,18 +130,20 @@
         android:layout_alignParentEnd="true"
         android:paddingStart="20sp"
         android:paddingEnd="10sp"
-        android:onClick="linkParticipantsActivity" />
+        android:layout_alignParentStart="true" />
 
     //Button: Participate
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/detail_button_participate"
-        android:layout_below="@id/detail_participants_dynamic"
         android:paddingStart="20sp"
         android:paddingEnd="10sp"
         android:text="@string/detail_button_participate_false"
-        android:visibility="visible" />
+        android:visibility="visible"
+        android:layout_below="@+id/detail_participants_dynamic"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="40dp" />
 
 
 </RelativeLayout>

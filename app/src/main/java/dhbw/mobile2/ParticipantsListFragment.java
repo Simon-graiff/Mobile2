@@ -1,13 +1,16 @@
 package dhbw.mobile2;
 
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 
 import com.parse.GetCallback;
@@ -22,10 +25,11 @@ import java.util.List;
 /**
  * Created by Vincent on 19.05.2015.
  */
-public class ParticipantsListFragment extends Fragment{
+public class ParticipantsListFragment extends Fragment implements View.OnClickListener{
     ListView participantsListView;
     String eventId;
     List<ParseUser> listParticipants;
+    Button backToEventDetailButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -34,6 +38,9 @@ public class ParticipantsListFragment extends Fragment{
 
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         eventId = sharedPref.getString("eventId", "LyRCMu490k");
+
+        backToEventDetailButton = (Button) rootView.findViewById(R.id.participantsListBackButton);
+        backToEventDetailButton.setOnClickListener(this);
 
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
         query.fromLocalDatastore();
@@ -52,6 +59,15 @@ public class ParticipantsListFragment extends Fragment{
     }
 
 
+    @Override
+    public void onClick(View view){
+        if (view == backToEventDetailButton){
+            Fragment fragment = null;
+            fragment = new EventDetailFragment();
+            FragmentManager fragmentManager = getFragmentManager();
+            fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+        }
+    }
 
 
     private void createParticipantsList(){

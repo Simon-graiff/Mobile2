@@ -247,12 +247,6 @@ public class MainScreen extends ActionBarActivity {
 
     }
 
-    public void linkParticipantsActivity(View view){
-
-        Fragment fragment = new ParticipantsListFragment();
-        FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
-    }
 
    /* public void linkCreateEvent(View view){
         Intent intent = new Intent(this, CreateEventActivity.class);

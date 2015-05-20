@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,7 +34,7 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
     Intent intent;
 
     //EventObject
-    ParseObject eventObject;
+    public ParseObject eventObject;
 
     //Relevant Users
     ParseUser currentUser = ParseUser.getCurrentUser();
@@ -56,6 +57,7 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
     private TextView detailCreationTimeDynamic;
     private TextView detailParticipantsDynamic;
     private Button detailButtonParticipate;
+    private Button detailButtonListParticipants;
     View rootView;
 
 
@@ -72,6 +74,8 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
 
         detailButtonParticipate = (Button) rootView.findViewById(R.id.detail_button_participate);
         detailButtonParticipate.setOnClickListener(this);
+        detailButtonListParticipants = (Button) rootView.findViewById(R.id.detail_participants_dynamic);
+        detailButtonListParticipants.setOnClickListener(this);
 
         return rootView;
     }
@@ -123,8 +127,14 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
     }
 
 
+    public void linkParticipantsActivity(View view){
 
-    private void declareViews(){
+        Fragment fragment = new ParticipantsListFragment();
+        FragmentManager fragmentManager = getFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+    }
+
+    public void declareViews(){
         detailCategoryDynamic = (TextView) (rootView.findViewById(R.id.detail_category_dynamic));
         detailDescriptionDynamic = (TextView) (rootView.findViewById(R.id.detail_description_dynamic));
         detailTitleDynamic = (TextView) (rootView.findViewById(R.id.detail_title_dynamic));
@@ -132,7 +142,6 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
         detailCreatorNameDynamic = (TextView) (rootView.findViewById(R.id.detail_creator_dynamic));
         detailCreationTimeDynamic = (TextView) (rootView.findViewById(R.id.detail_creation_time_dynamic));
         detailParticipantsDynamic = (TextView) (rootView.findViewById(R.id.detail_participants_dynamic));
-        detailButtonParticipate = (Button) (rootView.findViewById(R.id.detail_button_participate));
     }
 
     public void fillSimpleType (String dynamicField, TextView textViewToFill){
@@ -194,7 +203,9 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
     public void onClick(View view) {
         if (view == detailButtonParticipate){
             activateParticipation(view);
-        }
+        } else if (view == detailButtonListParticipants){
+            linkParticipantsActivity(view);
+        };
     }
 
 
