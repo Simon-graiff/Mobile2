@@ -2,6 +2,7 @@ package dhbw.mobile2;
 
 import android.app.Fragment;
 //import android.support.v4.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Criteria;
@@ -14,10 +15,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
@@ -30,6 +33,8 @@ import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class AppMapFragment extends Fragment
@@ -37,8 +42,9 @@ public class AppMapFragment extends Fragment
 
     public LocationManager locationManager;
     private SupportMapFragment supportMapFragment;
-    private GoogleMap map;
-    MapView myMapView;
+    private GoogleMap map = null;
+    MapView myMapView = null;
+    public List<EventManagerItem> eventManager = new ArrayList<EventManagerItem>();
 
     private final LocationListener locationListener = new LocationListener() {
 
@@ -58,7 +64,7 @@ public class AppMapFragment extends Fragment
                     .build();
 
             map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
+            drawEvents();
         }
 
         @Override
@@ -83,24 +89,12 @@ public class AppMapFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_app_map, container, false);
-        myMapView = (MapView) rootView.findViewById(R.id.myMapView);
-        myMapView.onCreate(savedInstanceState);
 
-        map = myMapView.getMap();
-        map.getUiSettings().setMyLocationButtonEnabled(false);
-
-        map.setMyLocationEnabled(true);
-        map.setOnMapLongClickListener(this);
-        map.setOnMarkerClickListener(this);
-
-        MapsInitializer.initialize(this.getActivity());
+        //MapsInitializer.initialize(this.getActivity());
 
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,500,0,locationListener);
-
-        setUpMap();
-
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
 
         /*try{
             MapsInitializer.initialize(this.getActivity());
@@ -112,21 +106,62 @@ public class AppMapFragment extends Fragment
     }
 
     @Override
+    public void onActivityCreated(Bundle savedInstanceState){
+        super.onActivityCreated(savedInstanceState);
+
+        try {
+            MapsInitializer.initialize(this.getActivity());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        //myMapView = (MapView) rootView.findViewById(R.id.myMapView);
+        myMapView = (MapView) getView().findViewById(R.id.myMapView);
+        myMapView.onCreate(savedInstanceState);
+
+        map = myMapView.getMap();
+
+        if(map!=null) {
+            map.getUiSettings().setMyLocationButtonEnabled(false);
+
+            map.setMyLocationEnabled(true);
+            map.setOnMapLongClickListener(this);
+            map.setOnMarkerClickListener(this);
+
+            setUpMap();
+        }
+    }
+
+    @Override
     public void onResume(){
-        myMapView.onResume();
         super.onResume();
+        if(map!=null){
+            myMapView.onResume();
+        }
+
+    }
+
+    @Override
+    public void onPause() {
+        if (map != null)
+            myMapView.onPause();
+        super.onPause();
     }
 
     @Override
     public void onDestroy(){
+        if(map!=null) {
+            myMapView.onDestroy();
+        }
         super.onDestroy();
-        myMapView.onDestroy();
     }
 
     @Override
     public void onLowMemory(){
         super.onLowMemory();
-        myMapView.onLowMemory();
+        if(map!=null) {
+            myMapView.onLowMemory();
+        }
     }
 
     private void setUpMap(){
@@ -171,17 +206,15 @@ public class AppMapFragment extends Fragment
 
     private Location getUserPosition(){
 
-        Log.d("Main", "Getting user's position");
-
         Location userPosition = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
         if(userPosition!=null) {
             LatLng pos = new LatLng(userPosition.getLatitude(), userPosition.getLongitude());
             String title = "Your position";
             String color = "green";
-            drawMarker(pos, title, color);
+            String id = "Your position";
+            drawMarker(pos, title, color, id);
         }
-
 
         return userPosition;
     }
@@ -209,29 +242,33 @@ public class AppMapFragment extends Fragment
         Log.d("Main", "Map was tapped on:"+point);
         String s = "For test purpose only";
         String c = "red";
-        drawMarker(point, s, c);
+        String i = "Testmarker";
+        drawMarker(point, s, c, i);
     }
 
-    private void drawMarker(LatLng position, String title, String color){
+    private void drawMarker(LatLng position, String title, String color, String eventID){
 
         if(color.equals("red")) {
-            map.addMarker(new MarkerOptions()
+            Marker m = map.addMarker(new MarkerOptions()
                             .title(title)
                             .position(position)
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
             );
+
+            eventManager.add(new EventManagerItem(m.getId(), eventID));
+
         }else if(color.equals("green")){
-            map.addMarker(new MarkerOptions()
+            Marker m = map.addMarker(new MarkerOptions()
                             .title(title)
                             .position(position)
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
             );
+
+            eventManager.add(new EventManagerItem(m.getId(), eventID));
         }
     }
 
     private void drawEvents(){
-
-        Log.d("Main", "Entered drawEvents");
 
         //Creating ParseGeoPoint with user's current location
         Location userLocation = getUserPosition();
@@ -239,15 +276,12 @@ public class AppMapFragment extends Fragment
         ParseObject user = new ParseObject("User");
         user.put("location", point);
 
-        Log.d("Main", "Created ParseObject");
-
         //Preparing query
         ParseGeoPoint queryParameter = (ParseGeoPoint) user.get("location");
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
-        query.whereNear("location", queryParameter);
-        query.whereWithinKilometers("location", queryParameter, 5.0);
+        query.whereWithinKilometers("geoPoint", queryParameter, 5);
 
-        Log.d("Main", "Prepared query and starting execution");
+        Log.d("Main", "Waiting for Callback...");
 
         //Executing query
         List<ParseObject> list = null;
@@ -258,18 +292,20 @@ public class AppMapFragment extends Fragment
                     Log.d("Main", "Retrieved " + eventList.size() + " events");
 
                     if (!eventList.isEmpty()) {
-                        for (int i = 1; i < eventList.size(); i++) {
+                        for (int i = 0; i < eventList.size(); i++) {
                             //list.add(eventList.get(i));
                             Log.d("Main", "Added an object");
 
-                            double tmpLat = eventList.get(i).getDouble("latitude");
-                            double tmpLng = eventList.get(i).getDouble("longitude");
+                            ParseGeoPoint tmpPoint = (ParseGeoPoint) eventList.get(i).get("geoPoint");
+                            double tmpLat = tmpPoint.getLatitude();
+                            double tmpLng = tmpPoint.getLongitude();
                             LatLng tmpLatLng = new LatLng(tmpLat, tmpLng);
 
                             String tmpTitle = eventList.get(i).getString("title");
                             String color = "red";
-                            //String eventID = list.get(i).getString("id");
-                            drawMarker(tmpLatLng, tmpTitle, color);
+                            String eventID = eventList.get(i).getObjectId();
+                            Log.d("Main", "eventID = "+ eventID);
+                            drawMarker(tmpLatLng, tmpTitle, color, eventID);
                         }
                     }
 
@@ -283,15 +319,30 @@ public class AppMapFragment extends Fragment
     @Override
     public boolean onMarkerClick(final Marker m){
 
-        Log.d("Main", "You've tapped a marker at: "+m.getPosition());
-        Log.d("Main", "ID is: " + m.getId());
+        String markerID = m.getId();
+        String eventID = "Not found";
 
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString("eventId", "l9lvvbNByv");
-        editor.commit();
+        //Retrieve eventID from eventManager with markerID
+        for(int i=0; i<eventManager.size(); i++){
+            if(eventManager.get(i).getMarkerID().equals(markerID)){
+                eventID = eventManager.get(i).getEventID();
+            }
+        }
 
-        Log.d("Main", "Executed commit");
+        //Save eventID in SharedPreferences
+        if(!eventID.equals("Not found")){
+            if(!eventID.equals("Your position")) {
+                SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString("eventId", eventID);
+                editor.commit();
+
+                Fragment eventDetailFragment = new EventDetailFragment();
+                //ChildFragmentManager
+                FragmentManager fragmentManager = getFragmentManager();
+                fragmentManager.beginTransaction().replace(R.id.frame_container, eventDetailFragment).commit();
+            }
+        }
 
         return true;
     }
