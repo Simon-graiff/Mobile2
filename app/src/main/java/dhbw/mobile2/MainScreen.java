@@ -143,7 +143,7 @@ public class MainScreen extends ActionBarActivity {
         if(position==0) {
             fragment = new ProfileFragment();
         }else if(position==1){
-            fragment = new MapFragment();
+            fragment = new AppMapFragment();
         }else if(position==2){
             fragment = new CreateEventFragment();
         }else if(position==3){
@@ -153,10 +153,10 @@ public class MainScreen extends ActionBarActivity {
         }else if(position==5){
             fragment = new LogoutFragment();
         }else if(position == 6){
-            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+            /*SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putString("eventId", "l9lvvbNByv");
-            editor.commit();
+            editor.commit();*/
 
             fragment = new EventDetailFragment();
         }
@@ -204,10 +204,11 @@ public class MainScreen extends ActionBarActivity {
     //Called when invalidateOptionsMenu() is triggered
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        // if nav drawer is opened, hide the action items
+        /*// if nav drawer is opened, hide the action items
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
         menu.findItem(R.id.action_settings).setVisible(!drawerOpen);
-        return super.onPrepareOptionsMenu(menu);
+        return super.onPrepareOptionsMenu(menu);*/
+        return false;
     }
 
     @Override
@@ -239,17 +240,4 @@ public class MainScreen extends ActionBarActivity {
     protected void onResume(){
         super.onResume();
     }
-
-    public void linkDetailEvent(View view){
-        Intent intent = new Intent(this, EventDetailActivity.class);
-        intent.putExtra("eventId", "rsmkYSi7ze");
-        startActivity(intent);
-
-    }
-
-
-   /* public void linkCreateEvent(View view){
-        Intent intent = new Intent(this, CreateEventActivity.class);
-        startActivity(intent);
-    }*/
 }
