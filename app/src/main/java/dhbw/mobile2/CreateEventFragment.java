@@ -165,9 +165,6 @@ public class CreateEventFragment extends Fragment
         participants.add(user);
         event.put("participants", participants);
         event.put("creator", user);
-
-        user.put("eventId", event.getObjectId());
-        user.saveInBackground();
     }
 
     public void createGeofence(View w){
@@ -203,6 +200,9 @@ public class CreateEventFragment extends Fragment
             lastLocation = null;
             event.saveInBackground();
             Toast.makeText(getActivity().getBaseContext(), "Event saved: " + event.toString(), Toast.LENGTH_LONG).show();
+
+            ParseUser.getCurrentUser().put("eventId", event.getObjectId());
+            ParseUser.getCurrentUser().saveInBackground();
 
             Fragment fragment = new MapFragment();
             getFragmentManager().beginTransaction().replace(R.id.frame_container, fragment).commit();
