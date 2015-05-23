@@ -194,7 +194,7 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
         }
     }
 
-    private void checkParticipationStatus(ParseObject object){
+    public void checkParticipationStatus(ParseObject object){
         String eventIdOfUser = currentUser.getString("eventId");
         if (eventIdOfUser != null){
            Log.d("Main", "eventId is not null");

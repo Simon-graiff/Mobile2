@@ -162,8 +162,12 @@ public class CreateEventFragment extends Fragment
         event.put("locationName", mEditText_location.getText().toString());
         event.put("duration", mEditText_duration.getText().toString());
         event.put("maxMembers",maxMembers);
+        participants.add(user);
         event.put("participants", participants);
         event.put("creator", user);
+
+        user.put("eventId", event.getObjectId());
+        user.saveInBackground();
     }
 
     public void createGeofence(View w){

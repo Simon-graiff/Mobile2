@@ -163,7 +163,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
             editor.commit();
 
              fragment = new EventDetailFragment();
-            
+
         }else if(position==4){
             fragment = new SettingsFragment();
         }else if(position==5){
