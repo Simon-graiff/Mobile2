@@ -37,6 +37,7 @@
     <string name="desc_list_item_icon">Item Icon</string>
 
     //eventDetail
+    <string name="detail_no_event">no_event</string>
     <string name="detail_title">Title: </string>
     <string name="detail_category">Category: </string>
     <string name="detail_description">Description: </string>

@@ -25,7 +25,7 @@ import com.parse.ParseUser;
 import java.util.ArrayList;
 
 
-public class MainScreen extends ActionBarActivity {
+public class MainScreen extends ActionBarActivity implements ListEventsFragment.OnFragmentInteractionListener {
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -45,6 +45,9 @@ public class MainScreen extends ActionBarActivity {
 
     public static FragmentManager fragmentManager;
 
+    //currentUser
+    ParseUser currentUser;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,6 +58,8 @@ public class MainScreen extends ActionBarActivity {
             //If the user is not logged in call the loginActiviy
             Intent intent = new Intent(getApplicationContext(), LogInActivity.class);
             startActivity(intent);
+        } else {
+            currentUser = ParseUser.getCurrentUser();
         }
 
 
@@ -129,6 +134,11 @@ public class MainScreen extends ActionBarActivity {
         mDrawerList.setOnItemClickListener(new SlideMenuClickListener());
     }
 
+    @Override
+    public void onFragmentInteraction(String id) {
+
+    }
+
     private class SlideMenuClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -147,7 +157,13 @@ public class MainScreen extends ActionBarActivity {
         }else if(position==2){
             fragment = new CreateEventFragment();
         }else if(position==3){
-            fragment = new MyEventFragment();
+            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString("eventId", currentUser.getString("eventId"));
+            editor.commit();
+
+             fragment = new EventDetailFragment();
+            
         }else if(position==4){
             fragment = new SettingsFragment();
         }else if(position==5){
@@ -158,7 +174,7 @@ public class MainScreen extends ActionBarActivity {
             editor.putString("eventId", "l9lvvbNByv");
             editor.commit();*/
 
-            fragment = new EventDetailFragment();
+            fragment = new ListEventsFragment();
         }
 
         if (fragment != null) {

@@ -7,23 +7,29 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
+import java.io.ByteArrayInputStream;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -37,7 +43,7 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
     public ParseObject eventObject;
 
     //Relevant Users
-    ParseUser currentUser = ParseUser.getCurrentUser();
+    ParseUser currentUser;
     List<ParseUser> listParticipants;
 
     //Dynamic Information of Event
@@ -71,6 +77,8 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
         eventId = sharedPref.getString("eventId", "LyRCMu490k");
         //createExampleEventData();
         retrieveParseData();
+
+        currentUser = ParseUser.getCurrentUser();
 
         detailButtonParticipate = (Button) rootView.findViewById(R.id.detail_button_participate);
         detailButtonParticipate.setOnClickListener(this);
@@ -122,8 +130,8 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
         fillCreatorName(object);
         fillCreationTime(object);
         fillParticipants(object);
-        longitude = object.getInt("longitude");
-        latitude = object.getInt("latitude");
+
+        loadProfilePicture();
     }
 
 
@@ -187,15 +195,20 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
     }
 
     private void checkParticipationStatus(ParseObject object){
-        List<ParseUser> listParticipants = object.getList("participants");
-        for (int i=0; i < listParticipants.size(); i++){
-            try {
-                if (listParticipants.get(i).fetchIfNeeded().getObjectId().equals(currentUser.getObjectId())){
-                    changeParticipationToTrue();
-                }
-            }catch (Exception e){
-                e.printStackTrace();
-            }
+        String eventIdOfUser = currentUser.getString("eventId");
+        if (eventIdOfUser != null){
+           Log.d("Main", "eventId is not null");
+           if (!eventIdOfUser.equals("no_event")) {
+               changeParticipationToTrue();
+               Log.d("Main", "eventId does not equal no_event");
+           } else {
+               changeParticipationToFalse();
+               Log.d("Main", "eventId does equal no_event");
+           }
+
+       } else {
+           Log.d("Main", "eventId is null");
+           changeParticipationToFalse();
         }
     }
 
@@ -208,7 +221,23 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
         };
     }
 
+    public void loadProfilePicture(){
+        ImageView imageView=(ImageView) rootView.findViewById(R.id.imageView);
 
+        ParseFile profilepicture = creator.getParseFile("profilepicture");
+        byte [] data = new byte[0];
+        try {
+            data = profilepicture.getData();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        Bitmap bitmap= BitmapFactory.decodeByteArray(data, 0, data.length);
+        int heightPixels = getActivity().getApplicationContext().getResources().getDisplayMetrics().heightPixels;
+        //Set the ProfilePicuture to the ImageView and scale it to the screen size
+        imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, ((int)(heightPixels*0.1)), ((int)(heightPixels*0.1)), false));
+
+    }
 
     public void activateParticipation(View view){
         //add CurrentUser to ParseObject
@@ -219,6 +248,8 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
                 listParticipants.add(currentUser);
                 eventObject.put("participants", listParticipants);
                 eventObject.saveInBackground();
+
+
 
                 changeParticipationToTrue();
             } else {
@@ -237,32 +268,41 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
     private void changeParticipationToTrue(){
         statusParticipation = true;
         fillParticipants(eventObject);
-        detailButtonParticipate.setText("I don\'t participate");
+        detailButtonParticipate.setText("Don\'t participate");
         detailButtonParticipate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 deactivateParticipation(detailButtonParticipate);
             }
         });
+
+        ParseUser.getCurrentUser().put("eventId", eventId);
+        ParseUser.getCurrentUser().saveInBackground();
     }
 
     private void changeParticipationToFalse(){
         statusParticipation = false;
         fillParticipants(eventObject);
-        detailButtonParticipate.setText("I do participate");
+        detailButtonParticipate.setText("Participate");
         detailButtonParticipate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 activateParticipation(detailButtonParticipate);
             }
         });
+
+        ParseUser.getCurrentUser().put("eventId", R.string.detail_no_event);
+        ParseUser.getCurrentUser().saveInBackground();
     }
 
     private void deactivateParticipation(View view){
-        if (statusParticipation == true) {
+        if (statusParticipation) {
             listParticipants.remove(currentUser);
             eventObject.put("participants", listParticipants);
             eventObject.saveInBackground();
+
+
+
 
             changeParticipationToFalse();
         }
