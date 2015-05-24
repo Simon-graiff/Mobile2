@@ -95,7 +95,7 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
 
 
     public void retrieveParseData() {
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
+                ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
 
 
         query.getInBackground(eventId, new GetCallback<ParseObject>() {
@@ -185,6 +185,7 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
     }
 
     private void fillParticipants(ParseObject object){
+        listParticipants = eventObject.getList("participants");
         maxMembers = object.getInt("maxMembers");
         try {
             String textParticipants = listParticipants.size() + "/" + maxMembers + " participants";
@@ -203,6 +204,8 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
                if (eventIdOfUser.equals(eventObject.getObjectId())) {
                    changeParticipationToTrue();
                    Log.d("Main", "eventId does not equal no_event");
+               } else {
+                   statusParticipation = true;
                }
            } else {
 
@@ -269,12 +272,30 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
                 toast.show();
             }
         } else {
+            Log.d("Main", "Dialog is shown");
             DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     switch (which){
                         case DialogInterface.BUTTON_POSITIVE:
                             //Yes button clicked
+                            ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
+
+
+                            query.getInBackground(currentUser.getString("eventId"), new GetCallback<ParseObject>() {
+                                public void done(ParseObject object, ParseException queryException) {
+                                    if (queryException == null) {
+
+                                        removeUserFromList(object);
+                                        statusParticipation = false;
+                                        activateParticipation(getView());
+                                    } else {
+                                        System.out.print("Object could not be received");
+                                    }
+
+                                }
+                            });
+
                             break;
 
                         case DialogInterface.BUTTON_NEGATIVE:
@@ -285,7 +306,10 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
             };
 
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("Are you sure?").setPositiveButton("Yes", dialogClickListener)
+            builder.setMessage(
+                    "You already participate in an event at the moment. " +
+                            "Do you want to cancel your other event to participate in this one?").setPositiveButton(
+                    "Yes", dialogClickListener)
                     .setNegativeButton("No", dialogClickListener).show();
         }
 
@@ -322,15 +346,16 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
         ParseUser.getCurrentUser().saveInBackground();
     }
 
+    private void removeUserFromList(ParseObject eventObject){
+        List<ParseUser> listParticipants = eventObject.getList("participants");
+        listParticipants.remove(currentUser);
+        eventObject.put("participants", listParticipants);
+        eventObject.saveInBackground();
+    }
+
     private void deactivateParticipation(View view){
         if (statusParticipation) {
-            listParticipants.remove(currentUser);
-            eventObject.put("participants", listParticipants);
-            eventObject.saveInBackground();
-
-
-
-
+            removeUserFromList(eventObject);
             changeParticipationToFalse();
         }
     }
