@@ -12,13 +12,10 @@ android {
         testApplicationId "com.whereu.eventdetail.unittesting.tests"
     }
     buildTypes {
-        debug {
-            resValue "string", "google_maps_api_key", "AIzaSyDgy1QFJKNnashjDkX1VBkDyt4t1HKtmyU"
-        }
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            resValue "string", "google_maps_api_key", "AIzaSyDgy1QFJKNnashjDkX1VBkDyt4t1HKtmyU"
         }
     }
     sourceSets {

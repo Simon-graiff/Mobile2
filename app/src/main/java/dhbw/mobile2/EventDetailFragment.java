@@ -1,6 +1,7 @@
 package dhbw.mobile2;
 
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
@@ -199,14 +200,20 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
         if (eventIdOfUser != null){
            Log.d("Main", "eventId is not null");
            if (!eventIdOfUser.equals("no_event")) {
-               changeParticipationToTrue();
-               Log.d("Main", "eventId does not equal no_event");
+               if (eventIdOfUser.equals(eventObject.getObjectId())) {
+                   changeParticipationToTrue();
+                   Log.d("Main", "eventId does not equal no_event");
+               }
            } else {
-               changeParticipationToFalse();
-               Log.d("Main", "eventId does equal no_event");
+
+                   changeParticipationToFalse();
+
            }
 
        } else {
+
+                changeParticipationToFalse();
+
            Log.d("Main", "eventId is null");
            changeParticipationToFalse();
         }
@@ -242,6 +249,7 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
     public void activateParticipation(View view){
         //add CurrentUser to ParseObject
 
+        String eventIdOfUser = currentUser.getString("eventId");
 
         if (!statusParticipation) {
             if (listParticipants.size() <= maxMembers) {
@@ -260,6 +268,25 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
                 Toast toast = Toast.makeText(context, text, duration);
                 toast.show();
             }
+        } else {
+            DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    switch (which){
+                        case DialogInterface.BUTTON_POSITIVE:
+                            //Yes button clicked
+                            break;
+
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            //No button clicked
+                            break;
+                    }
+                }
+            };
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage("Are you sure?").setPositiveButton("Yes", dialogClickListener)
+                    .setNegativeButton("No", dialogClickListener).show();
         }
 
 
