@@ -102,7 +102,7 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        screenView = inflater.inflate(R.layout.fragment_list_events, container, false);
+        screenView = inflater.inflate(R.layout.fragment_events_list, container, false);
 
         // Set the adapter
         mListView = (AbsListView) screenView.findViewById(android.R.id.list);
