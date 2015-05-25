@@ -1,4 +1,4 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="horizontal"
@@ -7,29 +7,35 @@
         android:id="@+id/category_picture"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginBottom="5dp"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:layout_marginTop="5dp"
         android:src="@drawable/ic_sport" />
 
     <TextView
-        android:id="@+id/event_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="eventname"
-        android:layout_weight="0.65" />
+        android:id="@+id/event_name"
+        android:layout_alignTop="@+id/category_picture"
+        android:layout_toEndOf="@+id/category_picture" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="distance"
         android:id="@+id/distance"
-        android:layout_weight="0.34" />
+        android:layout_weight="0.34"
+        android:layout_below="@+id/event_name"
+        android:layout_toEndOf="@+id/category_picture" />
 
     <TextView
         android:layout_width="101dp"
         android:layout_height="wrap_content"
 
-        android:id="@+id/time" />
-</LinearLayout>
+        android:id="@+id/time"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@+id/category_picture"
+        android:layout_alignBottom="@+id/category_picture" />
+</RelativeLayout>
