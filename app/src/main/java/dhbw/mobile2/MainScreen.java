@@ -94,8 +94,11 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         navMenuIcons.recycle();
 
         //Setting the nav drawer list adapter
-        //adapter = new NavDrawerListAdapter(getApplicationContext(), navDrawerItems);
-        //mDrawerList.setAdapter(adapter);
+        if(ParseUser.getCurrentUser()!=null){
+            adapter = new NavDrawerListAdapter(getApplicationContext(), navDrawerItems);
+            mDrawerList.setAdapter(adapter);
+        }
+
 
         //Enabling action bar app icon and behaving it as toggle button
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
