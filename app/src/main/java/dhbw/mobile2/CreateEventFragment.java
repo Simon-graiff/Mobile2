@@ -8,6 +8,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -40,7 +41,7 @@ import java.util.Map;
 
 
 public class CreateEventFragment extends Fragment
-        implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status>, OnClickListener {
+        implements ResultCallback<Status>, OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private EditText mEditText_title;
     private EditText mEditText_duration;
@@ -50,18 +51,19 @@ public class CreateEventFragment extends Fragment
     private Spinner mSpinner_category;
     private Button mButton_createEvent;
     private Button mButton_creteGeofence;
-    private Button mButton_callBackend;
+    private Button mButton_test;
     private LocationManager lm;
     private Location lastLocation = null;
     static final int TIME_DIFFERENCE_THRESHOLD = 1 * 60 * 1000;
     private ParseObject event = null;
-    private GoogleApiClient mGoogleApiClient;
     private ArrayList<Geofence> mGeofenceList = new ArrayList<>();
     private PendingIntent mGeofencePendingIntent;
     private View rootView;
+    private GoogleApiClient mGoogleApiClient;
 
     private Boolean mCreatingEventObject = false;
     private Boolean mSearchingEvents = false;
+    private Boolean mCreatingGeofence = false;
 
 
     private final LocationListener locationListener = new LocationListener() {
@@ -100,49 +102,52 @@ public class CreateEventFragment extends Fragment
         mButton_createEvent.setOnClickListener(this);
         mButton_creteGeofence = (Button) rootView.findViewById(R.id.button_createGeofence);
         mButton_creteGeofence.setOnClickListener(this);
+        mButton_test = (Button) rootView.findViewById(R.id.button_test);
+        mButton_test.setOnClickListener(this);
 
         mSpinner_category = (Spinner) rootView.findViewById(R.id.SpinnerFeedbackType);
         lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+
         mGoogleApiClient = new GoogleApiClient.Builder(getActivity().getBaseContext())
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
+        mGoogleApiClient.connect();
+
         return rootView;
     }
 
     private void handleNewLocation(Location location){
-        if(mCreatingEventObject)
-            setLocationDataInEventObject(lastLocation, location);
-        else if(mSearchingEvents)
-            sendEventRequest(location);
-    }
-
-
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getActivity().getMenuInflater().inflate(R.menu.menu_create_event, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if(isBetterLocation(lastLocation,location)) {
+            lastLocation = location;
+            return;
         }
 
-        return super.onOptionsItemSelected(item);
+        if(mCreatingEventObject)
+            createEvent(location);
+        else if(mSearchingEvents)
+            sendEventRequest(location);
+        else if (mCreatingGeofence)
+            submitGeofenceToDatabase(location);
+        lm.removeUpdates(locationListener);
+        lastLocation = null;
     }
 
-    public void createEvent(View w){
+    private void submitGeofenceToDatabase(Location location) {
+        ParseObject geofence = new ParseObject("GeoFence");
+
+        ParseGeoPoint geoPoint = new ParseGeoPoint();
+        geoPoint.setLatitude(location.getLatitude());
+        geoPoint.setLongitude(location.getLongitude());
+        geofence.put("geoPoint", geoPoint);
+        geofence.put("user", ParseUser.getCurrentUser());
+        geofence.saveInBackground();
+
+    }
+
+    public void createEvent(Location location){
         //start updating the location with locationListener-Object
-        mCreatingEventObject = true;
         int maxMembers = 0;
         try{
             maxMembers = Integer.parseInt(mEditText_maxMembers.getText().toString());
@@ -151,8 +156,10 @@ public class CreateEventFragment extends Fragment
             return;
         }
 
-        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
-        ParseUser user = ParseUser.getCurrentUser();
+        ParseGeoPoint geoPoint = new ParseGeoPoint();
+        geoPoint.setLatitude(location.getLatitude());
+        geoPoint.setLongitude(location.getLongitude());
+
         ArrayList<ParseUser> participants = new ArrayList<ParseUser>();
 
         event = new ParseObject("Event");
@@ -163,47 +170,52 @@ public class CreateEventFragment extends Fragment
         event.put("duration", mEditText_duration.getText().toString());
         event.put("maxMembers",maxMembers);
         event.put("participants", participants);
-        event.put("creator", user);
+        event.put("creator", ParseUser.getCurrentUser());
+        event.put("geoPoint", geoPoint);
+        event.saveInBackground();
+        mCreatingEventObject = false;
+
+        Toast.makeText(getActivity().getBaseContext(), "Have fun!", Toast.LENGTH_LONG).show();
+
+        Fragment fragment = new MapFragment();
+        getFragmentManager().beginTransaction().replace(R.id.frame_container, fragment).commit();
     }
 
-    public void createGeofence(View w){
-        mGoogleApiClient.connect();
+
+    public void createGeofence (){
+        mGeofenceList.add(new Geofence.Builder()
+                .setRequestId("Test")
+                .setCircularRegion(10, 10, 2000000) //long,lat,radius
+                .setExpirationDuration(Geofence.NEVER_EXPIRE)//millis
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                .build());
+
+        LocationServices.GeofencingApi.addGeofences(
+                mGoogleApiClient,
+                getGeofencingRequest(),
+                getGeofencePendingIntent()
+        ).setResultCallback(this);
     }
 
-    private PendingIntent getGeofencePendingIntent(){
-        if( mGeofencePendingIntent != null){
-            return mGeofencePendingIntent;
-        }
-        Intent intent = new Intent(getActivity().getBaseContext(), GeofenceTransitionsIntentService.class);
-        return PendingIntent.getService(getActivity().getBaseContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-    }
+    private void sendEventRequest(Location location){
 
-    private GeofencingRequest getGeofencingRequest() {
-        GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
-        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
-        builder.addGeofences(mGeofenceList);
-        return builder.build();
-    }
+        Map<String,Object> param = new HashMap<String, Object>();
+        param.put("longitude",location.getLongitude());
+        param.put("latitude",location.getLatitude());
+        param.put("userId", ParseUser.getCurrentUser().getObjectId());
 
-    private void setLocationDataInEventObject(Location oldLocation, Location location) {
-        Toast.makeText(getActivity().getBaseContext(), location.toString(), Toast.LENGTH_LONG).show();
-        if(isBetterLocation(oldLocation, location)) {
-            Toast.makeText(getActivity().getBaseContext(), "Better location found", Toast.LENGTH_LONG).show();
-            ParseGeoPoint geoPoint = new ParseGeoPoint();
-            geoPoint.setLatitude(location.getLatitude());
-            geoPoint.setLongitude(location.getLongitude());
-            event.put("geoPoint",geoPoint);
-            lastLocation = location;
-        }else {
-            lm.removeUpdates(locationListener);
-            lastLocation = null;
-            event.saveInBackground();
-            Toast.makeText(getActivity().getBaseContext(), "Event saved: " + event.toString(), Toast.LENGTH_LONG).show();
 
-            Fragment fragment = new MapFragment();
-            getFragmentManager().beginTransaction().replace(R.id.frame_container, fragment).commit();
-            mCreatingEventObject = false;
-        }
+        ParseCloud.callFunctionInBackground("getNearEvents", param, new FunctionCallback<Map<String, Object>>() {
+            @Override
+            public void done(Map<String, Object> stringObjectMap, ParseException e) {
+                if (e == null) {
+                    Toast.makeText(getActivity().getBaseContext(), stringObjectMap.get("events").toString(), Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getActivity().getBaseContext(), "error im CloudCode", Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     private boolean isBetterLocation(Location oldLocation, Location newLocation) {
@@ -235,68 +247,73 @@ public class CreateEventFragment extends Fragment
     }
 
     @Override
-    public void onConnected(Bundle bundle) {
-        mGeofenceList.add(new Geofence.Builder()
-                .setRequestId("Test")
-                .setCircularRegion(10, 10, 2000000) //long,lat,radius
-                .setExpirationDuration(Geofence.NEVER_EXPIRE)//millis
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-                .build());
-
-        LocationServices.GeofencingApi.addGeofences(
-                mGoogleApiClient,
-                getGeofencingRequest(),
-                getGeofencePendingIntent()
-        ).setResultCallback(this);
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        Toast.makeText(getActivity().getBaseContext(), "Connection Suspended", Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        Toast.makeText(getActivity().getBaseContext(), "Connection Failed: "+connectionResult, Toast.LENGTH_LONG).show();
+    public void onClick(View view) {
+        if (view == mButton_createEvent){
+            mCreatingEventObject = true;
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
+        }else if(view == mButton_creteGeofence){
+            createGeofence();
+        }else if(view==mButton_test){
+            mSearchingEvents = true;
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
+        }
     }
 
     @Override
     public void onResult(Status status) {
         Toast.makeText(getActivity().getBaseContext(), "Result: "+status.toString(), Toast.LENGTH_LONG).show();
-    }
-
-    private void sendEventRequest(Location location){
-
-        Map<String,Object> param = new HashMap<String, Object>();
-        param.put("longitude",location.getLongitude());
-        param.put("latitude",location.getLatitude());
-        param.put("userId",ParseUser.getCurrentUser().getObjectId());
-
-
-        ParseCloud.callFunctionInBackground("getNearEvents", param, new FunctionCallback<Map<String, Object>>() {
-            @Override
-            public void done(Map<String, Object> stringObjectMap, ParseException e) {
-                if (e == null) {
-                    Toast.makeText(getActivity().getBaseContext(), stringObjectMap.get("events").toString(), Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(getActivity().getBaseContext(), "error im CloudCode", Toast.LENGTH_LONG).show();
-                    e.printStackTrace();
-                }
-            }
-        });
+        mCreatingGeofence = true;
+        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
     }
 
     @Override
-    public void onClick(View view) {
-        if (view == mButton_createEvent){
-            createEvent(view);
-        }else if(view == mButton_creteGeofence){
-            //createGeofence(view);
-            mSearchingEvents = true;
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
-        }else if(view==mButton_callBackend){
-            mSearchingEvents = true;
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
+    public void onConnected(Bundle bundle) {
+        Log.d("API", "Connected");
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.d("API", "ConnectedSuspended");
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Toast.makeText(getActivity().getBaseContext(), "ERROR CONNECTING GOOGLE API CLIENT", Toast.LENGTH_LONG).show();
+    }
+
+    private PendingIntent getGeofencePendingIntent(){
+        if( mGeofencePendingIntent != null){
+            return mGeofencePendingIntent;
         }
+        Intent intent = new Intent(getActivity().getBaseContext(), GeofenceTransitionsIntentService.class);
+        return PendingIntent.getService(getActivity().getBaseContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private GeofencingRequest getGeofencingRequest() {
+        GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
+        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
+        builder.addGeofences(mGeofenceList);
+        return builder.build();
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getActivity().getMenuInflater().inflate(R.menu.menu_create_event, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

@@ -17,15 +17,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+
 import com.google.android.gms.maps.MapFragment;
-
-
 import com.parse.ParseUser;
 
 import java.util.ArrayList;
 
 
-public class MainScreen extends ActionBarActivity {
+public class MainScreen extends ActionBarActivity  {
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -127,6 +126,7 @@ public class MainScreen extends ActionBarActivity {
         }
 
         mDrawerList.setOnItemClickListener(new SlideMenuClickListener());
+
     }
 
     private class SlideMenuClickListener implements ListView.OnItemClickListener {

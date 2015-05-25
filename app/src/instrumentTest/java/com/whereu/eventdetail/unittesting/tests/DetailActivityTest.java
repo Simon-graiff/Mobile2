@@ -40,7 +40,6 @@ public class DetailActivityTest extends ActivityInstrumentationTestCase2<EventDe
         TextView testTextView = (TextView) activity.findViewById(R.id.detail_category_dynamic);
         activity.fillSimpleType("title", testTextView);
         assertEquals("Runde Flunkiball auf dem Campus", testTextView.getText());
-
     }
 
 }
