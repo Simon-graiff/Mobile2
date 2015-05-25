@@ -23,9 +23,6 @@ import com.parse.ParseUser;
 
 import java.util.ArrayList;
 
-import dhbw.mobile2.NavDrawerItem;
-import dhbw.mobile2.R;
-
 public class NavDrawerListAdapter extends BaseAdapter {
 
     private Context context;
