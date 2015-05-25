@@ -2,18 +2,6 @@ apply plugin: 'com.android.application'
 
 android {
     signingConfigs {
-        release {
-            keyAlias 'AndroidMaps'
-            keyPassword 'Tungdil4963'
-            storeFile file('C:/Users/Vincent/.android/android.jks')
-            storePassword 'Tungdil4963'
-        }
-        debug {
-            keyAlias 'AndroidMaps'
-            keyPassword 'Tungdil4963'
-            storeFile file('C:/Users/Vincent/.android/android.jks')
-            storePassword 'Tungdil4963'
-        }
     }
     compileSdkVersion 22
     buildToolsVersion "22.0.1"
@@ -29,10 +17,8 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
         }
         debug {
-            signingConfig signingConfigs.release
         }
     }
     sourceSets {
