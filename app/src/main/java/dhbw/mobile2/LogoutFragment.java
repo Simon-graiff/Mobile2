@@ -36,7 +36,6 @@ public class LogoutFragment extends Fragment {
                     break;
 
                 case DialogInterface.BUTTON_NEGATIVE:
-                    //No button clicked
                     break;
             }
         }
@@ -46,7 +45,7 @@ public class LogoutFragment extends Fragment {
     public void onResume() {
         super.onResume();
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage("Do you really want to logout?").setPositiveButton("Yes", dialogClickListener)
+        builder.setTitle("Logout").setMessage("Do you really want to logout?").setPositiveButton("Yes", dialogClickListener)
                 .setNegativeButton("No", dialogClickListener).show();
 
     }

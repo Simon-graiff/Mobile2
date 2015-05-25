@@ -127,7 +127,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
 
         if (savedInstanceState == null) {
             //Setting MapFragment as default fragment
-            Fragment fragment = new CreateEventFragment();
+            Fragment fragment = new AppMapFragment();
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
         }
@@ -178,7 +178,14 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
             fragment = new ListEventsFragment();
         }
 
-        if (fragment != null) {
+        // If called Fragment is the logout fragment just add the fragment to the other instead of replacing it
+        // because only the showDialog needs to be displayed and it shall be overlapping the existing fragment
+        if (fragment != null && fragment.getClass() == LogoutFragment.class) {
+            FragmentManager fragmentManager = getFragmentManager();
+            fragmentManager.beginTransaction().add(R.id.frame_container, fragment).commit();
+        }
+
+            if (fragment != null && fragment.getClass() != LogoutFragment.class) {
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
 
