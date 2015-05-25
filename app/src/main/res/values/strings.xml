@@ -6,7 +6,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_create_event">CreateEventActivity</string>
-    <string name="google_maps_key">AIzaSyDgy1QFJKNnashjDkX1VBkDyt4t1HKtmyU</string>
+    <string name="google_maps_key">AIzaSyA6QRdSbBvPfoDKIxIgbOTJYHQXsAOXluM</string>
 
     <!--Menu-->
     <string name="drawer_open">Slider Menu Opened</string>
@@ -37,14 +37,15 @@
     <string name="desc_list_item_icon">Item Icon</string>
 
     //eventDetail
+    <string name="detail_no_event">no_event</string>
     <string name="detail_title">Title: </string>
     <string name="detail_category">Category: </string>
     <string name="detail_description">Description: </string>
     <string name="detail_location">Location: </string>
     <string name="detail_creation_time">Created: </string>
     <string name="detail_participants">Teilnehmer:</string>
-    <string name="detail_button_participate_false">I Participate</string>
-    <string name="detail_button_participate_true">I Don\'t Participate</string>
+    <string name="detail_button_participate_false">Participate</string>
+    <string name="detail_button_participate_true">Don\'t Participate</string>
 
     //Participants List
     <string name="participants_back_button">Back to Event Details</string>

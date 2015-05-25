@@ -1,6 +1,8 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+    }
     compileSdkVersion 22
     buildToolsVersion "22.0.1"
     defaultConfig {
@@ -12,13 +14,11 @@ android {
         testApplicationId "com.whereu.eventdetail.unittesting.tests"
     }
     buildTypes {
-        debug {
-            resValue "string", "google_maps_api_key", "AIzaSyDgy1QFJKNnashjDkX1VBkDyt4t1HKtmyU"
-        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            resValue "string", "google_maps_api_key", "AIzaSyDgy1QFJKNnashjDkX1VBkDyt4t1HKtmyU"
+        }
+        debug {
         }
     }
     sourceSets {
@@ -29,8 +29,8 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile fileTree(dir: 'libs', include: 'Parse*.jar')
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile fileTree(include: 'Parse*.jar', dir: 'libs')
     compile 'com.android.support:appcompat-v7:22.1.1'
     compile 'com.google.android.gms:play-services:7.3.0'
     compile 'com.parse.bolts:bolts-android:1.+'
