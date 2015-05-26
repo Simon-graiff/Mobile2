@@ -85,7 +85,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             if(checked){
                 removeQueryParameter("Music");
             }else{
-                setQueryParameter("Music");
+                setQueryParameter("Music ");
             }
         }else if(id == R.id.chilling_checkbox){
             if(checked){

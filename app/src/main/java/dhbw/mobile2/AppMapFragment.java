@@ -263,7 +263,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
                             String tmpTitle = eventList.get(i).getString("title");
                             String category = eventList.get(i).getString("category");
                             String eventID = eventList.get(i).getObjectId();
-                            Log.d("Main", "eventID = " + eventID);
+                            Log.d("Main", "eventID =" + eventID);
 
 
                             if(!category.equals(sport)){
