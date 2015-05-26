@@ -158,9 +158,6 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
 
         if(position==0) {
             fragment = ProfileFragment.newInstance(ParseUser.getCurrentUser().getObjectId());
-
-
-
         }else if(position==1){
             fragment = new AppMapFragment();
         }else if(position==2){
