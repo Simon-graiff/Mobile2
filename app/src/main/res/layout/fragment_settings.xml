@@ -5,11 +5,66 @@
     android:weightSum="1">
 
     <TextView
-        android:layout_width="151dp"
+        android:layout_width="175dp"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Settings Fragment"
-        android:id="@+id/textView"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Filter for events"
+        android:id="@+id/EventFilter_textView"
+        android:layout_weight="0.03" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sport"
+        android:id="@+id/sports_checkbox"
+        android:layout_weight="0.03"
+        android:checked="true"/>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Music"
+        android:id="@+id/music_checkbox"
+        android:layout_weight="0.03"
+        android:checked="true" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Chilling"
+        android:id="@+id/chilling_checkbox"
+        android:layout_weight="0.03"
+        android:checked="true" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Drinking"
+        android:id="@+id/drinking_checkbox"
+        android:layout_weight="0.03"
+        android:checked="true" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="0.14" />
+        android:layout_weight="0.15"
+        android:id="@+id/divider" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Filter for gender"
+        android:id="@+id/GenerFilter_textView"
+        android:layout_weight="0.03" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Allow mixed gender groups"
+        android:id="@+id/mixedGener_switch"
+        android:layout_weight="0.03"
+        android:checked="true" />
+
 </LinearLayout>

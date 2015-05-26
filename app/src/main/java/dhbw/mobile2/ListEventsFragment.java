@@ -26,12 +26,11 @@ import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
-import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
+import dhbw.mobile2.dummy.DummyContent;
 
 /**
  * A fragment representing a list of Items.
@@ -44,7 +43,14 @@ import java.util.List;
  */
 public class ListEventsFragment extends Fragment implements AdapterView.OnItemClickListener {
 
+    // TODO: Rename parameter arguments, choose names that match
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
 
+    // TODO: Rename and change types of parameters
+    private String mParam1;
+    private String mParam2;
 
     private OnFragmentInteractionListener mListener;
 
@@ -66,7 +72,8 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
     public static ListEventsFragment newInstance(String param1, String param2) {
         ListEventsFragment fragment = new ListEventsFragment();
         Bundle args = new Bundle();
-
+        args.putString(ARG_PARAM1, param1);
+        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -82,7 +89,10 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
+        }
         getEventData();
 
        // mAdapter = new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
@@ -92,7 +102,7 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        screenView = inflater.inflate(R.layout.fragment_events_list, container, false);
+        screenView = inflater.inflate(R.layout.fragment_list_events_grid, container, false);
 
         // Set the adapter
         mListView = (AbsListView) screenView.findViewById(android.R.id.list);
@@ -126,7 +136,7 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-
+            mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
             mListener.onFragmentInteraction(titleArray.get(position));
 
             goToEventDetails(idArray.get(position));
@@ -181,14 +191,12 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
 
     public void getEventData(){
         titleArray = new ArrayList<String>();
-        final ArrayList<String> categoryArray = new ArrayList<String>();
         idArray = new ArrayList<String>();
-        final ArrayList<Double> distanceArray = new ArrayList<Double>();
 
         //Creating ParseGeoPoint with user's current location
         LocationManager locationManager =  (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        final Location userLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        final ParseGeoPoint point = new ParseGeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
+        Location userLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);;
+        ParseGeoPoint point = new ParseGeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
         ParseObject user = new ParseObject("User");
         user.put("location", point);
 
@@ -209,13 +217,9 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
                         ParseObject event = eventList.get(i);
                         titleArray.add(event.getString("title"));
                         idArray.add(event.getObjectId());
-                        categoryArray.add(event.getString("category"));
-                        ParseGeoPoint eventPoint = event.getParseGeoPoint("geoPoint");
-                        double distance = eventPoint.distanceInKilometersTo(point);
-                        distanceArray.add(distance);
                         Log.d("Main", "title: " + event.getString("title"));
                     }
-                    mAdapter = new EventlistAdapter(getActivity(), titleArray, categoryArray, distanceArray);
+                    mAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1,android.R.id.text1,titleArray);
                     mListView.setAdapter(mAdapter);
                 }else {
                     Log.d("Main", "Exception: "+e);
