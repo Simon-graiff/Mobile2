@@ -42,10 +42,9 @@
     <string name="detail_category">Category: </string>
     <string name="detail_description">Description: </string>
     <string name="detail_location">Location: </string>
-    <string name="detail_creation_time">Created: </string>
-    <string name="detail_participants">Teilnehmer:</string>
+    <string name="detail_creation_time">Time</string>
+    <string name="detail_button_navigate">Navigate Me</string>
     <string name="detail_button_participate_false">Participate</string>
-    <string name="detail_button_participate_true">Don\'t Participate</string>
 
     //Participants List
     <string name="participants_back_button">Back to Event Details</string>

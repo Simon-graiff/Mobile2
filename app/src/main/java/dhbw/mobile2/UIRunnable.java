@@ -22,6 +22,10 @@ public class UIRunnable implements Runnable{
 
     public void run() {
         String stringFromObject = eventObject.getString(dynamicField);
-        textViewToFill.setText(stringFromObject);
+        if (dynamicField=="description"){
+            textViewToFill.setText("\"" + stringFromObject + "\"");
+        } else {
+            textViewToFill.setText(stringFromObject);
+        }
     }
 }

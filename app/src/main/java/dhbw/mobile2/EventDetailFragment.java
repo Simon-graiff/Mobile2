@@ -6,13 +6,21 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -67,13 +75,13 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     //Views
     private TextView detailCategoryDynamic;
     private TextView detailDescriptionDynamic;
-    private TextView detailTitleDynamic;
     private TextView detailLocationNameDynamic;
     private TextView detailCreatorNameDynamic;
     private TextView detailCreationTimeDynamic;
     private TextView detailParticipantsDynamic;
     private Button detailButtonParticipate;
     private Button detailButtonListParticipants;
+    private Button detailButtonNavigate;
     View rootView;
 
     //Map Elements
@@ -100,6 +108,8 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         detailButtonParticipate.setOnClickListener(this);
         detailButtonListParticipants = (Button) rootView.findViewById(R.id.detail_participants_dynamic);
         detailButtonListParticipants.setOnClickListener(this);
+        detailButtonNavigate = (Button) rootView.findViewById(R.id.detail_button_navigate);
+        detailButtonNavigate.setOnClickListener(this);
 
 
         return rootView;
@@ -113,19 +123,12 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     public void onResume() {
         super.onResume();
         myMapView.onResume();
-        initializeMap();
     }
 
     @Override
     public void onPause(){
         super.onPause();
         myMapView.onPause();
-
-        if(locationManager != null){
-
-            locationManager = null;
-
-        }
     }
 
     @Override
@@ -166,6 +169,27 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         });
     }
 
+    public Bitmap getCroppedCircleBitmap(Bitmap bitmap) {
+        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
+                bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+
+        final int color = 0xff424242;
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(color);
+        // canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
+        canvas.drawCircle(bitmap.getWidth() / 2, bitmap.getHeight() / 2,
+                bitmap.getWidth() / 2, paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+        //Bitmap _bmp = Bitmap.createScaledBitmap(output, 60, 60, false);
+        //return _bmp;
+        return output;
+    }
 
     private void fillDynamicData(ParseObject object){
         declareViews();
@@ -174,7 +198,27 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         fillSimpleType("category", detailCategoryDynamic);
         fillSimpleType("description", detailDescriptionDynamic);
         fillSimpleType("locationName", detailLocationNameDynamic);
-        fillSimpleType("title", detailTitleDynamic);
+
+        ((ActionBarActivity)getActivity()).getSupportActionBar().setTitle(eventObject.getString("title"));
+        String category = eventObject.getString("category");
+        ImageView categoryImage = (ImageView) rootView.findViewById(R.id.category_picture);
+        switch (category){
+            case "Sport":
+                categoryImage.setImageResource(R.drawable.ic_sport);
+                break;
+            case "Chilling":
+                categoryImage.setImageResource(R.drawable.ic_chilling);
+                break;
+            case "Food":
+                categoryImage.setImageResource(R.drawable.ic_food);
+                break;
+            case "Music":
+                categoryImage.setImageResource(R.drawable.ic_music);
+                break;
+            case "Videogames":
+                categoryImage.setImageResource(R.drawable.ic_videogames);
+                break;
+        }
 
 
         fillCreatorName(object);
@@ -195,7 +239,6 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     public void declareViews(){
         detailCategoryDynamic = (TextView) (rootView.findViewById(R.id.detail_category_dynamic));
         detailDescriptionDynamic = (TextView) (rootView.findViewById(R.id.detail_description_dynamic));
-        detailTitleDynamic = (TextView) (rootView.findViewById(R.id.detail_title_dynamic));
         detailLocationNameDynamic = (TextView) (rootView.findViewById(R.id.detail_location_name_dynamic));
         detailCreatorNameDynamic = (TextView) (rootView.findViewById(R.id.detail_creator_dynamic));
         detailCreationTimeDynamic = (TextView) (rootView.findViewById(R.id.detail_creation_time_dynamic));
@@ -212,7 +255,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         try {
             creator = object.getParseUser("creator").fetchIfNeeded();
             String creatorName = creator.getUsername();
-            detailCreatorNameDynamic.setText("Created by " + creatorName);
+            detailCreatorNameDynamic.setText(creatorName);
 
         } catch (Exception e) {
 
@@ -278,6 +321,8 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
             activateParticipation(view);
         } else if (view == detailButtonListParticipants){
             linkParticipantsActivity();
+        } else if (view == detailButtonNavigate){
+            navigateToEvent();
         }
     }
 
@@ -295,6 +340,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         Bitmap bitmap= BitmapFactory.decodeByteArray(data, 0, data.length);
         int heightPixels = getActivity().getApplicationContext().getResources().getDisplayMetrics().heightPixels;
         //Set the ProfilePicuture to the ImageView and scale it to the screen size
+        bitmap = getCroppedCircleBitmap(bitmap);
         imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, ((int)(heightPixels*0.1)), ((int)(heightPixels*0.1)), false));
 
     }
@@ -525,6 +571,14 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     }
 
 
+    public void navigateToEvent(){
+        double latitude = markers.get(0).getPosition().latitude;
+        double longitude = markers.get(0).getPosition().longitude;
+        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + ", " + longitude + "&mode=w");
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+        mapIntent.setPackage("com.google.android.apps.maps");
+        startActivity(mapIntent);
+    }
 
     @Override
     public boolean onMarkerClick(Marker marker) {
