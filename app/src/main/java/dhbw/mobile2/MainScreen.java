@@ -23,7 +23,7 @@ import com.parse.ParseUser;
 import java.util.ArrayList;
 
 
-public class MainScreen extends ActionBarActivity implements ListEventsFragment.OnFragmentInteractionListener {
+public class MainScreen extends ActionBarActivity implements ListEventsFragment.OnFragmentInteractionListener, ParticipantsListFragment.OnParticipantInteractionListener {
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -140,6 +140,11 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
 
     }
 
+    @Override
+    public void onParticipantInteraction(String id) {
+
+    }
+
     private class SlideMenuClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -153,9 +158,6 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
 
         if(position==0) {
             fragment = ProfileFragment.newInstance(ParseUser.getCurrentUser().getObjectId());
-
-
-
         }else if(position==1){
             fragment = new AppMapFragment();
         }else if(position==2){

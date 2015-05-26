@@ -10,7 +10,9 @@
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:layout_marginTop="5dp"
-        android:src="@drawable/ic_sport" />
+        android:src="@drawable/ic_sport"
+        android:tintMode="src_atop"
+        android:tint="@color/icon_color"/>
 
     <TextView
         android:layout_width="wrap_content"

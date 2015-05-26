@@ -1,7 +1,6 @@
 package dhbw.mobile2;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,10 +10,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-/**
- * Created by Vincent on 24.05.2015.
- */
-public class EventlistAdapter extends ArrayAdapter {
+public class EventlistAdapter extends ArrayAdapter<String> {
     private final Activity context;
     private final ArrayList<String> itemname;
     private final ArrayList<String> category;
@@ -22,7 +18,6 @@ public class EventlistAdapter extends ArrayAdapter {
 
     public EventlistAdapter(Activity context, ArrayList<String> itemname, ArrayList<String> category, ArrayList<Double> distance) {
         super(context, R.layout.listitem_event, itemname);
-        // TODO Auto-generated constructor stub
 
         this.distance=distance;
         this.context=context;
@@ -49,11 +44,19 @@ public class EventlistAdapter extends ArrayAdapter {
                 break;
             case "chilling":
                 categoryImage.setImageResource(R.drawable.ic_chilling);
+                break;
             case "food":
                 categoryImage.setImageResource(R.drawable.ic_food);
+                break;
+            case "music":
+                categoryImage.setImageResource(R.drawable.ic_music);
+                break;
+            case "videogames":
+                categoryImage.setImageResource(R.drawable.ic_videogames);
+                break;
         }
 
         return rowView;
 
-    };
+    }
 }

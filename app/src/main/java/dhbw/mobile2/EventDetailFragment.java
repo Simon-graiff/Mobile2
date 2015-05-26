@@ -6,7 +6,6 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,7 +13,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -32,6 +31,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.FindCallback;
@@ -43,16 +43,14 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-public class EventDetailFragment extends Fragment implements View.OnClickListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMarkerClickListener {
+public class EventDetailFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener, GoogleMap.OnMarkerClickListener {
 
-    Intent intent;
 
     //EventObject
     public ParseObject eventObject;
@@ -62,11 +60,8 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
     List<ParseUser> listParticipants;
 
     //Dynamic Information of Event
-    private int latitude;
-    private int longitude;
     private int maxMembers;
     private ParseUser creator;
-    private Date creationTime;
     private String eventId;
     private boolean statusParticipation = false;
     //Views
@@ -84,15 +79,16 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
     //Map Elements
     private GoogleMap map = null;
     LocationManager locationManager;
-    MapView myMapView;
-    public List<EventManagerItem> eventManager = new ArrayList<EventManagerItem>();
+    MapView  myMapView ;
+    public List<EventManagerItem> eventManager = new ArrayList<>();
+    ArrayList<Marker> markers = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_event_detail, container, false);
+        myMapView = (MapView) rootView.findViewById(R.id.mapView);
+        myMapView.onCreate(savedInstanceState);
 
-        //Theoretisch kannst Du hier Deine Variablen initialisieren, es kann aber bei unterschiedlichen
-        // APIs zu Schwierigkeiten kommen;
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         eventId = sharedPref.getString("eventId", "LyRCMu490k");
         //createExampleEventData();
@@ -113,9 +109,39 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
     //Standardkonstruktor
     public EventDetailFragment(){}
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        myMapView.onResume();
+        initializeMap();
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        myMapView.onPause();
+
+        if(locationManager != null){
+
+            locationManager = null;
+
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        myMapView.onDestroy();
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        myMapView.onLowMemory();
+    }
 
     public void retrieveParseData() {
-                ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
 
 
         query.getInBackground(eventId, new GetCallback<ParseObject>() {
@@ -129,7 +155,9 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
 
                     fillDynamicData(object);
                     checkParticipationStatus(object);
-                    initializeMap();
+                    if (myMapView != null) {
+                        myMapView.getMapAsync(EventDetailFragment.this);
+                    }
                 } else {
                     System.out.print("Object could not be received");
                 }
@@ -157,7 +185,7 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
     }
 
 
-    public void linkParticipantsActivity(View view){
+    public void linkParticipantsActivity(){
 
         Fragment fragment = new ParticipantsListFragment();
         FragmentManager fragmentManager = getFragmentManager();
@@ -193,6 +221,7 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
     }
 
     private void fillCreationTime(ParseObject object){
+        Date creationTime;
         creationTime = object.getCreatedAt();
         Calendar calendar = GregorianCalendar.getInstance();
         calendar.setTime(creationTime);
@@ -222,7 +251,7 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
         if (eventIdOfUser != null){
             Log.d("Main", "eventId is not null");
            if (!eventIdOfUser.equals("no_event")) {
-               if (eventIdOfUser.equals(eventObject.getObjectId())) {
+               if (eventIdOfUser.equals(object.getObjectId())) {
                    changeParticipationToTrue();
                    Log.d("Main", "eventId does not equal no_event");
                } else {
@@ -248,8 +277,8 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
         if (view == detailButtonParticipate){
             activateParticipation(view);
         } else if (view == detailButtonListParticipants){
-            linkParticipantsActivity(view);
-        };
+            linkParticipantsActivity();
+        }
     }
 
     public void loadProfilePicture(){
@@ -272,8 +301,6 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
 
     public void activateParticipation(View view){
         //add CurrentUser to ParseObject
-
-        String eventIdOfUser = currentUser.getString("eventId");
 
         if (!statusParticipation) {
             if (listParticipants.size() <= maxMembers) {
@@ -344,7 +371,7 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
         detailButtonParticipate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                deactivateParticipation(detailButtonParticipate);
+                deactivateParticipation();
             }
         });
 
@@ -374,41 +401,15 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
         eventObject.saveInBackground();
     }
 
-    private void deactivateParticipation(View view){
+    private void deactivateParticipation(){
         if (statusParticipation) {
             removeUserFromList(eventObject);
             changeParticipationToFalse();
         }
     }
 
-    public void createExampleEventData() {
-
-        ParseQuery<ParseUser> query = ParseUser.getQuery();
-        query.whereContains("username", "Vi");
-        query.findInBackground(new FindCallback<ParseUser>() {
-            @Override
-            public void done(List<ParseUser> list, ParseException e) {
-                ParseObject event = new ParseObject("Event");
-                event.put("title", "Runde Flunkiball auf dem Campus");
-                event.put("description", "Wir wollten eine Runde Flunkiball auf dem Campus zocken. Dafuer brauchen wir mindestens 10 Leute.");
-                event.put("category", "sport");
-                event.put("locationName", "Uni Mannheim");
-                event.put("longitude", 8.46181);
-                event.put("latitude", 49.483);
-                event.put("duration", "3 hours");
-                event.put("maxMembers", 30);
-                event.put("creator", list.get(0));
-                List<ParseUser> ListParticipants = list;
-                event.put("participants", list);
-                event.saveInBackground();
-            }
-        });
-    }
-
     private void initializeMap(){
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
 
     }
 
@@ -424,21 +425,7 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
         }
 
 
-        myMapView = (MapView) rootView.findViewById(R.id.mapView);
-        if (myMapView != null) {
-            Log.d("Main", "myMapView is not null");
-        }
 
-        map = myMapView.getMap();
-
-        if (map != null) {
-            map.getUiSettings().setMyLocationButtonEnabled(false);
-
-            map.setMyLocationEnabled(true);
-            map.setOnMapLongClickListener(this);
-            map.setOnMarkerClickListener(this);
-
-        }
 
 
     }
@@ -453,7 +440,6 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
             //map = supportMapFragment.getMap();
 
         }else {
-            map.setOnMapLongClickListener(this);
             map.setOnMarkerClickListener(this);
 
             Log.d("Main", "Map is instantiated");
@@ -463,21 +449,24 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
             if(userPosition != null){
 
                 Log.d("Main", "Last position was found");
+                drawEvent();
 
+                LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+                Log.d("Main", "Count of markers: " + markers.size());
+                for (Marker marker : markers) {
+                    builder.include(marker.getPosition());
+                }
                 LatLng coordinates = new LatLng(userPosition.getLatitude(),
                         userPosition.getLongitude());
+                builder.include(coordinates);
+                LatLngBounds bounds = builder.build();
 
-                //map.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinates, 13));
+                int padding = 50; // offset from edges of the map in pixels
+                CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
 
-                CameraPosition cameraPosition = new CameraPosition.Builder()
-                        .target(coordinates)
-                        .zoom(16)
-                        .tilt(40)
-                        .build();
+                map.animateCamera(cu);
 
-                map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
-                drawEvent();
 
             }else{
                 Log.d("Main", "No last position found");
@@ -489,25 +478,8 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
 
         Location userPosition = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
-        if(userPosition!=null) {
-            LatLng pos = new LatLng(userPosition.getLatitude(), userPosition.getLongitude());
-            String title = "Your position";
-            String color = "green";
-            String id = "Your position";
-            drawMarker(pos, title, color, id);
-        }
 
         return userPosition;
-    }
-
-    //Click listener for long taps on map. Has to be public, since overriding a foreign method.
-    @Override
-    public void onMapLongClick(LatLng point){
-        Log.d("Main", "Map was tapped on:"+point);
-        String s = "For test purpose only";
-        String c = "red";
-        String i = "Testmarker";
-        drawMarker(point, s, c, i);
     }
 
     private void drawMarker(LatLng position, String title, String color, String eventID){
@@ -518,60 +490,13 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
                             .position(position)
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
             );
+            markers.add(m);
+            Log.d("Main", "Creates red marker");
 
             eventManager.add(new EventManagerItem(m.getId(), eventID));
 
-        }else if(color.equals("green")){
-            Marker m = map.addMarker(new MarkerOptions()
-                            .title(title)
-                            .position(position)
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-            );
-
-            eventManager.add(new EventManagerItem(m.getId(), eventID));
         }
     }
-
-    private final LocationListener locationListener = new LocationListener() {
-
-        @Override
-        public void onLocationChanged(Location location) {
-
-            Log.d("Main", "Location changed");
-
-            if (map != null) {
-                double lat = location.getLatitude();
-                double lon = location.getLongitude();
-                LatLng position = new LatLng(lat, lon);
-
-                CameraPosition cameraPosition = new CameraPosition.Builder()
-                        .target(position)
-                        .zoom(16)
-                        .tilt(40)
-                        .build();
-
-                map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-                drawEvent();
-            }
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-
-        }
-
-    };
-
 
     public void drawEvent(){
         //Creating ParseGeoPoint with user's current location
@@ -604,6 +529,22 @@ public class EventDetailFragment extends Fragment implements View.OnClickListene
     @Override
     public boolean onMarkerClick(Marker marker) {
         return false;
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        Log.d("Main", "Map is now ready");
+        map = googleMap;
+        if (map != null) {
+            map.getUiSettings().setMyLocationButtonEnabled(false);
+
+            map.setMyLocationEnabled(true);
+            map.setOnMarkerClickListener(this);
+
+        }
+        initializeMap();
+        setUpMap();
+
     }
 }
 
