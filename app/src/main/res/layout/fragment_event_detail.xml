@@ -8,7 +8,6 @@
     tools:context="dhbw.mobile2.EventDetailActivity">
 
 
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -142,6 +141,13 @@
         android:paddingEnd="10sp"
         android:layout_alignParentStart="true" />
 
+    //Map
+    <com.google.android.gms.maps.MapView
+        android:id="@+id/mapView"
+        android:layout_width="fill_parent"
+        android:layout_height="200dp"
+        android:layout_below="@id/detail_participants_dynamic"/>
+
     //Button: Participate
     <Button
         android:layout_width="wrap_content"
@@ -151,15 +157,9 @@
         android:paddingEnd="10sp"
         android:text="@string/detail_button_participate_false"
         android:visibility="visible"
-        android:layout_below="@+id/detail_participants_dynamic"
+        android:layout_below="@id/mapView"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="40dp" />
 
-
-    //Map
-    <com.google.android.gms.maps.MapView
-        android:id="@+id/mapView"
-        android:layout_width="fill_parent"
-        android:layout_height="50dp"/>
 
 </RelativeLayout>
