@@ -1,11 +1,9 @@
 package dhbw.mobile2;
 
 import android.app.Fragment;
-//import android.support.v4.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -15,13 +13,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -34,17 +29,17 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
-public class AppMapFragment extends Fragment
-        implements GoogleMap.OnMapLongClickListener, GoogleMap.OnMarkerClickListener {
+public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickListener {
 
     public LocationManager locationManager;
-    private SupportMapFragment supportMapFragment;
     private GoogleMap map = null;
     MapView myMapView = null;
-    public List<EventManagerItem> eventManager = new ArrayList<EventManagerItem>();
+    public List<EventManagerItem> eventManager = new ArrayList<>();
+
+    private SharedPreferences sharedPref;
+    SharedPreferences.Editor editor;
 
     private final LocationListener locationListener = new LocationListener() {
 
@@ -121,13 +116,14 @@ public class AppMapFragment extends Fragment
         myMapView = (MapView) getView().findViewById(R.id.myMapView);
         myMapView.onCreate(savedInstanceState);
 
+        sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+
         map = myMapView.getMap();
 
         if(map!=null) {
             map.getUiSettings().setMyLocationButtonEnabled(false);
 
             map.setMyLocationEnabled(true);
-            map.setOnMapLongClickListener(this);
             map.setOnMarkerClickListener(this);
 
             setUpMap();
@@ -212,76 +208,36 @@ public class AppMapFragment extends Fragment
     private Location getUserPosition(){
 
         Location userPosition = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-        if(userPosition!=null) {
-            LatLng pos = new LatLng(userPosition.getLatitude(), userPosition.getLongitude());
-            String title = "Your position";
-            String color = "green";
-            String id = "Your position";
-            drawMarker(pos, title, color, id);
-        }
-
         return userPosition;
     }
 
-    private GoogleMap.CancelableCallback cancelableCallback = new GoogleMap.CancelableCallback() {
-        @Override
-        public void onFinish() {
-            scroll();
-        }
+    private void drawMarker(LatLng position, String title, String eventID){
 
-        @Override
-        public void onCancel() {
+        Marker m = map.addMarker(new MarkerOptions()
+                        .title(title)
+                        .position(position)
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+        );
 
-        }
+        eventManager.add(new EventManagerItem(m.getId(), eventID));
 
-        //Reducing scroll speed to reduce amount of necessary data
-        public void scroll(){
-            map.animateCamera(CameraUpdateFactory.scrollBy(10, -10));
-        }
-    };
-
-    //Click listener for long taps on map. Has to be public, since overriding a foreign method.
-    @Override
-    public void onMapLongClick(LatLng point){
-        Log.d("Main", "Map was tapped on:"+point);
-        String s = "For test purpose only";
-        String c = "red";
-        String i = "Testmarker";
-        drawMarker(point, s, c, i);
-    }
-
-    private void drawMarker(LatLng position, String title, String color, String eventID){
-
-        if(color.equals("red")) {
-            Marker m = map.addMarker(new MarkerOptions()
-                            .title(title)
-                            .position(position)
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-            );
-
-            eventManager.add(new EventManagerItem(m.getId(), eventID));
-
-        }else if(color.equals("green")){
-            Marker m = map.addMarker(new MarkerOptions()
-                            .title(title)
-                            .position(position)
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-            );
-
-            eventManager.add(new EventManagerItem(m.getId(), eventID));
-        }
     }
 
     private void drawEvents(){
 
-        //Creating ParseGeoPoint with user's current location
+        //Create ParseGeoPoint with user's current location
         Location userLocation = getUserPosition();
         ParseGeoPoint point = new ParseGeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
         ParseObject user = new ParseObject("User");
         user.put("location", point);
 
-        //Preparing query
+        //Prepare filter options
+        final String sport = sharedPref.getString("Sport", null);
+        final String music = sharedPref.getString("Music", null);
+        final String chilling = sharedPref.getString("Chilling", null);
+        final String drinking = sharedPref.getString("Drinking", null);
+
+        //Prepare query
         ParseGeoPoint queryParameter = (ParseGeoPoint) user.get("location");
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
         query.whereWithinKilometers("geoPoint", queryParameter, 5);
@@ -289,7 +245,6 @@ public class AppMapFragment extends Fragment
         Log.d("Main", "Waiting for Callback...");
 
         //Executing query
-        List<ParseObject> list = null;
         query.findInBackground(new FindCallback<ParseObject>() {
             public void done(List<ParseObject> eventList, ParseException e) {
                 if (e == null) {
@@ -298,24 +253,33 @@ public class AppMapFragment extends Fragment
 
                     if (!eventList.isEmpty()) {
                         for (int i = 0; i < eventList.size(); i++) {
-                            //list.add(eventList.get(i));
-                            Log.d("Main", "Added an object");
-
+                            //Extraction of latitude and longitude from recieved GeoPoints
                             ParseGeoPoint tmpPoint = (ParseGeoPoint) eventList.get(i).get("geoPoint");
                             double tmpLat = tmpPoint.getLatitude();
                             double tmpLng = tmpPoint.getLongitude();
                             LatLng tmpLatLng = new LatLng(tmpLat, tmpLng);
 
+                            //Prepare necessary information and draw markers to map
                             String tmpTitle = eventList.get(i).getString("title");
-                            String color = "red";
+                            String category = eventList.get(i).getString("category");
                             String eventID = eventList.get(i).getObjectId();
-                            Log.d("Main", "eventID = "+ eventID);
-                            drawMarker(tmpLatLng, tmpTitle, color, eventID);
+                            Log.d("Main", "eventID =" + eventID);
+
+
+                            if(!category.equals(sport)){
+                                if(!category.equals(music)){
+                                    if(!category.equals(chilling)){
+                                        if(!category.equals(drinking)){
+                                            drawMarker(tmpLatLng, tmpTitle, eventID);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
 
                 } else {
-                    Log.d("Main", "Error: " + e.getMessage());
+                    Log.d("Main", "Error on callback: " + e.getMessage());
                 }
             }
         });
@@ -334,19 +298,15 @@ public class AppMapFragment extends Fragment
             }
         }
 
-        //Save eventID in SharedPreferences
         if(!eventID.equals("Not found")){
-            if(!eventID.equals("Your position")) {
-                SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putString("eventId", eventID);
-                editor.commit();
+            //Save eventID in SharedPreferences
+            editor.putString("eventId", eventID);
+            editor.commit();
 
-                Fragment eventDetailFragment = new EventDetailFragment();
-                //ChildFragmentManager
-                FragmentManager fragmentManager = getFragmentManager();
-                fragmentManager.beginTransaction().replace(R.id.frame_container, eventDetailFragment).commit();
-            }
+            //Direction to EventDetailFragment
+            Fragment eventDetailFragment = new EventDetailFragment();
+            FragmentManager fragmentManager = getFragmentManager();
+            fragmentManager.beginTransaction().replace(R.id.frame_container, eventDetailFragment).commit();
         }
 
         return true;
