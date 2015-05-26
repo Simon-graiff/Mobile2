@@ -152,7 +152,10 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         Fragment fragment = null;
 
         if(position==0) {
-            fragment = new ProfileFragment();
+            fragment = ProfileFragment.newInstance(ParseUser.getCurrentUser().getObjectId());
+
+
+
         }else if(position==1){
             fragment = new AppMapFragment();
         }else if(position==2){
@@ -181,6 +184,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         // If called Fragment is the logout fragment just add the fragment to the other instead of replacing it
         // because only the showDialog needs to be displayed and it shall be overlapping the existing fragment
         if (fragment != null && fragment.getClass() == LogoutFragment.class) {
+            Fragment.instantiate(getApplicationContext(), LogoutFragment.class.getName(), new Bundle());
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().add(R.id.frame_container, fragment).commit();
         }
