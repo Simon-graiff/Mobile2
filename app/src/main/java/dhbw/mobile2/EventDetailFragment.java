@@ -221,6 +221,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         }
 
 
+
         fillCreatorName(object);
         fillCreationTime(object);
         fillParticipants(object);
@@ -568,6 +569,18 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         String eventID = eventObject.getObjectId();
         drawMarker(tmpLatLng, tmpTitle, color, eventID);
 
+        //fill distance
+        ParseGeoPoint currentLocation = new ParseGeoPoint (userLocation.getLatitude(), userLocation.getLongitude());
+        double distance = currentLocation.distanceInKilometersTo(eventObject.getParseGeoPoint("geoPoint"));
+
+        TextView distanceView = (TextView) rootView.findViewById(R.id.detail_distance_dynamic);
+        distance = ((int) (distance * 10))/10;
+        if ((distance % 10) == 0){
+            int intDistance = (int) distance;
+            distanceView.setText(  intDistance + " km");;
+        } else {
+            distanceView.setText(distance + " km");
+        }
     }
 
 
@@ -596,8 +609,12 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
             map.setOnMarkerClickListener(this);
 
         }
+
+
         initializeMap();
         setUpMap();
+
+
 
     }
 }

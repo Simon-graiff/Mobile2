@@ -34,7 +34,7 @@ public class EventlistAdapter extends ArrayAdapter<String> {
         TextView distanceView = (TextView) rowView.findViewById(R.id.distance);
 
         long distanceLong = distance.get(position).longValue();
-        distanceView.setText(distanceLong+ "km");
+        distanceView.setText(distanceLong+ " km");
         eventName.setText(itemname.get(position));
 
         categoryImage.setImageResource(R.drawable.ic_sport);

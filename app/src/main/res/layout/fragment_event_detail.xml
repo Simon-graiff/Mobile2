@@ -75,6 +75,14 @@
             android:layout_height="1dp"
             android:background="@android:color/darker_gray"/>
     </LinearLayout>
+    //Participants
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/detail_participants_dynamic"
+        android:paddingStart="20sp"
+        android:paddingEnd="10sp"
+        android:layout_weight="0.5"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -125,14 +133,6 @@
             android:paddingEnd="10sp"
             android:layout_weight="1" />
     </LinearLayout>
-    //Participants
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/detail_participants_dynamic"
-        android:paddingStart="20sp"
-        android:paddingEnd="10sp"
-        android:layout_weight="0.5"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -152,6 +152,31 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/detail_location_name_dynamic"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:gravity="center_horizontal"
+            android:paddingStart="20sp"
+            android:paddingEnd="10sp"
+            android:layout_weight="1" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_weight="0.5">
+        //locationName
+        <TextView
+            android:id="@+id/detail_distance_static"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/detail_distance"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:paddingStart="10sp"
+            android:paddingEnd="20sp"
+            android:layout_weight="1" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/detail_distance_dynamic"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:gravity="center_horizontal"
             android:paddingStart="20sp"
