@@ -1,5 +1,6 @@
 package dhbw.mobile2;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
@@ -8,9 +9,11 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -29,7 +32,9 @@ import java.util.List;
 /**
  * Created by Vincent on 19.05.2015.
  */
-public class ParticipantsListFragment extends Fragment implements View.OnClickListener{
+public class ParticipantsListFragment extends Fragment implements View.OnClickListener, AdapterView.OnItemClickListener {
+    private OnParticipantInteractionListener mListener;
+
     ListView participantsListView;
     String eventId;
     List<ParseUser> listParticipants;
@@ -59,7 +64,27 @@ public class ParticipantsListFragment extends Fragment implements View.OnClickLi
             }
         });
 
+        participantsListView = (ListView) rootView.findViewById(R.id.participatorsListView);
+        participantsListView.setOnItemClickListener(this);
+
         return rootView;
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            mListener = (OnParticipantInteractionListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnParticipantInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
     }
 
 
@@ -73,10 +98,24 @@ public class ParticipantsListFragment extends Fragment implements View.OnClickLi
         }
     }
 
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        if (null != mListener) {
+            // Notify the active callbacks interface (the activity, if the
+            // fragment is attached to one) that an item has been selected.
+            mListener.onParticipantInteraction(listParticipants.get(position).getObjectId());
+
+            Log.d("Main", "got into Listener");
+            Fragment fragment = ProfileFragment.newInstance(listParticipants.get(position).getObjectId());
+            FragmentManager fragmentManager = getFragmentManager();
+            fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+        }
+    }
+
+
 
 
     private void createParticipantsList(){
-        participantsListView = (ListView) getView().findViewById(R.id.participatorsListView);
         ArrayList<String> arrayListParticipantNames = new ArrayList<String>();
         ArrayList<Bitmap> arrayListParticipantPictures = new ArrayList<Bitmap>();
         for (int i = 0; i < listParticipants.size(); i++) {
@@ -112,5 +151,9 @@ public class ParticipantsListFragment extends Fragment implements View.OnClickLi
         //Set the ProfilePicuture to the ImageView and scale it to the screen size
         bitmap = Bitmap.createScaledBitmap(bitmap, ((int) (heightPixels * 0.1)), ((int) (heightPixels * 0.1)), false);
         return bitmap;
+    }
+
+    public interface OnParticipantInteractionListener {
+        public void onParticipantInteraction(String id);
     }
 }
