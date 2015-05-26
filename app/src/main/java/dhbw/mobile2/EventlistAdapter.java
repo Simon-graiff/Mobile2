@@ -49,8 +49,16 @@ public class EventlistAdapter extends ArrayAdapter {
                 break;
             case "chilling":
                 categoryImage.setImageResource(R.drawable.ic_chilling);
+                break;
             case "food":
                 categoryImage.setImageResource(R.drawable.ic_food);
+                break;
+            case "music":
+                categoryImage.setImageResource(R.drawable.ic_music);
+                break;
+            case "videogames":
+                categoryImage.setImageResource(R.drawable.ic_videogames);
+                break;
         }
 
         return rowView;

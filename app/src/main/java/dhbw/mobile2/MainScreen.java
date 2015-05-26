@@ -23,7 +23,7 @@ import com.parse.ParseUser;
 import java.util.ArrayList;
 
 
-public class MainScreen extends ActionBarActivity implements ListEventsFragment.OnFragmentInteractionListener {
+public class MainScreen extends ActionBarActivity implements ListEventsFragment.OnFragmentInteractionListener, ParticipantsListFragment.OnParticipantInteractionListener {
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -137,6 +137,11 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
 
     @Override
     public void onFragmentInteraction(String id) {
+
+    }
+
+    @Override
+    public void onParticipantInteraction(String id) {
 
     }
 

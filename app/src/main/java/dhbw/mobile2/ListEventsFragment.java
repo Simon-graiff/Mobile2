@@ -62,14 +62,6 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
      */
     private ListAdapter mAdapter;
 
-    // TODO: Rename and change types of parameters
-    public static ListEventsFragment newInstance(String param1, String param2) {
-        ListEventsFragment fragment = new ListEventsFragment();
-        Bundle args = new Bundle();
-
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -175,7 +167,6 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         public void onFragmentInteraction(String id);
     }
 

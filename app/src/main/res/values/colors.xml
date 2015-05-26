@@ -5,4 +5,5 @@
     <color name="list_item_title">#000000</color>
     <color name="background_pressed">#088A08</color>
     <color name="list_background_pressed">#088A08</color>
+    <color name="icon_color">#00BCFF</color>
 </resources>
