@@ -67,6 +67,8 @@ public class AppMapFragment extends Fragment
             drawEvents();
         }
 
+
+
         @Override
         public void onStatusChanged(String s, int i, Bundle bundle) {
 
@@ -138,6 +140,8 @@ public class AppMapFragment extends Fragment
         if(map!=null){
             myMapView.onResume();
         }
+        locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
 
     }
 
@@ -146,6 +150,7 @@ public class AppMapFragment extends Fragment
         if (map != null)
             myMapView.onPause();
         super.onPause();
+        locationManager.removeUpdates(locationListener);
     }
 
     @Override
