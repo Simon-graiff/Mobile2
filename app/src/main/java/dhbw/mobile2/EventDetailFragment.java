@@ -572,9 +572,10 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         //fill distance
         ParseGeoPoint currentLocation = new ParseGeoPoint (userLocation.getLatitude(), userLocation.getLongitude());
         double distance = currentLocation.distanceInKilometersTo(eventObject.getParseGeoPoint("geoPoint"));
-
+        distance = distance * 10;
+        int distanceInt = (int) distance;
+        distance = distanceInt/10.0;
         TextView distanceView = (TextView) rootView.findViewById(R.id.detail_distance_dynamic);
-        distance = ((int) (distance * 10))/10;
         if ((distance % 10) == 0){
             int intDistance = (int) distance;
             distanceView.setText(  intDistance + " km");;

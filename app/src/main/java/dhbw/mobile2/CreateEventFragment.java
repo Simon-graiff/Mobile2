@@ -31,6 +31,7 @@ import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -128,11 +129,19 @@ public class CreateEventFragment extends Fragment
         event.put("locationName", mEditText_location.getText().toString());
         event.put("duration", mEditText_duration.getText().toString());
         event.put("maxMembers", maxMembers);
+        participants.add(ParseUser.getCurrentUser());
         event.put("participants", participants);
         event.put("creator", ParseUser.getCurrentUser());
         event.put("geoPoint", geoPoint);
-        event.saveInBackground();
+        event.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                ParseUser.getCurrentUser().put("eventId", event.getObjectId());
+                ParseUser.getCurrentUser().saveInBackground();
+            }
+        });
         mCreatingEventObject = false;
+
 
         Toast.makeText(getActivity().getBaseContext(), "Have fun!", Toast.LENGTH_LONG).show();
 

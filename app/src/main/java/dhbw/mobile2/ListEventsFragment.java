@@ -203,6 +203,9 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
                         categoryArray.add(event.getString("category"));
                         ParseGeoPoint eventPoint = event.getParseGeoPoint("geoPoint");
                         double distance = eventPoint.distanceInKilometersTo(point);
+                        distance = distance * 10;
+                        int distanceInt = (int) distance;
+                        distance = distanceInt/10.0;
                         distanceArray.add(distance);
                         Log.d("Main", "title: " + event.getString("title"));
                     }

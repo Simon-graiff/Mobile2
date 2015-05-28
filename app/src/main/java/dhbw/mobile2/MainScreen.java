@@ -1,8 +1,10 @@
 package dhbw.mobile2;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -18,6 +20,10 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.parse.GetCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import java.util.ArrayList;
@@ -40,6 +46,9 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
 
     private ArrayList<NavDrawerItem> navDrawerItems;
     private NavDrawerListAdapter adapter;
+
+    private boolean statusParticipation = false;
+    private boolean cancelOtherEvent = false;
 
     public static FragmentManager fragmentManager;
 
@@ -163,7 +172,34 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         }else if(position==1){
             fragment = new AppMapFragment();
         }else if(position==2){
-            fragment = new CreateEventFragment();
+            checkParticipation();
+            if (statusParticipation){
+                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which){
+                            case DialogInterface.BUTTON_POSITIVE:
+                                //Yes button clicked
+                                createEventFragment();
+                                break;
+
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                //No button clicked
+                                break;
+                        }
+                    }
+
+
+                };
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(
+                        "You already participate in an event. " +
+                                "Cancel other event to create new one?").setPositiveButton(
+                        "Yes", dialogClickListener)
+                        .setNegativeButton("No", dialogClickListener).show();
+            }
+
         }else if(position==3){
             SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPref.edit();
@@ -206,6 +242,35 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         } else {
             //Error in creating fragment
             Log.e("MainActivity", "Error in creating fragment");
+        }
+    }
+
+    private void createEventFragment(){
+        Fragment fragment = new CreateEventFragment();
+            FragmentManager fragmentManager = getFragmentManager();
+            fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+
+            // update selected item and title, then close the drawer
+            mDrawerList.setItemChecked(2, true);
+            mDrawerList.setSelection(2);
+            setTitle(navMenuTitles[2]);
+            mDrawerLayout.closeDrawer(mDrawerList);
+
+        }
+
+    private void checkParticipation(){
+        String eventIdOfUser = currentUser.getString("eventId");
+        if (eventIdOfUser != null){
+            Log.d("Main", "eventId is not null");
+            if (!eventIdOfUser.equals("no_event")) {
+                    statusParticipation = true;
+
+            } else {
+
+                statusParticipation = false;
+
+            }
+
         }
     }
 
