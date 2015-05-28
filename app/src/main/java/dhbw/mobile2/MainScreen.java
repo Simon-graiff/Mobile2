@@ -180,6 +180,8 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
                         switch (which){
                             case DialogInterface.BUTTON_POSITIVE:
                                 //Yes button clicked
+                                ParseUser.getCurrentUser().put("eventId", "no_event");
+                                ParseUser.getCurrentUser().saveInBackground();
                                 createEventFragment();
                                 break;
 
@@ -198,6 +200,8 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
                                 "Cancel other event to create new one?").setPositiveButton(
                         "Yes", dialogClickListener)
                         .setNegativeButton("No", dialogClickListener).show();
+            } else {
+                fragment = new CreateEventFragment();
             }
 
         }else if(position==3){
@@ -259,7 +263,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         }
 
     private void checkParticipation(){
-        String eventIdOfUser = currentUser.getString("eventId");
+        String eventIdOfUser = ParseUser.getCurrentUser().getString("eventId");
         if (eventIdOfUser != null){
             Log.d("Main", "eventId is not null");
             if (!eventIdOfUser.equals("no_event")) {
