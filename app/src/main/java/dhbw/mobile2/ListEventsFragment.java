@@ -14,11 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 
 import com.parse.FindCallback;
@@ -26,7 +22,6 @@ import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
-import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,7 +83,7 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
 
         // Set the adapter
         mListView = (AbsListView) screenView.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+        mListView.setAdapter(mAdapter);
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
@@ -130,31 +125,22 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString("eventId", objectId);
-        editor.commit();
+        editor.apply();
 
         Fragment fragment = new EventDetailFragment();
 
-        if (fragment != null) {
-            FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
 
-        } else {
-            //Error in creating fragment
-            Log.e("MainActivity", "Error in creating fragment");
-        }
+        FragmentManager fragmentManager = getFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+
+
     }
     /**
      * The default content for this Fragment has a TextView that is shown when
      * the list is empty. If you would like to change the text, call this method
      * to supply the text it should use.
      */
-    public void setEmptyText(CharSequence emptyText) {
-        View emptyView = mListView.getEmptyView();
 
-        if (emptyView instanceof TextView) {
-            ((TextView) emptyView).setText(emptyText);
-        }
-    }
 
     /**
      * This interface must be implemented by activities that contain this
@@ -167,14 +153,14 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        public void onFragmentInteraction(String id);
+        void onFragmentInteraction(String id);
     }
 
     public void getEventData(){
-        titleArray = new ArrayList<String>();
-        final ArrayList<String> categoryArray = new ArrayList<String>();
-        idArray = new ArrayList<String>();
-        final ArrayList<Double> distanceArray = new ArrayList<Double>();
+        titleArray = new ArrayList<>();
+        final ArrayList<String> categoryArray = new ArrayList<>();
+        idArray = new ArrayList<>();
+        final ArrayList<Double> distanceArray = new ArrayList<>();
 
         //Creating ParseGeoPoint with user's current location
         LocationManager locationManager =  (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
@@ -191,7 +177,6 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
         Log.d("Main", "Waiting for Callback...");
 
         //Executing query
-        List<ParseObject> list = null;
         query.findInBackground(new FindCallback<ParseObject>() {
             public void done(List<ParseObject> eventList, ParseException e) {
                 Log.d("Main", "Received "+eventList.size()+" events");

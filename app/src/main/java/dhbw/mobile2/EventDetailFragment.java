@@ -16,10 +16,10 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -37,12 +37,10 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -69,7 +67,6 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
     //Dynamic Information of Event
     private int maxMembers;
-    private ParseUser creator;
     private String eventId;
     private boolean statusParticipation = false;
     //Views
@@ -78,32 +75,43 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     private TextView detailLocationNameDynamic;
     private TextView detailCreatorNameDynamic;
     private TextView detailCreationTimeDynamic;
-    private TextView detailParticipantsDynamic;
     private Button detailButtonParticipate;
     private Button detailButtonListParticipants;
     private Button detailButtonNavigate;
-    View rootView;
+    private View rootView;
 
     //Map Elements
     private GoogleMap map = null;
-    LocationManager locationManager;
-    MapView  myMapView ;
+    private LocationManager locationManager;
+    private MapView  myMapView ;
     public List<EventManagerItem> eventManager = new ArrayList<>();
-    ArrayList<Marker> markers = new ArrayList<>();
+    private ArrayList<Marker> markers = new ArrayList<>();
+
+    //Konstruktur
+    public EventDetailFragment(){}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_event_detail, container, false);
+
+        //Map initialization
         myMapView = (MapView) rootView.findViewById(R.id.mapView);
         myMapView.onCreate(savedInstanceState);
 
+        //fetch from local DB which event to display
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         eventId = sharedPref.getString("eventId", "LyRCMu490k");
-        //createExampleEventData();
-        retrieveParseData();
 
         currentUser = ParseUser.getCurrentUser();
 
+        //declare TextViews
+        detailCategoryDynamic = (TextView) (rootView.findViewById(R.id.detail_category_dynamic));
+        detailDescriptionDynamic = (TextView) (rootView.findViewById(R.id.detail_description_dynamic));
+        detailLocationNameDynamic = (TextView) (rootView.findViewById(R.id.detail_location_name_dynamic));
+        detailCreatorNameDynamic = (TextView) (rootView.findViewById(R.id.detail_creator_dynamic));
+        detailCreationTimeDynamic = (TextView) (rootView.findViewById(R.id.detail_creation_time_dynamic));
+
+        //initialize Buttons and set their listeners
         detailButtonParticipate = (Button) rootView.findViewById(R.id.detail_button_participate);
         detailButtonParticipate.setOnClickListener(this);
         detailButtonListParticipants = (Button) rootView.findViewById(R.id.detail_participants_dynamic);
@@ -111,13 +119,13 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         detailButtonNavigate = (Button) rootView.findViewById(R.id.detail_button_navigate);
         detailButtonNavigate.setOnClickListener(this);
 
+        retrieveParseData();
+
 
         return rootView;
     }
 
-
-    //Standardkonstruktor
-    public EventDetailFragment(){}
+    //the following have to be implemented for the map, especially myMapView.onPause()
 
     @Override
     public void onResume() {
@@ -143,21 +151,40 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         myMapView.onLowMemory();
     }
 
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        try {
+            MapsInitializer.initialize(this.getActivity());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    //returns the data from Parse for the specified event
     public void retrieveParseData() {
+
+        //Query to fetch the object
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
-
-
         query.getInBackground(eventId, new GetCallback<ParseObject>() {
             public void done(ParseObject object, ParseException queryException) {
                 if (queryException == null) {
 
                     eventObject = object;
                     eventId = object.getObjectId();
+
+                    //for Participantlist to use the event is pinned in local DB
                     object.pinInBackground();
+
+
                     listParticipants = eventObject.getList("participants");
 
                     fillDynamicData(object);
                     checkParticipationStatus(object);
+
+                    //asynchronous call to map
                     if (myMapView != null) {
                         myMapView.getMapAsync(EventDetailFragment.this);
                     }
@@ -192,14 +219,21 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     }
 
     private void fillDynamicData(ParseObject object){
-        declareViews();
 
         //simple Types
         fillSimpleType("category", detailCategoryDynamic);
         fillSimpleType("description", detailDescriptionDynamic);
         fillSimpleType("locationName", detailLocationNameDynamic);
+        fillSimpleType("creator", detailCreatorNameDynamic);
 
-        ((ActionBarActivity)getActivity()).getSupportActionBar().setTitle(eventObject.getString("title"));
+        //add eventTitle to ActionBar
+        String title = eventObject.getString("title");
+        ActionBar actionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+        if ((title != null) && (actionBar != null)){
+            actionBar.setTitle(title);
+        }
+
+        //fill categoryPicture
         String category = eventObject.getString("category");
         ImageView categoryImage = (ImageView) rootView.findViewById(R.id.category_picture);
         switch (category){
@@ -220,12 +254,11 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
                 break;
         }
 
-
-
-        fillCreatorName(object);
+        //fill more complex types
         fillCreationTime(object);
         fillParticipants(object);
 
+        //load ProfilePicture
         loadProfilePicture();
     }
 
@@ -237,32 +270,11 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
     }
 
-    public void declareViews(){
-        detailCategoryDynamic = (TextView) (rootView.findViewById(R.id.detail_category_dynamic));
-        detailDescriptionDynamic = (TextView) (rootView.findViewById(R.id.detail_description_dynamic));
-        detailLocationNameDynamic = (TextView) (rootView.findViewById(R.id.detail_location_name_dynamic));
-        detailCreatorNameDynamic = (TextView) (rootView.findViewById(R.id.detail_creator_dynamic));
-        detailCreationTimeDynamic = (TextView) (rootView.findViewById(R.id.detail_creation_time_dynamic));
-        detailParticipantsDynamic = (TextView) (rootView.findViewById(R.id.detail_participants_dynamic));
-    }
-
     public void fillSimpleType (String dynamicField, TextView textViewToFill){
         getActivity().runOnUiThread(new UIRunnable(dynamicField, textViewToFill, eventObject)
         );
     }
 
-
-    private void fillCreatorName(ParseObject object){
-        try {
-            creator = object.getParseUser("creator").fetchIfNeeded();
-            String creatorName = creator.getUsername();
-            detailCreatorNameDynamic.setText(creatorName);
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-    }
 
     private void fillCreationTime(ParseObject object){
         Date creationTime;
@@ -284,7 +296,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         try {
             String textParticipants = listParticipants.size() + "/" + maxMembers + " participants";
 
-            detailParticipantsDynamic.setText(textParticipants);
+            detailButtonListParticipants.setText(textParticipants);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -319,7 +331,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public void onClick(View view) {
         if (view == detailButtonParticipate){
-            activateParticipation(view);
+            activateParticipation();
         } else if (view == detailButtonListParticipants){
             linkParticipantsActivity();
         } else if (view == detailButtonNavigate){
@@ -327,9 +339,10 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         }
     }
 
-    public void loadProfilePicture(){
+    private void loadProfilePicture(){
         ImageView imageView=(ImageView) rootView.findViewById(R.id.imageView);
 
+        ParseUser creator = eventObject.getParseUser("creator");
         ParseFile profilepicture = creator.getParseFile("profilepicture");
         byte [] data = new byte[0];
         try {
@@ -346,7 +359,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
     }
 
-    public void activateParticipation(View view){
+    public void activateParticipation(){
         //add CurrentUser to ParseObject
 
         if (!statusParticipation) {
@@ -383,7 +396,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
                                         removeUserFromList(object);
                                         statusParticipation = false;
-                                        activateParticipation(getView());
+                                        activateParticipation();
                                     } else {
                                         System.out.print("Object could not be received");
                                     }
@@ -433,7 +446,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         detailButtonParticipate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                activateParticipation(detailButtonParticipate);
+                activateParticipation();
             }
         });
 
@@ -455,27 +468,8 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         }
     }
 
-    private void initializeMap(){
-        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
 
 
-        try {
-            MapsInitializer.initialize(this.getActivity());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-
-
-
-    }
 
     private void setUpMap(){
 
@@ -522,11 +516,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     }//End of setUpMap
 
     private Location getUserPosition(){
-
-        Location userPosition = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-
-        return userPosition;
+        return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
     }
 
     private void drawMarker(LatLng position, String title, String color, String eventID){
@@ -552,14 +542,6 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         ParseObject user = new ParseObject("User");
         user.put("location", point);
 
-        //Preparing query
-
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
-
-        Log.d("Main", "Waiting for Callback...");
-
-        //Executing query
-
         ParseGeoPoint tmpPoint = eventObject.getParseGeoPoint("geoPoint");
         double tmpLat = tmpPoint.getLatitude();
         double tmpLng = tmpPoint.getLongitude();
@@ -578,7 +560,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         TextView distanceView = (TextView) rootView.findViewById(R.id.detail_distance_dynamic);
         if ((distance % 10) == 0){
             int intDistance = (int) distance;
-            distanceView.setText(  intDistance + " km");;
+            distanceView.setText(  intDistance + " km");
         } else {
             distanceView.setText(distance + " km");
         }
@@ -611,8 +593,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
         }
 
-
-        initializeMap();
+        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         setUpMap();
 
 

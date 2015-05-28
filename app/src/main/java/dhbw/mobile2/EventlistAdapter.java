@@ -1,7 +1,6 @@
 package dhbw.mobile2;
 
 import android.app.Activity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -26,8 +25,7 @@ public class EventlistAdapter extends ArrayAdapter<String> {
     }
 
     public View getView(int position,View view,ViewGroup parent) {
-        LayoutInflater inflater=context.getLayoutInflater();
-        View rowView=inflater.inflate(R.layout.listitem_event, null, true);
+        View rowView = context.getLayoutInflater().inflate(R.layout.listitem_event, null, true);
 
         TextView eventName = (TextView) rowView.findViewById(R.id.event_name);
         ImageView categoryImage = (ImageView) rowView.findViewById(R.id.category_picture);

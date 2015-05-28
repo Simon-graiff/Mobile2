@@ -79,16 +79,6 @@
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:label="@string/app_name"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-        <activity
-            android:name=".ParticipantsListActivity"
-            android:configChanges="keyboardHidden|orientation"
-            android:label="@string/title_activity_participants_list"
-            android:parentActivityName=".EventDetailActivity"
-            android:screenOrientation="portrait" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="dhbw.mobile2.EventDetailActivity" />
-        </activity>
 
         <service android:name="com.parse.PushService" />
 

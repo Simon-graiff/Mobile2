@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,9 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.parse.GetCallback;
@@ -29,9 +26,6 @@ import com.parse.ParseUser;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Vincent on 19.05.2015.
- */
 public class ParticipantsListFragment extends Fragment implements View.OnClickListener, AdapterView.OnItemClickListener {
     private OnParticipantInteractionListener mListener;
 
@@ -58,8 +52,6 @@ public class ParticipantsListFragment extends Fragment implements View.OnClickLi
                 if (e == null) {
                     listParticipants = object.getList("participants");
                     createParticipantsList();
-                } else {
-                    // something went wrong
                 }
             }
         });
@@ -91,7 +83,7 @@ public class ParticipantsListFragment extends Fragment implements View.OnClickLi
     @Override
     public void onClick(View view){
         if (view == backToEventDetailButton){
-            Fragment fragment = null;
+            Fragment fragment;
             fragment = new EventDetailFragment();
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
@@ -116,8 +108,8 @@ public class ParticipantsListFragment extends Fragment implements View.OnClickLi
 
 
     private void createParticipantsList(){
-        ArrayList<String> arrayListParticipantNames = new ArrayList<String>();
-        ArrayList<Bitmap> arrayListParticipantPictures = new ArrayList<Bitmap>();
+        ArrayList<String> arrayListParticipantNames = new ArrayList<>();
+        ArrayList<Bitmap> arrayListParticipantPictures = new ArrayList<>();
         for (int i = 0; i < listParticipants.size(); i++) {
             try {
                 ParseUser user = listParticipants.get(i).fetchIfNeeded();
@@ -154,6 +146,6 @@ public class ParticipantsListFragment extends Fragment implements View.OnClickLi
     }
 
     public interface OnParticipantInteractionListener {
-        public void onParticipantInteraction(String id);
+        void onParticipantInteraction(String id);
     }
 }

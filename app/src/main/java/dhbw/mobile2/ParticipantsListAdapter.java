@@ -11,9 +11,6 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-/**
- * Created by Vincent on 24.05.2015.
- */
 public class ParticipantsListAdapter extends ArrayAdapter {
     private final Activity context;
     private final ArrayList<String> itemname;
@@ -21,7 +18,6 @@ public class ParticipantsListAdapter extends ArrayAdapter {
 
     public ParticipantsListAdapter(Activity context, ArrayList<String> itemname, ArrayList<Bitmap> img) {
         super(context, R.layout.list_participants, itemname);
-        // TODO Auto-generated constructor stub
 
         this.context=context;
         this.itemname=itemname;
@@ -39,5 +35,5 @@ public class ParticipantsListAdapter extends ArrayAdapter {
         userPicture.setImageBitmap(img.get(position));
         return rowView;
 
-    };
+    }
 }
