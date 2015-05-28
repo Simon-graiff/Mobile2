@@ -2,15 +2,12 @@ package dhbw.mobile2;
 
 import android.app.Fragment;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -50,13 +47,13 @@ public class CreateEventFragment extends Fragment
     private EditText mEditText_description;
     private Spinner mSpinner_category;
     private Button mButton_createEvent;
-    private Button mButton_creteGeofence;
+    private Button mButton_creteGeoFence;
     private Button mButton_test;
     private LocationManager lm;
     private Location lastLocation = null;
-    static final int TIME_DIFFERENCE_THRESHOLD = 1 * 60 * 1000;
+    static final int TIME_DIFFERENCE_THRESHOLD = 60 * 1000;
     private ParseObject event = null;
-    private ArrayList<Geofence> mGeofenceList = new ArrayList<>();
+    private ArrayList<Geofence> mGeoFenceList = new ArrayList<>();
     private PendingIntent mGeofencePendingIntent;
     private View rootView;
     private GoogleApiClient mGoogleApiClient;
@@ -64,29 +61,6 @@ public class CreateEventFragment extends Fragment
     private Boolean mCreatingEventObject = false;
     private Boolean mSearchingEvents = false;
     private Boolean mCreatingGeofence = false;
-
-
-    private final LocationListener locationListener = new LocationListener() {
-        @Override
-        public void onLocationChanged(Location location) {
-            handleNewLocation(location);
-        }
-
-        @Override
-        public void onStatusChanged(String s, int i, Bundle bundle) {
-
-        }
-
-        @Override
-        public void onProviderEnabled(String s) {
-
-        }
-
-        @Override
-        public void onProviderDisabled(String s) {
-
-        }
-    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -100,13 +74,12 @@ public class CreateEventFragment extends Fragment
         mEditText_description = (EditText) rootView.findViewById(R.id.editText_FeedbackBody);
         mButton_createEvent = (Button) rootView.findViewById(R.id.button_CreateEvent);
         mButton_createEvent.setOnClickListener(this);
-        mButton_creteGeofence = (Button) rootView.findViewById(R.id.button_createGeofence);
-        mButton_creteGeofence.setOnClickListener(this);
+        mButton_creteGeoFence = (Button) rootView.findViewById(R.id.button_createGeofence);
+        mButton_creteGeoFence.setOnClickListener(this);
         mButton_test = (Button) rootView.findViewById(R.id.button_test);
         mButton_test.setOnClickListener(this);
 
         mSpinner_category = (Spinner) rootView.findViewById(R.id.SpinnerFeedbackType);
-        lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
         mGoogleApiClient = new GoogleApiClient.Builder(getActivity().getBaseContext())
                 .addConnectionCallbacks(this)
@@ -118,24 +91,9 @@ public class CreateEventFragment extends Fragment
         return rootView;
     }
 
-    private void handleNewLocation(Location location){
-        if(isBetterLocation(lastLocation,location)) {
-            lastLocation = location;
-            return;
-        }
-
-        if(mCreatingEventObject)
-            createEvent(location);
-        else if(mSearchingEvents)
-            sendEventRequest(location);
-        else if (mCreatingGeofence)
-            submitGeofenceToDatabase(location);
-        lm.removeUpdates(locationListener);
-        lastLocation = null;
-    }
-
-    private void submitGeofenceToDatabase(Location location) {
+    private void submitGeofenceToDatabase() {
         ParseObject geofence = new ParseObject("GeoFence");
+        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
         ParseGeoPoint geoPoint = new ParseGeoPoint();
         geoPoint.setLatitude(location.getLatitude());
@@ -143,12 +101,11 @@ public class CreateEventFragment extends Fragment
         geofence.put("geoPoint", geoPoint);
         geofence.put("user", ParseUser.getCurrentUser());
         geofence.saveInBackground();
-
     }
 
-    public void createEvent(Location location){
+    public void createEvent(){
         //start updating the location with locationListener-Object
-        int maxMembers = 0;
+        int maxMembers;
         try{
             maxMembers = Integer.parseInt(mEditText_maxMembers.getText().toString());
         }catch(NumberFormatException nfe){
@@ -156,11 +113,13 @@ public class CreateEventFragment extends Fragment
             return;
         }
 
+        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
         ParseGeoPoint geoPoint = new ParseGeoPoint();
         geoPoint.setLatitude(location.getLatitude());
         geoPoint.setLongitude(location.getLongitude());
 
-        ArrayList<ParseUser> participants = new ArrayList<ParseUser>();
+        ArrayList<ParseUser> participants = new ArrayList<>();
 
         event = new ParseObject("Event");
         event.put("title", mEditText_title.getText().toString());
@@ -168,7 +127,7 @@ public class CreateEventFragment extends Fragment
         event.put("category", mSpinner_category.getSelectedItem().toString());
         event.put("locationName", mEditText_location.getText().toString());
         event.put("duration", mEditText_duration.getText().toString());
-        event.put("maxMembers",maxMembers);
+        event.put("maxMembers", maxMembers);
         event.put("participants", participants);
         event.put("creator", ParseUser.getCurrentUser());
         event.put("geoPoint", geoPoint);
@@ -183,7 +142,7 @@ public class CreateEventFragment extends Fragment
 
 
     public void createGeofence (){
-        mGeofenceList.add(new Geofence.Builder()
+        mGeoFenceList.add(new Geofence.Builder()
                 .setRequestId("Test")
                 .setCircularRegion(10, 10, 2000000) //long,lat,radius
                 .setExpirationDuration(Geofence.NEVER_EXPIRE)//millis
@@ -197,9 +156,9 @@ public class CreateEventFragment extends Fragment
         ).setResultCallback(this);
     }
 
-    private void sendEventRequest(Location location){
-
-        Map<String,Object> param = new HashMap<String, Object>();
+    private void sendEventRequest(){
+        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        Map<String,Object> param = new HashMap<>();
         param.put("longitude",location.getLongitude());
         param.put("latitude",location.getLatitude());
         param.put("userId", ParseUser.getCurrentUser().getObjectId());
@@ -218,52 +177,20 @@ public class CreateEventFragment extends Fragment
         });
     }
 
-    private boolean isBetterLocation(Location oldLocation, Location newLocation) {
-        // If there is no old location, of course the new location is better.
-        if(oldLocation == null) {
-            return true;
-        }
-
-        // Check if new location is newer in time.
-        boolean isNewer = newLocation.getTime() > oldLocation.getTime();
-
-        // Check if new location more accurate. Accuracy is radius in meters, so less is better.
-        boolean isMoreAccurate = newLocation.getAccuracy() < oldLocation.getAccuracy();
-        Toast.makeText(getActivity().getBaseContext(), newLocation.getTime() + ";" + oldLocation.getTime() + ";"+ newLocation.getAccuracy() + ";"+oldLocation.getAccuracy(), Toast.LENGTH_LONG).show();
-        if(isMoreAccurate && isNewer) {
-            // More accurate and newer is always better.
-            return true;
-        } else if(isMoreAccurate && !isNewer) {
-            // More accurate but not newer can lead to bad fix because of user movement.
-            // Let us set a threshold for the maximum tolerance of time difference.
-            long timeDifference = newLocation.getTime() - oldLocation.getTime();
-
-            // If time difference is not greater then allowed threshold we accept it.
-            if(timeDifference > - TIME_DIFFERENCE_THRESHOLD) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     @Override
     public void onClick(View view) {
         if (view == mButton_createEvent){
-            mCreatingEventObject = true;
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
-        }else if(view == mButton_creteGeofence){
+            createEvent();
+        }else if(view == mButton_creteGeoFence){
             createGeofence();
         }else if(view==mButton_test){
-            mSearchingEvents = true;
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
+            sendEventRequest();
         }
     }
 
     @Override
     public void onResult(Status status) {
         Toast.makeText(getActivity().getBaseContext(), "Result: "+status.toString(), Toast.LENGTH_LONG).show();
-        mCreatingGeofence = true;
-        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
     }
 
     @Override
@@ -292,14 +219,8 @@ public class CreateEventFragment extends Fragment
     private GeofencingRequest getGeofencingRequest() {
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
         builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
-        builder.addGeofences(mGeofenceList);
+        builder.addGeofences(mGeoFenceList);
         return builder.build();
-    }
-
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getActivity().getMenuInflater().inflate(R.menu.menu_create_event, menu);
-        return true;
     }
 
     @Override
