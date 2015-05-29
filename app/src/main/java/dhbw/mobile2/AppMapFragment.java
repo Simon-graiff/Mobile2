@@ -2,6 +2,7 @@ package dhbw.mobile2;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
@@ -27,6 +28,7 @@ import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,9 +39,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
     private GoogleMap map = null;
     MapView myMapView = null;
     public List<EventManagerItem> eventManager = new ArrayList<>();
-
-    private SharedPreferences sharedPref;
-    SharedPreferences.Editor editor;
+    public List<ParseUser> participantList = new ArrayList<>();
 
     private final LocationListener locationListener = new LocationListener() {
 
@@ -91,7 +91,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
 
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
-//        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
 
         /*try{
             MapsInitializer.initialize(this.getActivity());
@@ -116,8 +116,6 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         myMapView = (MapView) getView().findViewById(R.id.myMapView);
         myMapView.onCreate(savedInstanceState);
 
-        sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-
         map = myMapView.getMap();
 
         if(map!=null) {
@@ -137,7 +135,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
             myMapView.onResume();
         }
         locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
-//        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
 
     }
 
@@ -232,10 +230,12 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         user.put("location", point);
 
         //Prepare filter options
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         final String sport = sharedPref.getString("Sport", null);
         final String music = sharedPref.getString("Music", null);
         final String chilling = sharedPref.getString("Chilling", null);
         final String drinking = sharedPref.getString("Drinking", null);
+        final boolean mixedGenders = sharedPref.getBoolean("MixedGenders", true);
 
         //Prepare query
         ParseGeoPoint queryParameter = (ParseGeoPoint) user.get("location");
@@ -259,18 +259,43 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
                             double tmpLng = tmpPoint.getLongitude();
                             LatLng tmpLatLng = new LatLng(tmpLat, tmpLng);
 
-                            //Prepare necessary information and draw markers to map
-                            String tmpTitle = eventList.get(i).getString("title");
-                            String category = eventList.get(i).getString("category");
-                            String eventID = eventList.get(i).getObjectId();
-                            Log.d("Main", "eventID =" + eventID);
+                            participantList = eventList.get(i).getList("participants");
+                            boolean tmpMale=false;
+                            boolean tmpFemale=false;
+                            for(int j=0; j<participantList.size();j++){
+                                try {
+                                    if (participantList.get(j).fetchIfNeeded().getString("gender").equals("male")) {
+                                        tmpMale = true;
+                                    } else {
+                                        tmpFemale = true;
+                                    }
+                                }catch (ParseException exception){
+                                    exception.printStackTrace();
+                                }
+                            }
 
+                            //If tmpMale & tmpFemale are both true then the participants of the
+                            //event are from both genders. In case the user wants to avoid that
+                            //a preference check is needed
+                            if(tmpMale==true && tmpFemale==true && mixedGenders==false){
+                                Log.d("Main", "There is a mixed gender group");
+                            }else{
+                                Log.d("Main", "In der if");
 
-                            if(!category.equals(sport)){
-                                if(!category.equals(music)){
-                                    if(!category.equals(chilling)){
-                                        if(!category.equals(drinking)){
-                                            drawMarker(tmpLatLng, tmpTitle, eventID);
+                                //Prepare necessary information and draw markers to map
+                                String tmpTitle = eventList.get(i).getString("title");
+                                String category = eventList.get(i).getString("category");
+                                String eventID = eventList.get(i).getObjectId();
+                                Log.d("Main", "eventID =" + eventID);
+
+                                //An event can only be from one category. If any of the following
+                                //conditions fails, the others doesn't need to be checked.
+                                if(!category.equals(sport)){
+                                    if(!category.equals(music)){
+                                        if(!category.equals(chilling)){
+                                            if(!category.equals(drinking)){
+                                                drawMarker(tmpLatLng, tmpTitle, eventID);
+                                            }
                                         }
                                     }
                                 }
@@ -300,13 +325,24 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
 
         if(!eventID.equals("Not found")){
             //Save eventID in SharedPreferences
+            SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
             editor.putString("eventId", eventID);
             editor.commit();
 
             //Direction to EventDetailFragment
             Fragment eventDetailFragment = new EventDetailFragment();
-            FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.frame_container, eventDetailFragment).commit();
+            /*FragmentManager fragmentManager = getActivity().getFragmentManager();
+            fragmentManager
+                    .beginTransaction()
+                    .add(R.id.frame_container, eventDetailFragment, "eventDetailFragment")
+                    .addToBackStack(null)
+                    //.replace(R.id.frame_container, eventDetailFragment)
+                    .commit();*/
+            FragmentTransaction transaction = getActivity().getFragmentManager().beginTransaction();
+            transaction.replace(R.id.frame_container, eventDetailFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
         }
 
         return true;
