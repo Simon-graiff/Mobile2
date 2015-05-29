@@ -26,7 +26,9 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="35dp">
+        android:layout_height="35dp"
+        android:id="@+id/layout_change"
+        android:visibility="gone">
 
         <TextView
             android:layout_width="wrap_content"
@@ -110,8 +112,24 @@
         android:textSize="@dimen/textFieldFontSize"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
+        android:focusable="false"
         android:padding="10dp"
-        android:focusable="false"/>
+
+        android:visibility="gone"/>
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="35dp"
+        android:onClick="changeProfile"
+        android:id="@+id/textView_reloadFacebookData"
+        android:text="Reload data from Facebook"
+        android:background="#ffffff"
+        android:textColor="@android:color/holo_blue_light"
+        android:textSize="@dimen/textFieldFontSize"
+        android:paddingLeft="10dp"
+        android:gravity="center"
+        android:layout_marginTop="1dp"
+        android:visibility="gone"/>
 
 
 </LinearLayout>

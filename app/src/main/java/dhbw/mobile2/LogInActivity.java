@@ -16,6 +16,7 @@ import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.parse.LogInCallback;
+import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
 import com.parse.ParseFile;
@@ -33,6 +34,8 @@ import java.util.List;
 
 
 public class LogInActivity extends ActionBarActivity {
+
+    private int callbackCount = 0;
 
 
     @Override
@@ -93,7 +96,8 @@ public class LogInActivity extends ActionBarActivity {
                     Log.d("MyApp", "User signed up and logged in through Facebook!");
                     ProgressDialog.show(LogInActivity.this, "Creating Account", "Please wait.."); //Show loading dialog until data has been pulled from parse
                     retriveFacebookData();
-                    //Redirect to MainScreen is executed in DownloadPictureTast
+                    redirectToMainScreen();
+                    //Redirect to MainScreen is executed in redirectToMainScreen()
                     //=> This task takes the longest and only if all Data is retrived its supposed to be redirected
 
                 } else {
@@ -103,6 +107,17 @@ public class LogInActivity extends ActionBarActivity {
                 }
             }
         });
+    }
+
+    /*
+    This method checks if all callbacks retruned with a positive result and redirects to main screen
+     */
+    private void redirectToMainScreen(){
+        callbackCount++;
+                if(callbackCount >3){
+                    Intent intent = new Intent(getApplicationContext(), MainScreen.class);
+                    startActivity(intent);
+                }
     }
 
     public void retriveFacebookData() {
@@ -118,13 +133,17 @@ public class LogInActivity extends ActionBarActivity {
                     try {
                         ParseUser.getCurrentUser().put("username", user.getString("name"));
                         ParseUser.getCurrentUser().put("gender", user.getString("gender"));
+                        ParseUser.getCurrentUser().put("aboutMe", "");
                         ParseUser.getCurrentUser().saveInBackground();
+                        redirectToMainScreen();
+
                     } catch (Exception e) {
                         Log.e("Error from FB Data", e.getMessage());
                     }
                 }
             }
         }).executeAsync();
+
 
 
     }
@@ -142,6 +161,7 @@ public class LogInActivity extends ActionBarActivity {
                         URL url = new URL(pictureURL);
                         //Download the Picture from provided URL and Save it as ByteArray to Parse
                         new DownloadPictureTask().execute(url);
+                        redirectToMainScreen();
                     } catch (Exception e) {
                         Log.e("Error from FB Data", e.getMessage());
                     }
@@ -151,8 +171,7 @@ public class LogInActivity extends ActionBarActivity {
 
         // Set paramaters for MeRequest to retrive the profile pricutre in correct size.
         Bundle bundle = new Bundle();
-        bundle.putString("fields", "name,picture.width(" + getResources().getString(R.string.profil_picture_with_px) +
-                        ").height(" + getResources().getString(R.string.profil_picture_height_px)+")");
+        bundle.putString("fields", "name,picture.width(800).height(800)");
                 graph.setParameters(bundle);
         graph.executeAsync();
 
@@ -179,8 +198,7 @@ public class LogInActivity extends ActionBarActivity {
                     ParseFile file = new ParseFile("profilepicture.jpg", data);
                     ParseUser.getCurrentUser().put("profilepicture", file);
                     ParseUser.getCurrentUser().saveInBackground();
-                    Intent intent = new Intent(getApplicationContext(), MainScreen.class);
-                    startActivity(intent);
+                    redirectToMainScreen();
 
                 } catch (IOException e) {
                     e.printStackTrace();

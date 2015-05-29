@@ -1,6 +1,7 @@
 package dhbw.mobile2;
 
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,15 +12,20 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.parse.GetCallback;
+import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseQuery;
@@ -49,6 +55,21 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         return f;
     }
 
+    @Override
+    public void onPause() {
+        EditText aboutMeTextField = (EditText) rootView.findViewById(id.editText_about);
+        String newAboutMe = aboutMeTextField.getText().toString();
+
+        if(!aboutMe.equals(newAboutMe)){
+            ParseUser.getCurrentUser().put("aboutMe", newAboutMe);
+            ParseUser.getCurrentUser().saveInBackground();
+            Toast.makeText(getActivity().getWindow().getContext(), "Your changes are saved!", Toast.LENGTH_LONG).show();
+        }
+
+        super.onPause();
+    }
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -58,21 +79,31 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
 
         //Add OnClickListener to the Profile data Change Entry
-        View view=(View) rootView.findViewById(id.imageView_change);
-        view.setOnClickListener(this);
-        view=(View) rootView.findViewById(id.textView_change);
-        view.setOnClickListener(this);
+        rootView.findViewById(id.imageView_change).setOnClickListener(this);
+        rootView.findViewById(id.textView_change).setOnClickListener(this);
+        rootView.findViewById(id.textView_reloadFacebookData).setOnClickListener(this);
 
 
 
-        pullUserDataFromParse();
+        if(userID.equals(ParseUser.getCurrentUser().getObjectId())){
+            username = ParseUser.getCurrentUser().getUsername();
+            gender= ParseUser.getCurrentUser().getString("gender");
+            aboutMe =ParseUser.getCurrentUser().getString("aboutMe");
+            profilepictureFile = ParseUser.getCurrentUser().getParseFile("profilepicture");
+            profilepictureFileBitmap = getRoundedCornerBitmap();
+            updateLayout();
+        }else{
+            pullUserDataFromParse();
+        }
+
+
         return rootView;
     }
 
-    private void updateLayout(){
+    private void updateLayout() {
 
         //Update Profile Picutre
-        ImageView imageView=(ImageView) rootView.findViewById(id.imageView_ProfilePicuture);
+        ImageView imageView = (ImageView) rootView.findViewById(id.imageView_ProfilePicuture);
         // Get the Pixesl of the Screen to Scale the ProfilePicture according to the Screen Size
         int heightPixels = getActivity().getApplicationContext().getResources().getDisplayMetrics().heightPixels;
         //Set the ProfilePicuture to the ImageView and scale it to the screen size
@@ -81,12 +112,20 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
         //Set user information
         getActivity().setTitle(username); //Change ActionBar title to the username's title
-        TextView usernameView =(TextView) rootView.findViewById(id.editText_username);
+        TextView usernameView = (TextView) rootView.findViewById(id.editText_username);
         usernameView.setText(username);
-        if(aboutMe!=null) {
-            TextView aboutMeView = (TextView) rootView.findViewById(id.editText_username);
-            aboutMeView.setText(aboutMe);
-        }
+
+        TextView aboutMeView = (TextView) rootView.findViewById(id.editText_about);
+        aboutMeView.setText(aboutMe);
+
+        //Only show about me if any text is entered
+            if (!aboutMe.equals("")){
+                rootView.findViewById(id.editText_about).setVisibility(View.VISIBLE);
+            }
+
+
+
+
         if(gender.equalsIgnoreCase("male")){
             //Disable female Button
             ImageButton femaleButton =(ImageButton) rootView.findViewById(id.imageButton_female);
@@ -95,6 +134,12 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
             //Dissable male BUtton
             ImageButton maleButton =(ImageButton) rootView.findViewById(id.imageButton_male);
             maleButton.setImageResource(drawable.ic_male_disabled);
+        }
+
+        //Adjust ProfileLayout if called user profile is the own profle
+        if(userID.equals(ParseUser.getCurrentUser().getObjectId())){
+            //Show the Change Profile data Fields
+            rootView.findViewById(id.layout_change).setVisibility(View.VISIBLE);
         }
 
 
@@ -174,6 +219,30 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        Log.d("Profile", "onClick");
+
+        if(v.getId()!= id.textView_reloadFacebookData) {
+            //Hide Change Buttons
+            rootView.findViewById(id.layout_change).setVisibility(View.GONE);
+            rootView.findViewById(id.editText_about).setVisibility(View.VISIBLE);
+            rootView.findViewById(id.editText_about).setFocusableInTouchMode(true);
+            rootView.findViewById(id.editText_about).setFocusable(true);
+            rootView.findViewById(id.textView_reloadFacebookData).setVisibility(View.VISIBLE);
+
+        }
+        else{
+            new LogInActivity().retriveFacebookData();
+            Toast.makeText(getActivity().getWindow().getContext(), "Your profile was updated", Toast.LENGTH_LONG).show();
+            //Save aboutMe before reloading Layout
+            EditText aboutMeTextField = (EditText) rootView.findViewById(id.editText_about);
+            String aboutMe = aboutMeTextField.getText().toString();
+            if(aboutMe!=null){
+                ParseUser.getCurrentUser().put("aboutMe", aboutMe);
+                ParseUser.getCurrentUser().saveInBackground();
+            }
+            FragmentManager fragmentManager = getFragmentManager();
+            Fragment fragment = ProfileFragment.newInstance(ParseUser.getCurrentUser().getObjectId());
+            fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+              }
+
     }
 }
