@@ -1,5 +1,6 @@
 package dhbw.mobile2;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -33,10 +34,13 @@ import java.util.List;
 
 public class LogInActivity extends ActionBarActivity {
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
+
+
 
         //Hide the ActionBar for the Login Screen
         ActionBar actionBar = getSupportActionBar();
@@ -87,9 +91,11 @@ public class LogInActivity extends ActionBarActivity {
                     ParseUser.logOut();
                 } else if (user.isNew()) {
                     Log.d("MyApp", "User signed up and logged in through Facebook!");
+                    ProgressDialog.show(LogInActivity.this, "Creating Account", "Please wait.."); //Show loading dialog until data has been pulled from parse
                     retriveFacebookData();
-                    Intent intent = new Intent(getApplicationContext(), MainScreen.class);
-                    startActivity(intent);
+                    //Redirect to MainScreen is executed in DownloadPictureTast
+                    //=> This task takes the longest and only if all Data is retrived its supposed to be redirected
+
                 } else {
                     Log.d("MyApp", "User logged in with Facebook!");
                     Intent intent = new Intent(getApplicationContext(), MainScreen.class);
@@ -173,6 +179,8 @@ public class LogInActivity extends ActionBarActivity {
                     ParseFile file = new ParseFile("profilepicture.jpg", data);
                     ParseUser.getCurrentUser().put("profilepicture", file);
                     ParseUser.getCurrentUser().saveInBackground();
+                    Intent intent = new Intent(getApplicationContext(), MainScreen.class);
+                    startActivity(intent);
 
                 } catch (IOException e) {
                     e.printStackTrace();
