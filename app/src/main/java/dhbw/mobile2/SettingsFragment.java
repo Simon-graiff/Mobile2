@@ -9,15 +9,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 
 import dhbw.mobile2.R;
 
-public class SettingsFragment extends Fragment implements View.OnClickListener {
+public class SettingsFragment extends Fragment
+        implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
     private CheckBox sports_checkbox;
     private CheckBox music_checkbox;
     private CheckBox chilling_checkbox;
     private CheckBox drinking_checkbox;
+    private Switch mixedGenderSwitch;
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
@@ -33,11 +37,13 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         music_checkbox = (CheckBox) rootView.findViewById(R.id.music_checkbox);
         chilling_checkbox = (CheckBox) rootView.findViewById(R.id.chilling_checkbox);
         drinking_checkbox = (CheckBox) rootView.findViewById(R.id.drinking_checkbox);
+        mixedGenderSwitch = (Switch) rootView.findViewById(R.id.mixedGender_switch);
 
         sports_checkbox.setOnClickListener(this);
         music_checkbox.setOnClickListener(this);
         chilling_checkbox.setOnClickListener(this);
         drinking_checkbox.setOnClickListener(this);
+        mixedGenderSwitch.setOnCheckedChangeListener(this);
 
         sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         editor = sharedPref.edit();
@@ -47,12 +53,14 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         final String music = sharedPref.getString("Music", null);
         final String chilling = sharedPref.getString("Chilling", null);
         final String drinking = sharedPref.getString("Drinking", null);
+        final boolean mixedGenders = sharedPref.getBoolean("MixedGenders", true);
 
         Log.d("Main", "+++++++++++++++");
         Log.d("Main", "Sport: "+sport);
         Log.d("Main", "Music: "+music);
         Log.d("Main", "Chilling: "+chilling);
         Log.d("Main", "Drinking: "+drinking);
+        Log.d("Main", "Mixed Genders "+mixedGenders);
         Log.d("Main", "+++++++++++++++");
 
         if(sport!=null){
@@ -65,6 +73,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             drinking_checkbox.setChecked(false);
         }
 
+        if(mixedGenders==false){
+            mixedGenderSwitch.setChecked(false);
+        }
 
         return rootView;
     }
@@ -102,6 +113,19 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked){
+        if(isChecked){
+            Log.d("Main", "Checked");
+            editor.remove("MixedGenders");
+            editor.commit();
+        }else{
+            Log.d("Main", "Not Checked");
+            editor.putBoolean("MixedGenders", false);
+            editor.commit();
+        }
+    }
+
     private void removeQueryParameter(String category){
         Log.d("Main", "removeParameter: "+category);
 
@@ -112,7 +136,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     //Sets SharedPreference for filtering the received event list in AppMapFragment
     private void setQueryParameter(String category){
 
-        Log.d("Main", "setParameter: "+category);
+        Log.d("Main", "setParameter: " + category);
 
         editor.putString(category, category);
         editor.commit();
