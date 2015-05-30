@@ -50,10 +50,6 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
     private boolean statusParticipation = false;
     private boolean cancelOtherEvent = false;
 
-    private boolean mapShown = true;
-
-    private boolean listShown = false;
-
     public static FragmentManager fragmentManager;
 
     //currentUser
@@ -286,8 +282,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
     public boolean onCreateOptionsMenu(Menu menu) {
         //getMenuInflater().inflate(R.menu.main, menu);
         getMenuInflater().inflate(R.menu.menu_create_event, menu);
-       // menu.add(findViewById(R.id.action_list_events));
-        return super.onCreateOptionsMenu(menu);
+        return true;
     }
 
     @Override
@@ -298,40 +293,23 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         }
         //Handle action bar actions click
         switch (item.getItemId()) {
-
-            case R.id.action_list_events:
-                openList();
-                return true;
-            case R.id.action_map:
-                openMap();
+            case R.id.action_settings:
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    private void openList(){
-        Fragment fragment;
-        FragmentManager fragmentManager = getFragmentManager();
-        fragment = new ListEventsFragment();
-        fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
-    }
 
-    private void openMap(){
-        Fragment fragment = new AppMapFragment();
-        FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
-    }
 
     //Called when invalidateOptionsMenu() is triggered
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        // if nav drawer is opened, hide the action items
+        /*// if nav drawer is opened, hide the action items
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-        menu.findItem(R.id.action_list_events).setVisible(mapShown);
-        menu.findItem(R.id.action_map).setVisible(listShown);
-        return super.onPrepareOptionsMenu(menu);
-        //return false;
+        menu.findItem(R.id.action_settings).setVisible(!drawerOpen);
+        return super.onPrepareOptionsMenu(menu);*/
+        return false;
     }
 
     @Override
@@ -362,13 +340,5 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
     @Override
     protected void onResume(){
         super.onResume();
-    }
-
-    public void setMapShown(boolean mapShown) {
-        this.mapShown = mapShown;
-    }
-
-    public void setListShown(boolean listShown) {
-        this.listShown = listShown;
     }
 }

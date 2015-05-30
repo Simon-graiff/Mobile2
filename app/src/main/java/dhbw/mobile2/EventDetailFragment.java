@@ -4,6 +4,7 @@ package dhbw.mobile2;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -27,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -119,18 +121,23 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         detailButtonNavigate = (Button) rootView.findViewById(R.id.detail_button_navigate);
         detailButtonNavigate.setOnClickListener(this);
 
-        retrieveParseData();
-
-
         return rootView;
     }
 
     //the following have to be implemented for the map, especially myMapView.onPause()
 
     @Override
-    public void onResume() {
+    public void onResume(){
         super.onResume();
-        myMapView.onResume();
+        if(map!=null){
+            myMapView.onResume();
+        }
+
+        ListView mDrawerList;
+        mDrawerList = (ListView) getActivity().findViewById(R.id.list_slidermenu);
+        mDrawerList.setItemChecked(1, true);
+        mDrawerList.setSelection(1);
+        retrieveParseData();
     }
 
     @Override
@@ -266,8 +273,13 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     public void linkParticipantsActivity(){
 
         Fragment fragment = new ParticipantsListFragment();
+        /*FragmentManager fragmentManager = getFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();*/
         FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.frame_container, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     public void fillSimpleType (String dynamicField, TextView textViewToFill){
@@ -524,7 +536,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
             markers.add(m);
             Log.d("Main", "Creates red marker");
 
-            eventManager.add(new EventManagerItem(m.getId(), eventID));
+            eventManager.add(new EventManagerItem(m.getId(), eventID, position));
 
         }
     }
