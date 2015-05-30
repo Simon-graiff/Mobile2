@@ -3,6 +3,7 @@ package dhbw.mobile2;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -27,9 +28,11 @@ import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import java.util.ArrayList;
+import java.util.Stack;
 
 
 public class MainScreen extends ActionBarActivity implements ListEventsFragment.OnFragmentInteractionListener, ParticipantsListFragment.OnParticipantInteractionListener {
+
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -51,6 +54,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
     private boolean cancelOtherEvent = false;
 
     public static FragmentManager fragmentManager;
+    private Stack<Fragment> fragmentStack;
 
     //currentUser
     ParseUser currentUser;
@@ -144,6 +148,8 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         }
 
         mDrawerList.setOnItemClickListener(new SlideMenuClickListener());
+
+        fragmentStack = new Stack<Fragment>();
     }
 
     @Override
@@ -217,11 +223,6 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         }else if(position==5){
             fragment = new LogoutFragment();
         }else if(position == 6){
-            /*SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString("eventId", "l9lvvbNByv");
-            editor.commit();*/
-
             fragment = new ListEventsFragment();
         }
 
@@ -230,12 +231,11 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         if (fragment != null && fragment.getClass() == LogoutFragment.class) {
             Fragment.instantiate(getApplicationContext(), LogoutFragment.class.getName(), new Bundle());
             FragmentManager fragmentManager = getFragmentManager();
+
             fragmentManager.beginTransaction().add(R.id.frame_container, fragment).commit();
         }
 
-            if (fragment != null && fragment.getClass() != LogoutFragment.class) {
-            FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+        if (fragment != null && fragment.getClass() != LogoutFragment.class) {
 
             // update selected item and title, then close the drawer
             mDrawerList.setItemChecked(position, true);
@@ -243,9 +243,30 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
             setTitle(navMenuTitles[position]);
             mDrawerLayout.closeDrawer(mDrawerList);
 
+            Log.d("Main", "Prepare transaction");
+            FragmentManager fragmentManager = getFragmentManager();
+            //fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            transaction.replace(R.id.frame_container, fragment);
+            transaction.addToBackStack(null);
+            Log.d("Main", "Added to BackStack");
+            transaction.commit();
+
         } else {
             //Error in creating fragment
             Log.e("MainActivity", "Error in creating fragment");
+        }
+    }
+
+    @Override
+    public void onBackPressed(){
+        Log.d("Main", "onBackPressed");
+
+        FragmentManager fragmentManager = getFragmentManager();
+        if(fragmentManager.getBackStackEntryCount()!=0){
+            fragmentManager.popBackStack();
+        }else{
+            super.onBackPressed();
         }
     }
 
@@ -270,11 +291,8 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
                     statusParticipation = true;
 
             } else {
-
                 statusParticipation = false;
-
             }
-
         }
     }
 
@@ -299,8 +317,6 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
                 return super.onOptionsItemSelected(item);
         }
     }
-
-
 
     //Called when invalidateOptionsMenu() is triggered
     @Override

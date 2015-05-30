@@ -9,11 +9,15 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -21,6 +25,7 @@ import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.FindCallback;
@@ -52,14 +57,21 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
             double lon = location.getLongitude();
             LatLng position = new LatLng(lat, lon);
 
-            CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target(position)
-                    .zoom(16)
-                    .tilt(40)
-                    .build();
-
-            map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
             drawEvents();
+
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+            for(int i=0; i<eventManager.size(); i++){
+                builder.include(eventManager.get(i).getLocation());
+            }
+
+            builder.include(position);
+            LatLngBounds bounds = builder.build();
+
+            int padding = 50; // offset from edges of the map in pixels
+            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+
+            map.animateCamera(cu);
         }
 
 
@@ -137,6 +149,13 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
 
+
+        ListView mDrawerList;
+        mDrawerList = (ListView) getActivity().findViewById(R.id.list_slidermenu);
+        mDrawerList.setItemChecked(1, true);
+        mDrawerList.setSelection(1);
+        ActionBar actionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+        actionBar.setTitle("Map");
     }
 
     @Override
@@ -217,7 +236,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
         );
 
-        eventManager.add(new EventManagerItem(m.getId(), eventID));
+        eventManager.add(new EventManagerItem(m.getId(), eventID, position));
 
     }
 
@@ -332,14 +351,9 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
 
             //Direction to EventDetailFragment
             Fragment eventDetailFragment = new EventDetailFragment();
-            /*FragmentManager fragmentManager = getActivity().getFragmentManager();
-            fragmentManager
-                    .beginTransaction()
-                    .add(R.id.frame_container, eventDetailFragment, "eventDetailFragment")
-                    .addToBackStack(null)
-                    //.replace(R.id.frame_container, eventDetailFragment)
-                    .commit();*/
-            FragmentTransaction transaction = getActivity().getFragmentManager().beginTransaction();
+
+            FragmentManager fragmentManager = getFragmentManager();
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
             transaction.replace(R.id.frame_container, eventDetailFragment);
             transaction.addToBackStack(null);
             transaction.commit();

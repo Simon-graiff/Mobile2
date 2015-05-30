@@ -3,13 +3,18 @@ package dhbw.mobile2;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ListView;
 import android.widget.Switch;
 
 import dhbw.mobile2.R;
@@ -140,5 +145,18 @@ public class SettingsFragment extends Fragment
 
         editor.putString(category, category);
         editor.commit();
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+
+        ListView mDrawerList;
+        mDrawerList = (ListView) getActivity().findViewById(R.id.list_slidermenu);
+        mDrawerList.setItemChecked(4, true);
+        mDrawerList.setSelection(4);
+        ActionBar actionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+        actionBar.setTitle("Settings");
+
     }
 }
