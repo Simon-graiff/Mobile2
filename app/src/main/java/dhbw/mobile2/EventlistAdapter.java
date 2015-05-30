@@ -38,19 +38,22 @@ public class EventlistAdapter extends ArrayAdapter<String> {
         categoryImage.setImageResource(R.drawable.ic_sport);
         switch (category.get(position)){
             case "Sport":
-                categoryImage.setImageResource(R.drawable.ic_sport);
+                categoryImage.setImageResource(R.drawable.ic_sport_blue);
                 break;
             case "Chilling":
-                categoryImage.setImageResource(R.drawable.ic_chilling);
+                categoryImage.setImageResource(R.drawable.ic_chilling_blue);
+                break;
+            case "Dancing":
+                categoryImage.setImageResource(R.drawable.ic_dance_blue);
                 break;
             case "Food":
-                categoryImage.setImageResource(R.drawable.ic_food);
+                categoryImage.setImageResource(R.drawable.ic_food_blue);
                 break;
             case "Music":
-                categoryImage.setImageResource(R.drawable.ic_music);
+                categoryImage.setImageResource(R.drawable.ic_music_blue);
                 break;
             case "Videogames":
-                categoryImage.setImageResource(R.drawable.ic_videogames);
+                categoryImage.setImageResource(R.drawable.ic_videogames_blue);
                 break;
         }
 

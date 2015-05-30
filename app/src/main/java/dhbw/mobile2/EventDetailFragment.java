@@ -129,7 +129,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public void onResume(){
         super.onResume();
-        if(map!=null){
+        if(myMapView!=null){
             myMapView.onResume();
         }
 
@@ -245,29 +245,45 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         ImageView categoryImage = (ImageView) rootView.findViewById(R.id.category_picture);
         switch (category){
             case "Sport":
-                categoryImage.setImageResource(R.drawable.ic_sport);
+                categoryImage.setImageResource(R.drawable.ic_sport_blue);
                 break;
             case "Chilling":
-                categoryImage.setImageResource(R.drawable.ic_chilling);
+                categoryImage.setImageResource(R.drawable.ic_chilling_blue);
+                break;
+            case "Dancing":
+                categoryImage.setImageResource(R.drawable.ic_dance_blue);
                 break;
             case "Food":
-                categoryImage.setImageResource(R.drawable.ic_food);
+                categoryImage.setImageResource(R.drawable.ic_food_blue);
                 break;
             case "Music":
-                categoryImage.setImageResource(R.drawable.ic_music);
+                categoryImage.setImageResource(R.drawable.ic_music_blue);
                 break;
             case "Videogames":
-                categoryImage.setImageResource(R.drawable.ic_videogames);
+                categoryImage.setImageResource(R.drawable.ic_videogames_blue);
                 break;
         }
 
         //fill more complex types
         fillCreationTime(object);
         fillParticipants(object);
+        fillCreatorName(object);
 
         //load ProfilePicture
         loadProfilePicture();
     }
+
+    private void fillCreatorName(ParseObject object){
+               try {
+                      ParseUser creator = object.getParseUser("creator").fetchIfNeeded();
+                      String creatorName = creator.getUsername();
+                      detailCreatorNameDynamic.setText(creatorName);
+
+                          } catch (Exception e) {
+
+                               e.printStackTrace();
+                    }
+            }
 
 
     public void linkParticipantsActivity(){
@@ -574,12 +590,39 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
 
     public void navigateToEvent(){
-        double latitude = markers.get(0).getPosition().latitude;
-        double longitude = markers.get(0).getPosition().longitude;
-        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + ", " + longitude + "&mode=w");
-        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-        mapIntent.setPackage("com.google.android.apps.maps");
-        startActivity(mapIntent);
+        String[] mode = {"driving", "walking", "bicycling"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+
+        builder.setTitle("How do you get there?")
+                .setItems(mode, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        double latitude = markers.get(0).getPosition().latitude;
+                        double longitude = markers.get(0).getPosition().longitude;
+                        String mode = "d";
+                        switch(which){
+                            case 0:
+                                mode="d";
+                                break;
+                            case 1:
+                                mode="w";
+                                break;
+                            case 2:
+                                mode="b";
+                                break;
+                        }
+                        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + ", " + longitude + "&mode=" + mode);
+                        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                        mapIntent.setPackage("com.google.android.apps.maps");
+                        startActivity(mapIntent);
+                    }
+
+                })
+                .show();
+
+
+
     }
 
     @Override

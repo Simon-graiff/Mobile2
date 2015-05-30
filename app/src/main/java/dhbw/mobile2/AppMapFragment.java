@@ -136,7 +136,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
     @Override
     public void onResume(){
         super.onResume();
-        if(map!=null){
+        if(myMapView!=null){
             myMapView.onResume();
         }
         locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);

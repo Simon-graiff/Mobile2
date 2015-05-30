@@ -319,13 +319,20 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         Fragment fragment;
                 FragmentManager fragmentManager = getFragmentManager();
                 fragment = new ListEventsFragment();
-                fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+
+                 FragmentTransaction transaction = fragmentManager.beginTransaction();
+                 transaction.replace(R.id.frame_container, fragment);
+                 transaction.addToBackStack(null);
+                 transaction.commit();
             }
 
     private void openMap(){
               Fragment fragment = new AppMapFragment();
                 FragmentManager fragmentManager = getFragmentManager();
-                fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.frame_container, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
             }
 
 
