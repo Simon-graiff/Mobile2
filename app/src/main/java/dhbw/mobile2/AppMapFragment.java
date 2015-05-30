@@ -1,5 +1,6 @@
 package dhbw.mobile2;
 
+import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -11,6 +12,8 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -137,6 +140,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
 
+        ((MainScreen) getActivity()).setMapShown(true);
     }
 
     @Override
@@ -145,6 +149,8 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
             myMapView.onPause();
         super.onPause();
         locationManager.removeUpdates(locationListener);
+
+        ((MainScreen) getActivity()).setMapShown(false);
     }
 
     @Override
@@ -217,7 +223,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
         );
 
-        eventManager.add(new EventManagerItem(m.getId(), eventID));
+        eventManager.add(new EventManagerItem(m.getId(), eventID, position));
 
     }
 
@@ -346,5 +352,9 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         }
 
         return true;
+    }
+
+    public void showListAsActionItem(){
+        MenuInflater actionBar = getActivity().getMenuInflater();
     }
 }
