@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -89,6 +90,21 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
         mListView.setOnItemClickListener(this);
 
         return screenView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        ((MainScreen) getActivity()).setMapShown(false);
+        ((MainScreen) getActivity()).setListShown(true);
+        getActivity().invalidateOptionsMenu();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        ((MainScreen) getActivity()).setListShown(false);
+        getActivity().invalidateOptionsMenu();
     }
 
     @Override
@@ -202,6 +218,11 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
             }
         });
     }
-
-
+/*
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        menu.findItem(R.id.action_list_events).setVisible(false);
+        super.onPrepareOptionsMenu(menu);
+    }
+    */
 }

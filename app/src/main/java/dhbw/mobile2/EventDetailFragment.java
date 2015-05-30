@@ -302,7 +302,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         }
     }
 
-    public void checkParticipationStatus(ParseObject object){
+    private void checkParticipationStatus(ParseObject object){
         String eventIdOfUser = currentUser.getString("eventId");
         if (eventIdOfUser != null){
             Log.d("Main", "eventId is not null");
@@ -314,16 +314,9 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
                    statusParticipation = true;
                }
            } else {
-
                    changeParticipationToFalse();
-
            }
-
        } else {
-
-                changeParticipationToFalse();
-
-           Log.d("Main", "eventId is null");
            changeParticipationToFalse();
         }
     }
@@ -380,7 +373,6 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
                 toast.show();
             }
         } else {
-            Log.d("Main", "Dialog is shown");
             DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -424,6 +416,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
     }
 
+    //Switch all things so user cannot participate in this event
     private void changeParticipationToTrue(){
         statusParticipation = true;
         fillParticipants(eventObject);
@@ -439,6 +432,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         ParseUser.getCurrentUser().saveInBackground();
     }
 
+    //Switch all things so user can participate in this event
     private void changeParticipationToFalse(){
         statusParticipation = false;
         fillParticipants(eventObject);
