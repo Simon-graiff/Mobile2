@@ -1,6 +1,5 @@
 package dhbw.mobile2;
 
-import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -10,12 +9,15 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -140,7 +142,13 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
 
-        ((MainScreen) getActivity()).setMapShown(true);
+
+        ListView mDrawerList;
+        mDrawerList = (ListView) getActivity().findViewById(R.id.list_slidermenu);
+        mDrawerList.setItemChecked(1, true);
+        mDrawerList.setSelection(1);
+        ActionBar actionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+        actionBar.setTitle("Map");
     }
 
     @Override
@@ -209,7 +217,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         }
     }//End of setUpMap
 
-    private Location getUserPosition(){
+    private Location getUserPosition() {
 
         Location userPosition = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         return userPosition;

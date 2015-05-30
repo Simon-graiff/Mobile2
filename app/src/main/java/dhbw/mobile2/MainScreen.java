@@ -3,6 +3,7 @@ package dhbw.mobile2;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -237,15 +238,20 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
             fragmentManager.beginTransaction().add(R.id.frame_container, fragment).commit();
         }
 
-            if (fragment != null && fragment.getClass() != LogoutFragment.class) {
-            FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+        if (fragment != null && fragment.getClass() != LogoutFragment.class) {
 
             // update selected item and title, then close the drawer
             mDrawerList.setItemChecked(position, true);
             mDrawerList.setSelection(position);
             setTitle(navMenuTitles[position]);
             mDrawerLayout.closeDrawer(mDrawerList);
+
+            FragmentManager fragmentManager = getFragmentManager();
+            //fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            transaction.replace(R.id.frame_container, fragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
 
         } else {
             //Error in creating fragment
@@ -310,7 +316,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
     }
 
     private void openList(){
-          Fragment fragment;
+        Fragment fragment;
                 FragmentManager fragmentManager = getFragmentManager();
                 fragment = new ListEventsFragment();
                 fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
@@ -366,10 +372,22 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
     }
 
     public void setMapShown(boolean mapShown) {
-              this.mapShown = mapShown;
-            }
+        this.mapShown = mapShown;
+    }
 
-                public void setListShown(boolean listShown) {
-                this.listShown = listShown;
-            }
+    public void setListShown(boolean listShown) {
+        this.listShown = listShown;
+    }
+
+    @Override
+    public void onBackPressed(){
+        Log.d("Main", "onBackPressed");
+
+        FragmentManager fragmentManager = getFragmentManager();
+        if(fragmentManager.getBackStackEntryCount()!=0){
+            fragmentManager.popBackStack();
+        }else{
+            super.onBackPressed();
+        }
+    }
 }
