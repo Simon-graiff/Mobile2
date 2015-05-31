@@ -95,6 +95,8 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         //4 = Settings
         //5 = Logout
         //6 = Vincents TestFragment
+        //7 = Mattes StartNotifications
+        //8 = Mattes StopNotifications
 
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[0], navMenuIcons.getResourceId(0, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[1], navMenuIcons.getResourceId(0, -1)));
@@ -103,6 +105,8 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[4], navMenuIcons.getResourceId(4, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[5], navMenuIcons.getResourceId(5, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[6], navMenuIcons.getResourceId(5, -1)));
+        navDrawerItems.add(new NavDrawerItem(navMenuTitles[7], navMenuIcons.getResourceId(5, -1)));
+        navDrawerItems.add(new NavDrawerItem(navMenuTitles[8], navMenuIcons.getResourceId(5, -1)));
 
         //Recycle the typed array
         navMenuIcons.recycle();
@@ -222,12 +226,11 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         }else if(position==5){
             fragment = new LogoutFragment();
         }else if(position == 6){
-            /*SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString("eventId", "l9lvvbNByv");
-            editor.commit();*/
-
             fragment = new ListEventsFragment();
+        }else if(position == 7){
+            fragment = new StartNotificationFragment();
+        }else if(position == 8){
+            fragment = new StopNotificationFragment();
         }
 
         // If called Fragment is the logout fragment just add the fragment to the other instead of replacing it

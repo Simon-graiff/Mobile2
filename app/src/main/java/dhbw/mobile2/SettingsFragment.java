@@ -26,6 +26,9 @@ public class SettingsFragment extends Fragment
     private CheckBox music_checkbox;
     private CheckBox chilling_checkbox;
     private CheckBox drinking_checkbox;
+    private CheckBox disco_checkbox;
+    private CheckBox videoGames_checkbox;
+    private CheckBox food_checkbox;
     private Switch mixedGenderSwitch;
 
     SharedPreferences sharedPref;
@@ -42,22 +45,32 @@ public class SettingsFragment extends Fragment
         music_checkbox = (CheckBox) rootView.findViewById(R.id.music_checkbox);
         chilling_checkbox = (CheckBox) rootView.findViewById(R.id.chilling_checkbox);
         drinking_checkbox = (CheckBox) rootView.findViewById(R.id.drinking_checkbox);
+        disco_checkbox = (CheckBox) rootView.findViewById(R.id.disco_checkbox);
+        videoGames_checkbox = (CheckBox) rootView.findViewById(R.id.videoGames_checkbox);
+        food_checkbox = (CheckBox) rootView.findViewById(R.id.food_checkbox);
         mixedGenderSwitch = (Switch) rootView.findViewById(R.id.mixedGender_switch);
 
         sports_checkbox.setOnClickListener(this);
         music_checkbox.setOnClickListener(this);
         chilling_checkbox.setOnClickListener(this);
         drinking_checkbox.setOnClickListener(this);
+        disco_checkbox.setOnClickListener(this);
+        videoGames_checkbox.setOnClickListener(this);
+        food_checkbox.setOnClickListener(this);
         mixedGenderSwitch.setOnCheckedChangeListener(this);
 
         sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         editor = sharedPref.edit();
 
-
+        //Using String instead of boolean offers the advantage of the String.equals(...) method.
+        //This simplifies the check in AppMapFragment.
         final String sport = sharedPref.getString("Sport", null);
         final String music = sharedPref.getString("Music", null);
         final String chilling = sharedPref.getString("Chilling", null);
         final String drinking = sharedPref.getString("Drinking", null);
+        final String disco = sharedPref.getString("Disco", null);
+        final String videoGames = sharedPref.getString("VideoGames", null);
+        final String food = sharedPref.getString("Food", null);
         final boolean mixedGenders = sharedPref.getBoolean("MixedGenders", true);
 
         Log.d("Main", "+++++++++++++++");
@@ -65,6 +78,9 @@ public class SettingsFragment extends Fragment
         Log.d("Main", "Music: "+music);
         Log.d("Main", "Chilling: "+chilling);
         Log.d("Main", "Drinking: "+drinking);
+        Log.d("Main", "Disco: "+disco);
+        Log.d("Main", "Video Games: "+videoGames);
+        Log.d("Main", "Food: "+food);
         Log.d("Main", "Mixed Genders "+mixedGenders);
         Log.d("Main", "+++++++++++++++");
 
@@ -76,6 +92,12 @@ public class SettingsFragment extends Fragment
             chilling_checkbox.setChecked(false);
         }else if(drinking!=null){
             drinking_checkbox.setChecked(false);
+        }else if(disco!=null){
+            disco_checkbox.setChecked(false);
+        }else if(videoGames!=null){
+            disco_checkbox.setChecked(false);
+        }else if(food!=null){
+            food_checkbox.setChecked(false);
         }
 
         if(mixedGenders==false){
@@ -114,6 +136,24 @@ public class SettingsFragment extends Fragment
                 removeQueryParameter("Drinking");
             }else{
                 setQueryParameter("Drinking");
+            }
+        }else if(id == R.id.disco_checkbox){
+            if(checked){
+                removeQueryParameter("Disco");
+            }else{
+                setQueryParameter("Disco");
+            }
+        }else if(id == R.id.videoGames_checkbox){
+            if(checked){
+                removeQueryParameter("VideoGames");
+            }else{
+                setQueryParameter("VideoGames");
+            }
+        }else if(id == R.id.food_checkbox){
+            if(checked){
+                removeQueryParameter("Food");
+            }else{
+                setQueryParameter("Food");
             }
         }
     }

@@ -249,6 +249,9 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         final String music = sharedPref.getString("Music", null);
         final String chilling = sharedPref.getString("Chilling", null);
         final String drinking = sharedPref.getString("Drinking", null);
+        final String disco = sharedPref.getString("Disco", null);
+        final String videoGames = sharedPref.getString("VideoGames", null);
+        final String food = sharedPref.getString("Food", null);
         final boolean mixedGenders = sharedPref.getBoolean("MixedGenders", true);
 
         //Prepare query
@@ -302,13 +305,19 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
                                 String eventID = eventList.get(i).getObjectId();
                                 Log.d("Main", "eventID =" + eventID);
 
-                                //An event can only be from one category. If any of the following
-                                //conditions fails, the others doesn't need to be checked.
+                                //An event can only belong to one category. If any of the following
+                                //conditions fails, there is no need for checking the others.
                                 if(!category.equals(sport)){
                                     if(!category.equals(music)){
                                         if(!category.equals(chilling)){
                                             if(!category.equals(drinking)){
-                                                drawMarker(tmpLatLng, tmpTitle, eventID);
+                                                if(!category.equals(disco)){
+                                                    if(!category.equals(videoGames)){
+                                                        if(!category.equals(food)){
+                                                            drawMarker(tmpLatLng, tmpTitle, eventID);
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }

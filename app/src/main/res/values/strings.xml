@@ -14,12 +14,14 @@
     <!--List entries-->
     <string-array name="nav_drawer_items">
         <item>Profile</item>
-        <item >Map</item>
-        <item >Create new event</item>
-        <item >My event</item>
-        <item >Settings</item>
-        <item >Logout</item>
-        <item> Event Detail</item>
+        <item>Map</item>
+        <item>Create new event</item>
+        <item>My event</item>
+        <item>Settings</item>
+        <item>Logout</item>
+        <item>Event Detail</item>
+        <item>Start Notification</item>
+        <item>Stop Notification</item>
     </string-array>
 
     <!--Icons list entries-->
