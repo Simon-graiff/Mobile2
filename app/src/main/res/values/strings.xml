@@ -61,6 +61,9 @@
     <string name="category2">Music</string>
     <string name="category3">Chilling</string>
     <string name="category4">Drinking</string>
+    <string name="category5">Video Games</string>
+    <string name="category6">Food</string>
+    <string name="category7">Disco</string>
     <string name="title_activity_log_in">LogIn</string>
     <string name="title_activity_participants_display">ParticipantsDisplayActivity</string>
     <string name="title_activity_participants_list">ParticipantsListActivity</string>
