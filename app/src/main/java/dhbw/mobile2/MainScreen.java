@@ -336,6 +336,12 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
                 openMap();
             case R.id.action_settings:
                 return true;
+            case R.id.action_notify_activate:
+                createGeofence();
+                return true;
+            case R.id.action_notify_deactivate:
+                removeGeoFence();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -371,6 +377,8 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         return super.onPrepareOptionsMenu(menu);*/
          menu.findItem(R.id.action_list_events).setVisible(mapShown);
         menu.findItem(R.id.action_map).setVisible(listShown);
+        menu.findItem(R.id.action_notify_activate).setVisible(mapShown && !mInGeofence);
+        menu.findItem(R.id.action_notify_deactivate).setVisible(mapShown && mInGeofence);
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -442,6 +450,8 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
                 if (e == null) {
                     Toast.makeText(getApplicationContext(), "GeoFenceDeleted", Toast.LENGTH_LONG).show();
                     mDeletingGeoFence = false;
+                    mInGeofence = false;
+                    invalidateOptionsMenu();
                 } else {
                     Toast.makeText(getApplicationContext(), "error im CloudCode", Toast.LENGTH_LONG).show();
                     e.printStackTrace();
@@ -481,6 +491,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         mPendingRequestId = null;
         mCreatingGeoFence = false;
         mInGeofence = true;
+        invalidateOptionsMenu();
         geoFence.saveInBackground();
     }
 
@@ -498,6 +509,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
                     if((Boolean)stringObjectMap.get("inGeoFence")) {
                         mCurrentGeoFenceId = stringObjectMap.get("data").toString();
                         mInGeofence = true;
+                        invalidateOptionsMenu();
                     }
                 } else {
                     e.printStackTrace();
