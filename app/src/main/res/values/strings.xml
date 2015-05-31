@@ -57,13 +57,15 @@
     <string name="create_maxMembers">How many can participate?</string>
     <string name="create_button">Start the awesome!</string>
     <string name="create_category">Which category does it belong to?</string>
-    <string name="category1">Sport</string>
-    <string name="category2">Music</string>
-    <string name="category3">Chilling</string>
-    <string name="category4">Drinking</string>
-    <string name="category5">Video Games</string>
-    <string name="category6">Food</string>
-    <string name="category7">Disco</string>
+
+    <string name="category_sport">Sport</string>
+    <string name="category_music">Music</string>
+    <string name="category_chilling">Chilling</string>
+    <string name="category_drinking">Drinking</string>
+    <string name="category_dancing">Dancing</string>
+    <string name="category_video_games">Video Games</string>
+    <string name="category_food">Food</string>
+
     <string name="title_activity_log_in">LogIn</string>
     <string name="title_activity_participants_display">ParticipantsDisplayActivity</string>
     <string name="title_activity_participants_list">ParticipantsListActivity</string>

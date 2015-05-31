@@ -306,16 +306,25 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
     private void fillCreationTime(ParseObject object){
         Date creationTime;
+        Date finishTime;
         creationTime = object.getCreatedAt();
+        finishTime = object.getDate("duration");
         Calendar calendar = GregorianCalendar.getInstance();
+
         calendar.setTime(creationTime);
         String creationTimeString = calendar.get(Calendar.HOUR_OF_DAY)+ ":";
         if (calendar.get(Calendar.MINUTE)< 10){
             creationTimeString += "0";}
-
         creationTimeString += calendar.get(Calendar.MINUTE);
 
-        detailCreationTimeDynamic.setText(creationTimeString);
+        calendar.setTime(finishTime);
+        String finishTimeString = calendar.get(Calendar.HOUR_OF_DAY)+ ":";
+        if (calendar.get(Calendar.MINUTE)< 10){
+            finishTimeString += "0";}
+        finishTimeString += calendar.get(Calendar.MINUTE);
+
+
+        detailCreationTimeDynamic.setText(creationTimeString + " - " + finishTimeString);
     }
 
     private void fillParticipants(ParseObject object){

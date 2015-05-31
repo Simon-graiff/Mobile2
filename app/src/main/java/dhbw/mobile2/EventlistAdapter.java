@@ -14,14 +14,23 @@ public class EventlistAdapter extends ArrayAdapter<String> {
     private final ArrayList<String> itemname;
     private final ArrayList<String> category;
     private ArrayList<Double> distance;
+    private ArrayList<String> time;
+    private ArrayList<String> participantCount;
 
-    public EventlistAdapter(Activity context, ArrayList<String> itemname, ArrayList<String> category, ArrayList<Double> distance) {
+    public EventlistAdapter(Activity context,
+                            ArrayList<String> itemname,
+                            ArrayList<String> category,
+                            ArrayList<Double> distance,
+                            ArrayList<String> time,
+                            ArrayList<String> participantCount) {
         super(context, R.layout.listitem_event, itemname);
 
         this.distance=distance;
         this.context=context;
         this.itemname=itemname;
         this.category=category;
+        this.time = time;
+        this.participantCount = participantCount;
     }
 
     public View getView(int position,View view,ViewGroup parent) {
@@ -56,6 +65,12 @@ public class EventlistAdapter extends ArrayAdapter<String> {
                 categoryImage.setImageResource(R.drawable.ic_videogames_blue);
                 break;
         }
+
+        TextView timeView = (TextView) rowView.findViewById(R.id.time);
+        timeView.setText(time.get(position));
+
+        TextView participantView = (TextView) rowView.findViewById(R.id.participantCount);
+        participantView.setText(participantCount.get(position));
 
         return rowView;
 

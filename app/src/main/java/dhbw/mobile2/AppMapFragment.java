@@ -142,6 +142,9 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
 
+        ((MainScreen) getActivity()).setMapShown(true);
+        ((MainScreen) getActivity()).setListShown(false);
+        getActivity().invalidateOptionsMenu();
 
         ListView mDrawerList;
         mDrawerList = (ListView) getActivity().findViewById(R.id.list_slidermenu);
@@ -159,6 +162,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         locationManager.removeUpdates(locationListener);
 
         ((MainScreen) getActivity()).setMapShown(false);
+        getActivity().invalidateOptionsMenu();
     }
 
     @Override

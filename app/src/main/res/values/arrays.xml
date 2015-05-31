@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="categorylist">
-        <item>@string/category1</item>
-        <item>@string/category2</item>
-        <item>@string/category3</item>
-        <item>@string/category4</item>
-        <item>@string/category5</item>
-        <item>@string/category6</item>
-        <item>@string/category7</item>
+
+        <item>@string/category_sport</item>
+        <item>@string/category_music</item>
+        <item>@string/category_chilling</item>
+        <item>@string/category_drinking</item>
+        <item>@string/category_dancing</item>
+        <item>@string/category_video_games</item>
+        <item>@string/category_food</item>
     </string-array>
 </resources>

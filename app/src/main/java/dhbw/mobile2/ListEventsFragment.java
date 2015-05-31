@@ -23,8 +23,12 @@ import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 
@@ -177,6 +181,8 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
         final ArrayList<String> categoryArray = new ArrayList<>();
         idArray = new ArrayList<>();
         final ArrayList<Double> distanceArray = new ArrayList<>();
+        final ArrayList<String> timeArray = new ArrayList<>();
+        final ArrayList<String> participantCountArray = new ArrayList<>();
 
         //Creating ParseGeoPoint with user's current location
         LocationManager locationManager =  (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
@@ -209,8 +215,43 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
                         distance = distanceInt/10.0;
                         distanceArray.add(distance);
                         Log.d("Main", "title: " + event.getString("title"));
+
+                        Date creationTime;
+                        Date finishTime;
+                        creationTime = event.getCreatedAt();
+                        finishTime = event.getDate("duration");
+                        Calendar calendar = GregorianCalendar.getInstance();
+
+                        calendar.setTime(creationTime);
+                        String creationTimeString = calendar.get(Calendar.HOUR_OF_DAY)+ ":";
+                        if (calendar.get(Calendar.MINUTE)< 10){
+                            creationTimeString += "0";}
+                        creationTimeString += calendar.get(Calendar.MINUTE);
+
+                        calendar.setTime(finishTime);
+                        String finishTimeString = calendar.get(Calendar.HOUR_OF_DAY)+ ":";
+                        if (calendar.get(Calendar.MINUTE)< 10){
+                            finishTimeString += "0";}
+                        finishTimeString += calendar.get(Calendar.MINUTE);
+                        String time = creationTimeString + " - " + finishTimeString;
+                        timeArray.add(time);
+
+                        List<ParseUser> listParticipants = event.getList("participants");
+                        int maxMembers = event.getInt("maxMembers");
+                        try {
+                            String textParticipants = listParticipants.size() + "/" + maxMembers;
+
+                            participantCountArray.add(textParticipants);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
                     }
-                    mAdapter = new EventlistAdapter(getActivity(), titleArray, categoryArray, distanceArray);
+                    mAdapter = new EventlistAdapter(getActivity(),
+                            titleArray,
+                            categoryArray,
+                            distanceArray,
+                            timeArray,
+                            participantCountArray);
                     mListView.setAdapter(mAdapter);
                 }else {
                     Log.d("Main", "Exception: "+e);
