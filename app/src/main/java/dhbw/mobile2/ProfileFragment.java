@@ -12,6 +12,8 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.text.Editable;
 import android.text.InputType;
 import android.util.Log;
@@ -21,6 +23,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -244,5 +247,17 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
             fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
               }
 
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+
+        ListView mDrawerList;
+        mDrawerList = (ListView) getActivity().findViewById(R.id.list_slidermenu);
+        mDrawerList.setItemChecked(0, true);
+        mDrawerList.setSelection(0);
+        ActionBar actionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+        actionBar.setTitle(username);
     }
 }

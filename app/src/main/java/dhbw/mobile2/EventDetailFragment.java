@@ -4,6 +4,7 @@ package dhbw.mobile2;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -27,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -119,18 +121,23 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         detailButtonNavigate = (Button) rootView.findViewById(R.id.detail_button_navigate);
         detailButtonNavigate.setOnClickListener(this);
 
-        retrieveParseData();
-
-
         return rootView;
     }
 
     //the following have to be implemented for the map, especially myMapView.onPause()
 
     @Override
-    public void onResume() {
+    public void onResume(){
         super.onResume();
-        myMapView.onResume();
+        if(myMapView!=null){
+            myMapView.onResume();
+        }
+
+        ListView mDrawerList;
+        mDrawerList = (ListView) getActivity().findViewById(R.id.list_slidermenu);
+        mDrawerList.setItemChecked(1, true);
+        mDrawerList.setSelection(1);
+        retrieveParseData();
     }
 
     @Override
@@ -238,36 +245,57 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         ImageView categoryImage = (ImageView) rootView.findViewById(R.id.category_picture);
         switch (category){
             case "Sport":
-                categoryImage.setImageResource(R.drawable.ic_sport);
+                categoryImage.setImageResource(R.drawable.ic_sport_blue);
                 break;
             case "Chilling":
-                categoryImage.setImageResource(R.drawable.ic_chilling);
+                categoryImage.setImageResource(R.drawable.ic_chilling_blue);
+                break;
+            case "Dancing":
+                categoryImage.setImageResource(R.drawable.ic_dance_blue);
                 break;
             case "Food":
-                categoryImage.setImageResource(R.drawable.ic_food);
+                categoryImage.setImageResource(R.drawable.ic_food_blue);
                 break;
             case "Music":
-                categoryImage.setImageResource(R.drawable.ic_music);
+                categoryImage.setImageResource(R.drawable.ic_music_blue);
                 break;
             case "Videogames":
-                categoryImage.setImageResource(R.drawable.ic_videogames);
+                categoryImage.setImageResource(R.drawable.ic_videogames_blue);
                 break;
         }
 
         //fill more complex types
         fillCreationTime(object);
         fillParticipants(object);
+        fillCreatorName(object);
 
         //load ProfilePicture
         loadProfilePicture();
     }
 
+    private void fillCreatorName(ParseObject object){
+               try {
+                      ParseUser creator = object.getParseUser("creator").fetchIfNeeded();
+                      String creatorName = creator.getUsername();
+                      detailCreatorNameDynamic.setText(creatorName);
+
+                          } catch (Exception e) {
+
+                               e.printStackTrace();
+                    }
+            }
+
 
     public void linkParticipantsActivity(){
 
         Fragment fragment = new ParticipantsListFragment();
+        /*FragmentManager fragmentManager = getFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();*/
         FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.frame_container, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     public void fillSimpleType (String dynamicField, TextView textViewToFill){
@@ -302,7 +330,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         }
     }
 
-    public void checkParticipationStatus(ParseObject object){
+    private void checkParticipationStatus(ParseObject object){
         String eventIdOfUser = currentUser.getString("eventId");
         if (eventIdOfUser != null){
             Log.d("Main", "eventId is not null");
@@ -314,16 +342,9 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
                    statusParticipation = true;
                }
            } else {
-
                    changeParticipationToFalse();
-
            }
-
        } else {
-
-                changeParticipationToFalse();
-
-           Log.d("Main", "eventId is null");
            changeParticipationToFalse();
         }
     }
@@ -380,7 +401,6 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
                 toast.show();
             }
         } else {
-            Log.d("Main", "Dialog is shown");
             DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -424,6 +444,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
     }
 
+    //Switch all things so user cannot participate in this event
     private void changeParticipationToTrue(){
         statusParticipation = true;
         fillParticipants(eventObject);
@@ -439,6 +460,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         ParseUser.getCurrentUser().saveInBackground();
     }
 
+    //Switch all things so user can participate in this event
     private void changeParticipationToFalse(){
         statusParticipation = false;
         fillParticipants(eventObject);
@@ -530,7 +552,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
             markers.add(m);
             Log.d("Main", "Creates red marker");
 
-            eventManager.add(new EventManagerItem(m.getId(), eventID));
+            eventManager.add(new EventManagerItem(m.getId(), eventID, position));
 
         }
     }
@@ -568,12 +590,39 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
 
     public void navigateToEvent(){
-        double latitude = markers.get(0).getPosition().latitude;
-        double longitude = markers.get(0).getPosition().longitude;
-        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + ", " + longitude + "&mode=w");
-        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-        mapIntent.setPackage("com.google.android.apps.maps");
-        startActivity(mapIntent);
+        String[] mode = {"driving", "walking", "bicycling"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+
+        builder.setTitle("How do you get there?")
+                .setItems(mode, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        double latitude = markers.get(0).getPosition().latitude;
+                        double longitude = markers.get(0).getPosition().longitude;
+                        String mode = "d";
+                        switch(which){
+                            case 0:
+                                mode="d";
+                                break;
+                            case 1:
+                                mode="w";
+                                break;
+                            case 2:
+                                mode="b";
+                                break;
+                        }
+                        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + ", " + longitude + "&mode=" + mode);
+                        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                        mapIntent.setPackage("com.google.android.apps.maps");
+                        startActivity(mapIntent);
+                    }
+
+                })
+                .show();
+
+
+
     }
 
     @Override

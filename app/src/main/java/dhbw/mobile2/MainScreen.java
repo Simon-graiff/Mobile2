@@ -3,6 +3,7 @@ package dhbw.mobile2;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -50,6 +51,10 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
     private boolean statusParticipation = false;
     private boolean cancelOtherEvent = false;
 
+    private boolean mapShown = true;
+    private boolean listShown = false;
+
+
     public static FragmentManager fragmentManager;
 
     //currentUser
@@ -90,6 +95,8 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         //4 = Settings
         //5 = Logout
         //6 = Vincents TestFragment
+        //7 = Mattes StartNotifications
+        //8 = Mattes StopNotifications
 
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[0], navMenuIcons.getResourceId(0, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[1], navMenuIcons.getResourceId(0, -1)));
@@ -98,6 +105,8 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[4], navMenuIcons.getResourceId(4, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[5], navMenuIcons.getResourceId(5, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[6], navMenuIcons.getResourceId(5, -1)));
+        navDrawerItems.add(new NavDrawerItem(navMenuTitles[7], navMenuIcons.getResourceId(5, -1)));
+        navDrawerItems.add(new NavDrawerItem(navMenuTitles[8], navMenuIcons.getResourceId(5, -1)));
 
         //Recycle the typed array
         navMenuIcons.recycle();
@@ -217,12 +226,11 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         }else if(position==5){
             fragment = new LogoutFragment();
         }else if(position == 6){
-            /*SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString("eventId", "l9lvvbNByv");
-            editor.commit();*/
-
             fragment = new ListEventsFragment();
+        }else if(position == 7){
+            fragment = new StartNotificationFragment();
+        }else if(position == 8){
+            fragment = new StopNotificationFragment();
         }
 
         // If called Fragment is the logout fragment just add the fragment to the other instead of replacing it
@@ -233,15 +241,20 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
             fragmentManager.beginTransaction().add(R.id.frame_container, fragment).commit();
         }
 
-            if (fragment != null && fragment.getClass() != LogoutFragment.class) {
-            FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+        if (fragment != null && fragment.getClass() != LogoutFragment.class) {
 
             // update selected item and title, then close the drawer
             mDrawerList.setItemChecked(position, true);
             mDrawerList.setSelection(position);
             setTitle(navMenuTitles[position]);
             mDrawerLayout.closeDrawer(mDrawerList);
+
+            FragmentManager fragmentManager = getFragmentManager();
+            //fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            transaction.replace(R.id.frame_container, fragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
 
         } else {
             //Error in creating fragment
@@ -293,6 +306,11 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         }
         //Handle action bar actions click
         switch (item.getItemId()) {
+            case R.id.action_list_events:
+                openList();
+                return true;
+            case R.id.action_map:
+                openMap();
             case R.id.action_settings:
                 return true;
             default:
@@ -300,6 +318,25 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         }
     }
 
+    private void openList(){
+        Fragment fragment;
+                FragmentManager fragmentManager = getFragmentManager();
+                fragment = new ListEventsFragment();
+
+                 FragmentTransaction transaction = fragmentManager.beginTransaction();
+                 transaction.replace(R.id.frame_container, fragment);
+                 transaction.addToBackStack(null);
+                 transaction.commit();
+            }
+
+    private void openMap(){
+              Fragment fragment = new AppMapFragment();
+                FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.frame_container, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
+            }
 
 
     //Called when invalidateOptionsMenu() is triggered
@@ -309,7 +346,9 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
         menu.findItem(R.id.action_settings).setVisible(!drawerOpen);
         return super.onPrepareOptionsMenu(menu);*/
-        return false;
+         menu.findItem(R.id.action_list_events).setVisible(mapShown);
+        menu.findItem(R.id.action_map).setVisible(listShown);
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -340,5 +379,25 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
     @Override
     protected void onResume(){
         super.onResume();
+    }
+
+    public void setMapShown(boolean mapShown) {
+        this.mapShown = mapShown;
+    }
+
+    public void setListShown(boolean listShown) {
+        this.listShown = listShown;
+    }
+
+    @Override
+    public void onBackPressed(){
+        Log.d("Main", "onBackPressed");
+
+        FragmentManager fragmentManager = getFragmentManager();
+        if(fragmentManager.getBackStackEntryCount()!=0){
+            fragmentManager.popBackStack();
+        }else{
+            super.onBackPressed();
+        }
     }
 }

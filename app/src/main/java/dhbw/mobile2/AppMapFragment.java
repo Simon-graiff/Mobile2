@@ -9,10 +9,15 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -131,12 +136,19 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
     @Override
     public void onResume(){
         super.onResume();
-        if(map!=null){
+        if(myMapView!=null){
             myMapView.onResume();
         }
         locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
 
+
+        ListView mDrawerList;
+        mDrawerList = (ListView) getActivity().findViewById(R.id.list_slidermenu);
+        mDrawerList.setItemChecked(1, true);
+        mDrawerList.setSelection(1);
+        ActionBar actionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+        actionBar.setTitle("Map");
     }
 
     @Override
@@ -145,6 +157,8 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
             myMapView.onPause();
         super.onPause();
         locationManager.removeUpdates(locationListener);
+
+        ((MainScreen) getActivity()).setMapShown(false);
     }
 
     @Override
@@ -203,7 +217,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         }
     }//End of setUpMap
 
-    private Location getUserPosition(){
+    private Location getUserPosition() {
 
         Location userPosition = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         return userPosition;
@@ -217,7 +231,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
         );
 
-        eventManager.add(new EventManagerItem(m.getId(), eventID));
+        eventManager.add(new EventManagerItem(m.getId(), eventID, position));
 
     }
 
@@ -235,6 +249,9 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         final String music = sharedPref.getString("Music", null);
         final String chilling = sharedPref.getString("Chilling", null);
         final String drinking = sharedPref.getString("Drinking", null);
+        final String disco = sharedPref.getString("Disco", null);
+        final String videoGames = sharedPref.getString("VideoGames", null);
+        final String food = sharedPref.getString("Food", null);
         final boolean mixedGenders = sharedPref.getBoolean("MixedGenders", true);
 
         //Prepare query
@@ -288,13 +305,19 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
                                 String eventID = eventList.get(i).getObjectId();
                                 Log.d("Main", "eventID =" + eventID);
 
-                                //An event can only be from one category. If any of the following
-                                //conditions fails, the others doesn't need to be checked.
+                                //An event can only belong to one category. If any of the following
+                                //conditions fails, there is no need for checking the others.
                                 if(!category.equals(sport)){
                                     if(!category.equals(music)){
                                         if(!category.equals(chilling)){
                                             if(!category.equals(drinking)){
-                                                drawMarker(tmpLatLng, tmpTitle, eventID);
+                                                if(!category.equals(disco)){
+                                                    if(!category.equals(videoGames)){
+                                                        if(!category.equals(food)){
+                                                            drawMarker(tmpLatLng, tmpTitle, eventID);
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -346,5 +369,9 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         }
 
         return true;
+    }
+
+    public void showListAsActionItem(){
+        MenuInflater actionBar = getActivity().getMenuInflater();
     }
 }

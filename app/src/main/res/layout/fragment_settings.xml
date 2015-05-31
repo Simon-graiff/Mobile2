@@ -49,6 +49,30 @@
         android:layout_weight="0.03"
         android:checked="true" />
 
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Disco"
+        android:id="@+id/disco_checkbox"
+        android:layout_weight="0.03"
+        android:checked="true" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Video games"
+        android:id="@+id/videoGames_checkbox"
+        android:layout_weight="0.03"
+        android:checked="true" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Food"
+        android:id="@+id/food_checkbox"
+        android:layout_weight="0.03"
+        android:checked="true" />
+
     <Space
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -63,11 +63,13 @@ public class NavDrawerListAdapter extends BaseAdapter {
 
         if(position==0){
             imgIcon.setImageBitmap(Bitmap.createScaledBitmap(bitmap, heightPixels, heightPixels, false));
+            txtTitle.setText(ParseUser.getCurrentUser().getUsername());
         }else{
             imgIcon.setImageResource(navDrawerItems.get(position).getIcon());
+            txtTitle.setText(navDrawerItems.get(position).getTitle());
         }
 
-        txtTitle.setText(navDrawerItems.get(position).getTitle());
+
 
         // displaying count
         // check whether it set visible or not
