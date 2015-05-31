@@ -20,8 +20,6 @@
         <item>Settings</item>
         <item>Logout</item>
         <item>Event Detail</item>
-        <item>Start Notification</item>
-        <item>Stop Notification</item>
     </string-array>
 
     <!--Icons list entries-->

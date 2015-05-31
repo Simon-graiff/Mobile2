@@ -5,7 +5,6 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
-import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,10 +21,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.Geofence;
-import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.MapFragment;
 import com.parse.FunctionCallback;
@@ -44,7 +40,7 @@ import java.util.Map;
 
 
 public class CreateEventFragment extends Fragment
-        implements ResultCallback<Status>, OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        implements OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private EditText mEditText_title;
     private EditText mEditText_duration;
@@ -53,9 +49,7 @@ public class CreateEventFragment extends Fragment
     private EditText mEditText_description;
     private Spinner mSpinner_category;
     private Button mButton_createEvent;
-    private Button mButton_createGeoFence;
     private Button mButton_test;
-    private Button mButton_removeGeoFence;
     private ParseObject event = null;
     private ArrayList<Geofence> mGeoFenceList = new ArrayList<>();
     private PendingIntent mGeoFencePendingIntent;
@@ -82,12 +76,8 @@ public class CreateEventFragment extends Fragment
         mEditText_description = (EditText) rootView.findViewById(R.id.editText_FeedbackBody);
         mButton_createEvent = (Button) rootView.findViewById(R.id.button_CreateEvent);
         mButton_createEvent.setOnClickListener(this);
-        mButton_createGeoFence = (Button) rootView.findViewById(R.id.button_createGeofence);
-        mButton_createGeoFence.setOnClickListener(this);
         mButton_test = (Button) rootView.findViewById(R.id.button_test);
         mButton_test.setOnClickListener(this);
-        mButton_removeGeoFence = (Button) rootView.findViewById(R.id.button_removeGeofence);
-        mButton_removeGeoFence.setOnClickListener(this);
 
         mUser = ParseUser.getCurrentUser();
 
@@ -101,22 +91,6 @@ public class CreateEventFragment extends Fragment
         mGoogleApiClient.connect();
 
         return rootView;
-    }
-
-    private void submitGeofenceToDatabase() {
-        ParseObject geoFence = new ParseObject("GeoFence");
-
-        ParseGeoPoint geoPoint = new ParseGeoPoint();
-        geoPoint.setLatitude(mLocation.getLatitude());
-        geoPoint.setLongitude(mLocation.getLongitude());
-        geoFence.put("center", geoPoint);
-        geoFence.put("user", ParseUser.getCurrentUser());
-        geoFence.put("requestId", mPendingRequestId);
-        mCurrentGeoFenceId = mPendingRequestId;
-        mPendingRequestId = null;
-        geoFence.saveInBackground();
-        mCreatingGeoFence = false;
-        changeButtons();
     }
 
     public void createEvent() {
@@ -175,25 +149,6 @@ public class CreateEventFragment extends Fragment
         getFragmentManager().beginTransaction().replace(R.id.frame_container, fragment).commit();
     }
 
-
-    public void createGeofence() {
-        mCreatingGeoFence = true;
-        String requestId = mLocation.getLongitude() + ";" + mLocation.getLatitude() + ";" + mUser.getObjectId();
-        mGeoFenceList.add(new Geofence.Builder()
-                .setRequestId(requestId)
-                .setCircularRegion(10, 10, 2000000) //long,lat,radius
-                .setExpirationDuration(Geofence.NEVER_EXPIRE)//millis
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-                .build());
-        mPendingRequestId = requestId;
-
-        LocationServices.GeofencingApi.addGeofences(
-                mGoogleApiClient,
-                getGeofencingRequest(),
-                getGeofencePendingIntent()
-        ).setResultCallback(this);
-    }
-
     private void sendEventRequest() {
         Map<String, Object> param = new HashMap<>();
         param.put("longitude", mLocation.getLongitude());
@@ -214,63 +169,6 @@ public class CreateEventFragment extends Fragment
         });
     }
 
-    private void checkIfInGeoFence() {
-        Map<String, Object> param = new HashMap<>();
-        param.put("longitude", mLocation.getLongitude());
-        param.put("latitude", mLocation.getLatitude());
-        param.put("userId", mUser.getObjectId());
-
-        ParseCloud.callFunctionInBackground("checkIfInGeoFence", param, new FunctionCallback<Map<String, Object>>() {
-            @Override
-            public void done(Map<String, Object> stringObjectMap, ParseException e) {
-                if (e == null) {
-                    Toast.makeText(getActivity().getBaseContext(), stringObjectMap.get("inGeoFence").toString(), Toast.LENGTH_LONG).show();
-                    Boolean isInGeoFence = (Boolean) stringObjectMap.get("inGeoFence");
-
-                    if (isInGeoFence) {
-                        mButton_createGeoFence.setEnabled(false);
-                        mButton_removeGeoFence.setEnabled(true);
-                        Toast.makeText(getActivity().getBaseContext(), stringObjectMap.get("data").toString(), Toast.LENGTH_LONG).show();
-                        mCurrentGeoFenceId = stringObjectMap.get("data").toString();
-                    } else {
-                        mButton_createGeoFence.setEnabled(true);
-                        mButton_removeGeoFence.setEnabled(false);
-                    }
-                } else {
-                    Toast.makeText(getActivity().getBaseContext(), "error im CloudCode", Toast.LENGTH_LONG).show();
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
-
-    private void removeGeoFence() {
-        mDeletingGeoFence = true;
-        ArrayList<String> geoFencesToRemove = new ArrayList<>();
-        geoFencesToRemove.add(mCurrentGeoFenceId);
-        LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, geoFencesToRemove).setResultCallback(this);
-    }
-
-    private void removeGeoFenceFromDatabase() {
-        Map<String, Object> param = new HashMap<>();
-        param.put("userId", mUser.getObjectId());
-        param.put("geoFenceId", mCurrentGeoFenceId);
-
-        ParseCloud.callFunctionInBackground("removeGeoFence", param, new FunctionCallback<Map<String, Object>>() {
-            @Override
-            public void done(Map<String, Object> stringObjectMap, ParseException e) {
-                if (e == null) {
-                    Toast.makeText(getActivity().getBaseContext(), "GeoFenceDeleted", Toast.LENGTH_LONG).show();
-                    changeButtons();
-                    mDeletingGeoFence = false;
-                } else {
-                    Toast.makeText(getActivity().getBaseContext(), "error im CloudCode", Toast.LENGTH_LONG).show();
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
-
     public void showTimePickerDialog() {
         DialogFragment timePickFragment = new TimePickerFragment();
         Bundle args = new Bundle();
@@ -281,36 +179,17 @@ public class CreateEventFragment extends Fragment
     public void onClick(View view) {
         if (view == mButton_createEvent) {
             createEvent();
-        } else if (view == mButton_createGeoFence) {
-            createGeofence();
         } else if (view == mButton_test) {
             sendEventRequest();
-        } else if (view == mButton_removeGeoFence) {
-            removeGeoFence();
         } else if (view == mEditText_duration) {
             showTimePickerDialog();
         }
     }
 
     @Override
-    public void onResult(Status status) {
-        Toast.makeText(getActivity().getBaseContext(), "Result: " + status.toString(), Toast.LENGTH_LONG).show();
-        if (mCreatingGeoFence) {
-            submitGeofenceToDatabase();
-        } else if (mDeletingGeoFence) {
-            removeGeoFenceFromDatabase();
-        } else {
-            Toast.makeText(getActivity().getBaseContext(), "Error Error Error", Toast.LENGTH_LONG).show();
-        }
-        mDeletingGeoFence = false;
-        mCreatingGeoFence = false;
-    }
-
-    @Override
     public void onConnected(Bundle bundle) {
         Log.d("API", "Connected");
         mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        checkIfInGeoFence();
     }
 
     @Override
@@ -321,21 +200,6 @@ public class CreateEventFragment extends Fragment
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Toast.makeText(getActivity().getBaseContext(), "ERROR CONNECTING GOOGLE API CLIENT", Toast.LENGTH_LONG).show();
-    }
-
-    private PendingIntent getGeofencePendingIntent() {
-        if (mGeoFencePendingIntent != null) {
-            return mGeoFencePendingIntent;
-        }
-        Intent intent = new Intent(getActivity().getBaseContext(), GeofenceTransitionsIntentService.class);
-        return PendingIntent.getService(getActivity().getBaseContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-    }
-
-    private GeofencingRequest getGeofencingRequest() {
-        GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
-        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
-        builder.addGeofences(mGeoFenceList);
-        return builder.build();
     }
 
 
@@ -354,16 +218,9 @@ public class CreateEventFragment extends Fragment
         return super.onOptionsItemSelected(item);
     }
 
-    private void changeButtons() {
-        mButton_removeGeoFence.setEnabled(!mButton_removeGeoFence.isEnabled());
-        mButton_createGeoFence.setEnabled(!mButton_createGeoFence.isEnabled());
-    }
-
-
     public static class TimePickerFragment extends DialogFragment
             implements TimePickerDialog.OnTimeSetListener {
 
-        private EditText toEdit;
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {

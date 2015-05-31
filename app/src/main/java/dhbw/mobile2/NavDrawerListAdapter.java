@@ -69,8 +69,6 @@ public class NavDrawerListAdapter extends BaseAdapter {
             txtTitle.setText(navDrawerItems.get(position).getTitle());
         }
 
-
-
         // displaying count
         // check whether it set visible or not
         if(navDrawerItems.get(position).getCounterVisibility()){
@@ -117,5 +115,4 @@ public class NavDrawerListAdapter extends BaseAdapter {
         return output;
 
     }
-
 }

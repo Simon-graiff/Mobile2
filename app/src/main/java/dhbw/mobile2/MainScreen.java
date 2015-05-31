@@ -4,12 +4,14 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
@@ -20,17 +22,28 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
-import com.parse.GetCallback;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingRequest;
+import com.google.android.gms.location.LocationServices;
+import com.parse.FunctionCallback;
+import com.parse.ParseCloud;
 import com.parse.ParseException;
+import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
-import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
-public class MainScreen extends ActionBarActivity implements ListEventsFragment.OnFragmentInteractionListener, ParticipantsListFragment.OnParticipantInteractionListener {
+public class MainScreen extends ActionBarActivity implements ListEventsFragment.OnFragmentInteractionListener, ParticipantsListFragment.OnParticipantInteractionListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status> {
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -53,6 +66,16 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
 
     private boolean mapShown = true;
     private boolean listShown = false;
+
+    private Boolean mCreatingGeoFence = false;
+    private Boolean mDeletingGeoFence = false;
+    private GoogleApiClient mGoogleApiClient;
+    private Location mLocation;
+    private ArrayList<Geofence> mGeoFenceList = new ArrayList<>();
+    private PendingIntent mGeoFencePendingIntent;
+    private String mPendingRequestId;
+    private String mCurrentGeoFenceId;
+    private Boolean mInGeofence = false;
 
 
     public static FragmentManager fragmentManager;
@@ -95,8 +118,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         //4 = Settings
         //5 = Logout
         //6 = Vincents TestFragment
-        //7 = Mattes StartNotifications
-        //8 = Mattes StopNotifications
+        //7 = Mattes Notifications
 
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[0], navMenuIcons.getResourceId(0, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[1], navMenuIcons.getResourceId(0, -1)));
@@ -105,8 +127,6 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[4], navMenuIcons.getResourceId(4, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[5], navMenuIcons.getResourceId(5, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[6], navMenuIcons.getResourceId(5, -1)));
-        navDrawerItems.add(new NavDrawerItem(navMenuTitles[7], navMenuIcons.getResourceId(5, -1)));
-        navDrawerItems.add(new NavDrawerItem(navMenuTitles[8], navMenuIcons.getResourceId(5, -1)));
 
         //Recycle the typed array
         navMenuIcons.recycle();
@@ -153,6 +173,13 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         }
 
         mDrawerList.setOnItemClickListener(new SlideMenuClickListener());
+
+        mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+        mGoogleApiClient.connect();
     }
 
     @Override
@@ -227,10 +254,6 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
             fragment = new LogoutFragment();
         }else if(position == 6){
             fragment = new ListEventsFragment();
-        }else if(position == 7){
-            fragment = new StartNotificationFragment();
-        }else if(position == 8){
-            fragment = new StopNotificationFragment();
         }
 
         // If called Fragment is the logout fragment just add the fragment to the other instead of replacing it
@@ -399,5 +422,133 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         }else{
             super.onBackPressed();
         }
+    }
+
+    private void removeGeoFence() {
+        mDeletingGeoFence = true;
+        ArrayList<String> geoFencesToRemove = new ArrayList<>();
+        geoFencesToRemove.add(mCurrentGeoFenceId);
+        LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, geoFencesToRemove).setResultCallback(this);
+    }
+
+    private void removeGeoFenceFromDatabase() {
+        Map<String, Object> param = new HashMap<>();
+        param.put("userId", currentUser.getObjectId());
+        param.put("geoFenceId", mCurrentGeoFenceId);
+
+        ParseCloud.callFunctionInBackground("removeGeoFence", param, new FunctionCallback<Map<String, Object>>() {
+            @Override
+            public void done(Map<String, Object> stringObjectMap, ParseException e) {
+                if (e == null) {
+                    Toast.makeText(getApplicationContext(), "GeoFenceDeleted", Toast.LENGTH_LONG).show();
+                    mDeletingGeoFence = false;
+                } else {
+                    Toast.makeText(getApplicationContext(), "error im CloudCode", Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    public void createGeofence() {
+        mCreatingGeoFence = true;
+        String requestId = mLocation.getLongitude() + ";" + mLocation.getLatitude() + ";" + currentUser.getObjectId();
+        mGeoFenceList.add(new Geofence.Builder()
+                .setRequestId(requestId)
+                .setCircularRegion(10, 10, 2000000) //long,lat,radius
+                .setExpirationDuration(Geofence.NEVER_EXPIRE)//millis
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                .build());
+        mPendingRequestId = requestId;
+
+        LocationServices.GeofencingApi.addGeofences(
+                mGoogleApiClient,
+                getGeofencingRequest(),
+                getGeofencePendingIntent()
+        ).setResultCallback(this);
+    }
+
+    private void submitGeofenceToDatabase() {
+        ParseObject geoFence = new ParseObject("GeoFence");
+
+        ParseGeoPoint geoPoint = new ParseGeoPoint();
+        geoPoint.setLatitude(mLocation.getLatitude());
+        geoPoint.setLongitude(mLocation.getLongitude());
+        geoFence.put("center", geoPoint);
+        geoFence.put("user", ParseUser.getCurrentUser());
+        geoFence.put("requestId", mPendingRequestId);
+        mCurrentGeoFenceId = mPendingRequestId;
+        mPendingRequestId = null;
+        mCreatingGeoFence = false;
+        mInGeofence = true;
+        geoFence.saveInBackground();
+    }
+
+    private void checkIfInGeoFence(double longitude, double latitude, String user) {
+        Map<String, Object> param = new HashMap<>();
+
+        param.put("longitude", longitude);
+        param.put("latitude", latitude);
+        param.put("userId", user);
+
+        ParseCloud.callFunctionInBackground("checkIfInGeoFence", param, new FunctionCallback<Map<String, Object>>() {
+            @Override
+            public void done(Map<String, Object> stringObjectMap, ParseException e) {
+                if (e == null) {
+                    if((Boolean)stringObjectMap.get("inGeoFence")) {
+                        mCurrentGeoFenceId = stringObjectMap.get("data").toString();
+                        mInGeofence = true;
+                    }
+                } else {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onResult(Status status) {
+        Toast.makeText(getApplicationContext(), "Result: " + status.toString(), Toast.LENGTH_LONG).show();
+        if (mCreatingGeoFence) {
+            submitGeofenceToDatabase();
+        } else if (mDeletingGeoFence) {
+            removeGeoFenceFromDatabase();
+        } else {
+            Toast.makeText(getApplicationContext(), "Error Error Error", Toast.LENGTH_LONG).show();
+        }
+        mDeletingGeoFence = false;
+        mCreatingGeoFence = false;
+    }
+
+    private PendingIntent getGeofencePendingIntent() {
+        if (mGeoFencePendingIntent != null) {
+            return mGeoFencePendingIntent;
+        }
+        Intent intent = new Intent(getApplicationContext(), GeofenceTransitionsIntentService.class);
+        return PendingIntent.getService(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private GeofencingRequest getGeofencingRequest() {
+        GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
+        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
+        builder.addGeofences(mGeoFenceList);
+        return builder.build();
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        Log.d("API", "Connected");
+        mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        checkIfInGeoFence(mLocation.getLongitude(),mLocation.getLatitude(),currentUser.getObjectId());
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.d("API", "Connection Suspended");
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Toast.makeText(getApplicationContext(), "ERROR CONNECTING GOOGLE API CLIENT", Toast.LENGTH_LONG).show();
     }
 }
