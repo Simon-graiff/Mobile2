@@ -36,15 +36,20 @@ public class EventlistAdapter extends ArrayAdapter<String> {
     public View getView(int position,View view,ViewGroup parent) {
         View rowView = context.getLayoutInflater().inflate(R.layout.listitem_event, null, true);
 
-        TextView eventName = (TextView) rowView.findViewById(R.id.event_name);
-        ImageView categoryImage = (ImageView) rowView.findViewById(R.id.category_picture);
-        TextView distanceView = (TextView) rowView.findViewById(R.id.distance);
+        TextView eventName      = (TextView)    rowView.findViewById(R.id.event_name);
+        ImageView categoryImage = (ImageView)   rowView.findViewById(R.id.category_picture);
+        TextView distanceView   = (TextView)    rowView.findViewById(R.id.distance);
+        TextView timeView       = (TextView)    rowView.findViewById(R.id.time);
+        TextView participantView= (TextView)    rowView.findViewById(R.id.participantCount);
 
-        long distanceLong = distance.get(position).longValue();
-        distanceView.setText(distanceLong+ " km");
+        //set all fields with their respective content
+        distanceView.setText(distance.get(position) + " km");
         eventName.setText(itemname.get(position));
+        timeView.setText(time.get(position));
+        participantView.setText(participantCount.get(position));
 
-        categoryImage.setImageResource(R.drawable.ic_sport);
+        // add an image depending on the category of the event,
+        // return sport of category cannot be detected
         switch (category.get(position)){
             case "Sport":
                 categoryImage.setImageResource(R.drawable.ic_sport_blue);
@@ -64,13 +69,12 @@ public class EventlistAdapter extends ArrayAdapter<String> {
             case "Videogames":
                 categoryImage.setImageResource(R.drawable.ic_videogames_blue);
                 break;
+
+            default:
+                categoryImage.setImageResource(R.drawable.ic_sport);
+                break;
+
         }
-
-        TextView timeView = (TextView) rowView.findViewById(R.id.time);
-        timeView.setText(time.get(position));
-
-        TextView participantView = (TextView) rowView.findViewById(R.id.participantCount);
-        participantView.setText(participantCount.get(position));
 
         return rowView;
 

@@ -143,7 +143,6 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
 
         ((MainScreen) getActivity()).setMapShown(true);
-        ((MainScreen) getActivity()).setListShown(false);
         getActivity().invalidateOptionsMenu();
 
         ListView mDrawerList;
