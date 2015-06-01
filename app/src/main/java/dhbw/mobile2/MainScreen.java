@@ -118,8 +118,6 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         //3 = My event
         //4 = Settings
         //5 = Logout
-        //6 = Vincents TestFragment
-        //7 = Mattes Notifications
 
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[0], navMenuIcons.getResourceId(0, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[1], navMenuIcons.getResourceId(0, -1)));
@@ -127,7 +125,6 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[3], navMenuIcons.getResourceId(3, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[4], navMenuIcons.getResourceId(4, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[5], navMenuIcons.getResourceId(5, -1)));
-        navDrawerItems.add(new NavDrawerItem(navMenuTitles[6], navMenuIcons.getResourceId(5, -1)));
 
         //Recycle the typed array
         navMenuIcons.recycle();
@@ -253,8 +250,6 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
             fragment = new SettingsFragment();
         }else if(position==5){
             fragment = new LogoutFragment();
-        }else if(position == 6){
-            fragment = new ListEventsFragment();
         }
 
         // If called Fragment is the logout fragment just add the fragment to the other instead of replacing it

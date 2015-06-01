@@ -86,17 +86,29 @@ public class SettingsFragment extends Fragment
 
         if(sport!=null){
             sports_checkbox.setChecked(false);
-        }else if(music!=null){
+        }
+
+        if(music!=null){
             music_checkbox.setChecked(false);
-        }else if(chilling!=null){
+        }
+
+        if(chilling!=null){
             chilling_checkbox.setChecked(false);
-        }else if(drinking!=null){
+        }
+
+        if(drinking!=null){
             drinking_checkbox.setChecked(false);
-        }else if(disco!=null){
+        }
+
+        if(disco!=null){
             disco_checkbox.setChecked(false);
-        }else if(videoGames!=null){
+        }
+
+        if(videoGames!=null){
             disco_checkbox.setChecked(false);
-        }else if(food!=null){
+        }
+
+        if(food!=null){
             food_checkbox.setChecked(false);
         }
 
