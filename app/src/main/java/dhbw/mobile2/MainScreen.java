@@ -28,6 +28,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.FusedLocationProviderApi;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
@@ -462,20 +463,24 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
 
     public void createGeofence() {
         mCreatingGeoFence = true;
-        String requestId = mLocation.getLongitude() + ";" + mLocation.getLatitude() + ";" + currentUser.getObjectId();
-        mGeoFenceList.add(new Geofence.Builder()
-                .setRequestId(requestId)
-                .setCircularRegion(10, 10, 2000000) //long,lat,radius
-                .setExpirationDuration(Geofence.NEVER_EXPIRE)//millis
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-                .build());
-        mPendingRequestId = requestId;
+        if(mLocation != null) {
+            String requestId = mLocation.getLongitude() + ";" + mLocation.getLatitude() + ";" + currentUser.getObjectId();
+            mGeoFenceList.add(new Geofence.Builder()
+                    .setRequestId(requestId)
+                    .setCircularRegion(10, 10, 2000000) //long,lat,radius
+                    .setExpirationDuration(Geofence.NEVER_EXPIRE)//millis
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                    .build());
+            mPendingRequestId = requestId;
 
-        LocationServices.GeofencingApi.addGeofences(
-                mGoogleApiClient,
-                getGeofencingRequest(),
-                getGeofencePendingIntent()
-        ).setResultCallback(this);
+            LocationServices.GeofencingApi.addGeofences(
+                    mGoogleApiClient,
+                    getGeofencingRequest(),
+                    getGeofencePendingIntent()
+            ).setResultCallback(this);
+        }else{
+            Toast.makeText(getApplicationContext(), "Please wait until GPS works...", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void submitGeofenceToDatabase() {
@@ -506,7 +511,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
             @Override
             public void done(Map<String, Object> stringObjectMap, ParseException e) {
                 if (e == null) {
-                    if((Boolean)stringObjectMap.get("inGeoFence")) {
+                    if ((Boolean) stringObjectMap.get("inGeoFence")) {
                         mCurrentGeoFenceId = stringObjectMap.get("data").toString();
                         mInGeofence = true;
                         invalidateOptionsMenu();
@@ -550,8 +555,9 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
     @Override
     public void onConnected(Bundle bundle) {
         Log.d("API", "Connected");
-        mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        checkIfInGeoFence(mLocation.getLongitude(),mLocation.getLatitude(),currentUser.getObjectId());
+        mLocation = getLocation(LocationServices.FusedLocationApi);
+        if(currentUser != null && mLocation != null)
+            checkIfInGeoFence(mLocation.getLongitude(),mLocation.getLatitude(),currentUser.getObjectId());
     }
 
     @Override
@@ -562,5 +568,19 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Toast.makeText(getApplicationContext(), "ERROR CONNECTING GOOGLE API CLIENT", Toast.LENGTH_LONG).show();
+    }
+
+    public Location getLocation(FusedLocationProviderApi locationClient){
+
+        if(locationClient.getLastLocation(mGoogleApiClient) == null){
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return getLocation(locationClient);
+        }else{
+            return locationClient.getLastLocation(mGoogleApiClient);
+        }
     }
 }

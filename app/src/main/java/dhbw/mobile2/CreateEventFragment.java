@@ -3,7 +3,6 @@ package dhbw.mobile2;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
-import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.location.Location;
 import android.os.Bundle;
@@ -21,7 +20,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.MapFragment;
 import com.parse.FunctionCallback;
@@ -51,17 +49,10 @@ public class CreateEventFragment extends Fragment
     private Button mButton_createEvent;
     private Button mButton_test;
     private ParseObject event = null;
-    private ArrayList<Geofence> mGeoFenceList = new ArrayList<>();
-    private PendingIntent mGeoFencePendingIntent;
     private View rootView;
     private GoogleApiClient mGoogleApiClient;
     private ParseUser mUser;
     private Location mLocation;
-    private String mPendingRequestId;
-    private String mCurrentGeoFenceId;
-    private Boolean mCreatingGeoFence = false;
-    private Boolean mDeletingGeoFence = false;
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
