@@ -105,6 +105,11 @@ public class CreateEventFragment extends Fragment
         geoPoint.setLongitude(mLocation.getLongitude());
 
         ArrayList<ParseUser> participants = new ArrayList<>();
+        try {
+            participants.add(ParseUser.getCurrentUser().fetchIfNeeded());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 
         String endTime = mEditText_duration.getText().toString().substring(7);
         int hourOfEnd = Integer.parseInt(endTime.substring(0, 2));
@@ -123,7 +128,6 @@ public class CreateEventFragment extends Fragment
         event.put("locationName", mEditText_location.getText().toString());
         event.put("duration", endDate);
         event.put("maxMembers", maxMembers);
-        participants.add(ParseUser.getCurrentUser());
         event.put("participants", participants);
         event.put("creator", mUser);
         event.put("geoPoint", geoPoint);
