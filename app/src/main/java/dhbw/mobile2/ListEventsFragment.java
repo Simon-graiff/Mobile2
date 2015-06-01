@@ -163,10 +163,11 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
         final ArrayList<Double> distanceArray = new ArrayList<>();
         final ArrayList<String> timeArray = new ArrayList<>();
         final ArrayList<String> participantCountArray = new ArrayList<>();
+        idArray = new ArrayList<>();
 
         //Creating ParseGeoPoint with user's current location for further processing in query
         LocationManager locationManager =  (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        final Location userLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        Location userLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         final ParseGeoPoint point = new ParseGeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
 
 
