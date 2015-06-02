@@ -240,12 +240,23 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
             }
 
         }else if(position==3){
+            mDrawerList.setItemChecked(3, true);
+            mDrawerList.setSelection(3);
             SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString("eventId", currentUser.getString("eventId"));
+            editor.putBoolean("myEventActivated", true);
+            String eventId = "";
+            try {
+                eventId = ParseUser.getCurrentUser().fetch().getString("eventId");
+                editor.putString("eventId", eventId);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
             editor.apply();
+            Log.d("Main", "eventId: " + eventId);
 
             fragment = new EventDetailFragment();
+
 
         }else if(position==4){
             fragment = new SettingsFragment();
