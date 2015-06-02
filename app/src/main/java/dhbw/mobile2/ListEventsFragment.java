@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -82,6 +83,7 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         screenView = inflater.inflate(R.layout.fragment_events_list, container, false);
+        screenView.setBackgroundColor(Color.rgb(240, 240, 240));
 
         // Set the adapter
         mListView = (AbsListView) screenView.findViewById(android.R.id.list);

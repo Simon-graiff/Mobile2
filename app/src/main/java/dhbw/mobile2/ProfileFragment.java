@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -79,6 +80,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         progressDialog = ProgressDialog.show(getActivity(), "Loading", "Please wait.."); //Show loading dialog until data has been pulled from parse
         rootView = inflater.inflate(layout.fragment_profile, container, false);
         userID= getArguments().getString("UserID");
+        rootView.setBackgroundColor(Color.rgb(240, 240, 240));
 
 
         //Add OnClickListener to the Profile data Change Entry
