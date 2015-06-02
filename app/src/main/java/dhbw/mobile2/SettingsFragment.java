@@ -118,7 +118,7 @@ public class SettingsFragment extends Fragment
             if(checked){
                 removeQueryParameter("Music");
             }else{
-                setQueryParameter("Music ");
+                setQueryParameter("Music");
             }
         }else if(id == R.id.chilling_checkbox){
             if(checked){
