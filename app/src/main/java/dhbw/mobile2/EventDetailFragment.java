@@ -208,6 +208,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
                     if (myMapView != null) {
                         myMapView.getMapAsync(EventDetailFragment.this);
                     }
+                    
                 } else {
                     System.out.print("Object could not be received");
                 }

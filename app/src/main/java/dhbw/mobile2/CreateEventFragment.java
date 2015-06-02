@@ -3,7 +3,11 @@ package dhbw.mobile2;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.app.TimePickerDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
@@ -137,14 +141,30 @@ public class CreateEventFragment extends Fragment
             @Override
             public void done(ParseException e) {
                 ParseUser.getCurrentUser().put("eventId", event.getObjectId());
-                ParseUser.getCurrentUser().saveInBackground();
+                ParseUser.getCurrentUser().saveEventually(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        Toast.makeText(getActivity().getBaseContext(), "Have fun!", Toast.LENGTH_LONG).show();
+
+                        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        String eventId = "";
+                        editor.putString("eventId", event.getObjectId());
+                        editor.apply();
+                        Log.d("Main", "eventId: " + eventId);
+
+                        Fragment fragment = new EventDetailFragment();
+                        FragmentManager fragmentManager = getFragmentManager();
+                        FragmentTransaction transaction = fragmentManager.beginTransaction();
+                        transaction.replace(R.id.frame_container, fragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+                    }
+                });
+
             }
         });
 
-        Toast.makeText(getActivity().getBaseContext(), "Have fun!", Toast.LENGTH_LONG).show();
-
-        Fragment fragment = new MapFragment();
-        getFragmentManager().beginTransaction().replace(R.id.frame_container, fragment).commit();
     }
 
     private void sendEventRequest() {
