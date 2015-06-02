@@ -8,6 +8,8 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -97,6 +99,12 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
         //activate the ActionBar Button for the Map; reload ActionBar
         ((MainScreen) getActivity()).setListShown(true);
         getActivity().invalidateOptionsMenu();
+
+        //add eventTitle to ActionBar
+        ActionBar actionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+        if (actionBar != null){
+            actionBar.setTitle("List of Events");
+        }
     }
 
     @Override

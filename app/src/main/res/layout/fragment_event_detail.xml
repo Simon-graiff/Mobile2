@@ -29,6 +29,7 @@
             android:orientation="vertical"
             android:layout_weight="1">
             <ImageView
+                android:contentDescription="@string/detail_profile_picture"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/imageView"
@@ -48,13 +49,13 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="#ffffff">
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="@android:color/darker_gray"/>
 
-        //description
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -70,11 +71,12 @@
             android:layout_height="1dp"
             android:background="@android:color/darker_gray"/>
     </LinearLayout>
-    //Participants
-    <Button
+  <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/detail_participants_dynamic"
+        android:textColor="@android:color/holo_blue_light"
+        android:background="#ffffff"
         android:paddingStart="20sp"
         android:paddingEnd="10sp"
         />
@@ -82,9 +84,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:background="#ffffff"
         >
-        //Line: Category
-        <TextView
+       <TextView
             android:id="@+id/detail_category_static"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_width="wrap_content"
@@ -107,9 +109,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:background="#ffffff"
         >
-        //creation time
-        <TextView
+       <TextView
             android:id="@+id/detail_creation_time_static"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -131,8 +133,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        //locationName
+        android:orientation="horizontal"
+        android:background="#ffffff">
         <TextView
             android:id="@+id/detail_location_name_static"
             android:layout_width="wrap_content"
@@ -155,8 +157,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        //locationName
+        android:orientation="horizontal"
+        android:background="#ffffff">
         <TextView
             android:id="@+id/detail_distance_static"
             android:layout_width="wrap_content"
@@ -176,8 +178,7 @@
             android:paddingEnd="10sp"
             android:layout_weight="1" />
     </LinearLayout>
-    //Map
-    <com.google.android.gms.maps.MapView
+   <com.google.android.gms.maps.MapView
         android:id="@+id/mapView"
         android:layout_width="fill_parent"
         android:layout_height="200dp"/>
@@ -186,18 +187,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        style="?android:attr/buttonBarStyle">
-        //Button: Navigate
-        <Button
+        style="?android:attr/buttonBarStyle"
+        android:background="#ffffff">
+      <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/detail_button_navigate"
             android:text="@string/detail_button_navigate"
             style="?android:attr/buttonBarButtonStyle"
+            android:textColor="@android:color/holo_blue_light"
            />
 
-        //Button: Participate
-        <Button
+       <Button
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:id="@+id/detail_button_participate"
@@ -207,6 +208,7 @@
             android:visibility="visible"
             android:layout_weight="1"
             style="?android:attr/buttonBarButtonStyle"
+            android:textColor="@android:color/holo_blue_light"
             />
 
     </LinearLayout>

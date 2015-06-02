@@ -262,8 +262,11 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
             case "Music":
                 categoryImage.setImageResource(R.drawable.ic_music_blue);
                 break;
-            case "Videogames":
+            case "Video Games":
                 categoryImage.setImageResource(R.drawable.ic_videogames_blue);
+                break;
+            default:
+                categoryImage.setImageResource(R.drawable.ic_sport_blue);
                 break;
         }
 
@@ -381,7 +384,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
             profilepicture.getDataInBackground(new GetDataCallback() {
                 @Override
                 public void done(byte[] bytes, ParseException e) {
-                    ImageView imageView=(ImageView) rootView.findViewById(R.id.imageView);
+                    ImageView imageView = (ImageView) rootView.findViewById(R.id.imageView);
                     Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                     int heightPixels = EventDetailFragment.this.getActivity().getApplicationContext().getResources().getDisplayMetrics().heightPixels;
                     //Set the ProfilePicuture to the ImageView and scale it to the screen size
@@ -430,7 +433,11 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
                         case DialogInterface.BUTTON_POSITIVE:
                             //Yes button clicked
 
-                            new GetCallback<ParseObject>() {
+                            ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
+                            try {
+                                String previousEventId = ParseUser.getCurrentUser().fetchIfNeeded().getString("eventId");
+                            query.getInBackground(previousEventId, new GetCallback<ParseObject>() {
+                                @Override
                                 public void done(ParseObject object, ParseException queryException) {
                                     if (queryException == null) {
 
@@ -441,7 +448,10 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
                                         System.out.print("Object could not be received");
                                     }
 
-                                }};
+                                }});
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
                             break;
 
                         //if user chooses No, leave everything as it is
@@ -496,11 +506,16 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     }
 
     //remove the current user from the participant list
-    private void removeUserFromList(ParseObject eventObject){
-        List<ParseUser> listParticipants = eventObject.getList("participants");
-        listParticipants.remove(currentUser);
-        eventObject.put("participants", listParticipants);
-        eventObject.saveInBackground();
+    private void removeUserFromList(ParseObject object){
+        List<ParseUser> listParticipants = object.getList("participants");
+        try {
+            listParticipants.remove(ParseUser.getCurrentUser().fetchIfNeeded());
+            Log.d("Main", "User has been removed from " + eventObject.getString("title"));
+        } catch (ParseException e) {
+           Log.d("Main", "User could not been removed from " + eventObject.getString("title"));
+        }
+        object.put("participants", listParticipants);
+        object.saveInBackground();
     }
 
     private void deactivateParticipation(){
@@ -599,33 +614,32 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
     public void navigateToEvent(){
         String[] mode = {"driving", "walking", "bicycling"};
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
-
-        builder.setTitle("How do you get there?")
-                .setItems(mode, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        double latitude = markers.get(0).getPosition().latitude;
-                        double longitude = markers.get(0).getPosition().longitude;
-                        String mode1 = "d";
-                        switch (which) {
-                            case 0:
-                                mode1 = "d";
-                                break;
-                            case 1:
-                                mode1 = "w";
-                                break;
-                            case 2:
-                                mode1 = "b";
-                                break;
-                        }
-                        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + ", " + longitude + "&mode=" + mode1);
-                        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-                        mapIntent.setPackage("com.google.android.apps.maps");
-                        EventDetailFragment.this.startActivity(mapIntent);
-                    }
-                })
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), AlertDialog.THEME_HOLO_LIGHT);
+        builder.setTitle("How do you get there?").
+              //  setMessage("Message Body").
+                setItems(mode, new DialogInterface.OnClickListener() {
+                  @Override
+                  public void onClick(DialogInterface dialog, int which) {
+                      double latitude = markers.get(0).getPosition().latitude;
+                      double longitude = markers.get(0).getPosition().longitude;
+                      String mode1 = "d";
+                      switch (which) {
+                          case 0:
+                              mode1 = "d";
+                              break;
+                          case 1:
+                              mode1 = "w";
+                              break;
+                          case 2:
+                              mode1 = "b";
+                              break;
+                      }
+                      Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + ", " + longitude + "&mode=" + mode1);
+                      Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                      mapIntent.setPackage("com.google.android.apps.maps");
+                      EventDetailFragment.this.startActivity(mapIntent);
+                  }
+              })
                 .show();
 
 

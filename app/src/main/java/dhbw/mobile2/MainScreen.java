@@ -79,6 +79,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
     private Boolean mInGeofence = false;
 
 
+
     public static FragmentManager fragmentManager;
 
     //currentUser
@@ -242,7 +243,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
             SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putString("eventId", currentUser.getString("eventId"));
-            editor.commit();
+            editor.apply();
 
             fragment = new EventDetailFragment();
 
@@ -297,16 +298,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
     private void checkParticipation(){
         String eventIdOfUser = ParseUser.getCurrentUser().getString("eventId");
         if (eventIdOfUser != null){
-            Log.d("Main", "eventId is not null");
-            if (!eventIdOfUser.equals("no_event")) {
-                    statusParticipation = true;
-
-            } else {
-
-                statusParticipation = false;
-
-            }
-
+            statusParticipation = !eventIdOfUser.equals("no_event");
         }
     }
 
@@ -373,8 +365,8 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         return super.onPrepareOptionsMenu(menu);*/
          menu.findItem(R.id.action_list_events).setVisible(mapShown);
         menu.findItem(R.id.action_map).setVisible(listShown);
-        menu.findItem(R.id.action_notify_activate).setVisible(mapShown && !mInGeofence);
-        menu.findItem(R.id.action_notify_deactivate).setVisible(mapShown && mInGeofence);
+        menu.findItem(R.id.action_notify_activate).setVisible(mapShown && !mInGeofence && !mCreatingGeoFence && !mDeletingGeoFence);
+        menu.findItem(R.id.action_notify_deactivate).setVisible(mapShown && mInGeofence && !mDeletingGeoFence && !mCreatingGeoFence);
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -430,6 +422,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
 
     private void removeGeoFence() {
         mDeletingGeoFence = true;
+        invalidateOptionsMenu();
         ArrayList<String> geoFencesToRemove = new ArrayList<>();
         geoFencesToRemove.add(mCurrentGeoFenceId);
         LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, geoFencesToRemove).setResultCallback(this);
@@ -458,6 +451,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
 
     public void createGeofence() {
         mCreatingGeoFence = true;
+        invalidateOptionsMenu();
         if(mLocation != null) {
             String requestId = mLocation.getLongitude() + ";" + mLocation.getLatitude() + ";" + currentUser.getObjectId();
             mGeoFenceList.add(new Geofence.Builder()
