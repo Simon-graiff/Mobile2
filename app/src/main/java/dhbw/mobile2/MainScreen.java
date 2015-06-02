@@ -13,6 +13,7 @@ import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.location.Location;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
@@ -450,6 +451,9 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
     }
 
     public void createGeofence() {
+        if(checkIfFirstGeoFence()){
+            showFirstTimeNotification();
+        }
         mCreatingGeoFence = true;
         invalidateOptionsMenu();
         if(mLocation != null) {
@@ -470,6 +474,30 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         }else{
             Toast.makeText(getApplicationContext(), "Please wait until GPS works...", Toast.LENGTH_LONG).show();
         }
+    }
+
+    private Boolean checkIfFirstGeoFence(){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if(!prefs.getBoolean("firstTime", false)) {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("firstTime", true);
+            editor.commit();
+            return true;
+        }
+        return false;
+    }
+
+    private void showFirstTimeNotification(){
+        new AlertDialog.Builder(this)
+                .setTitle("Creating Geofence")
+                .setMessage("From now on you'll be notified if any events are up in this area. To stop notifications just push the button again.")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // continue with delete
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_info)
+                .show();
     }
 
     private void submitGeofenceToDatabase() {
@@ -560,7 +588,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
     }
 
     public Location getLocation(FusedLocationProviderApi locationClient){
-
+        Log.d("ABC","Called");
         if(locationClient.getLastLocation(mGoogleApiClient) == null){
             try {
                 Thread.sleep(50);
