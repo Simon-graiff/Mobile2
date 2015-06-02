@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -65,6 +66,10 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
     //EventObject
     public ParseObject eventObject;
+
+    //ProgressDialog
+    private ProgressDialog progressDialog;
+
 
     //Relevant Users
     ParseUser currentUser;
@@ -135,6 +140,9 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
     @Override
     public void onResume(){
+        //Initialize progressDialog
+        progressDialog = ProgressDialog.show(getActivity(), "Loading", "Please wait..");
+
         super.onResume();
         if(myMapView!=null){
             myMapView.onResume();
@@ -207,8 +215,9 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
                     //asynchronous call to map
                     if (myMapView != null) {
                         myMapView.getMapAsync(EventDetailFragment.this);
-                    }
-                } else {
+                    } progressDialog.dismiss();
+                }
+                else {
                     System.out.print("Object could not be received");
                 }
 
