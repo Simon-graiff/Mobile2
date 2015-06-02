@@ -23,7 +23,8 @@
         android:text="Sport"
         android:id="@+id/sports_checkbox"
         android:layout_weight="0.03"
-        android:checked="true"/>
+        android:checked="true"
+        android:layout_marginLeft="10dp" />
 
     <CheckBox
         android:layout_width="wrap_content"
@@ -31,7 +32,8 @@
         android:text="Music"
         android:id="@+id/music_checkbox"
         android:layout_weight="0.03"
-        android:checked="true" />
+        android:checked="true"
+        android:layout_marginLeft="10dp" />
 
     <CheckBox
         android:layout_width="wrap_content"
@@ -39,23 +41,17 @@
         android:text="Chilling"
         android:id="@+id/chilling_checkbox"
         android:layout_weight="0.03"
-        android:checked="true" />
+        android:checked="true"
+        android:layout_marginLeft="10dp" />
 
     <CheckBox
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Drinking"
-        android:id="@+id/drinking_checkbox"
+        android:text="Dancing"
+        android:id="@+id/dancing_checkbox"
         android:layout_weight="0.03"
-        android:checked="true" />
-
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Disco"
-        android:id="@+id/disco_checkbox"
-        android:layout_weight="0.03"
-        android:checked="true" />
+        android:checked="true"
+        android:layout_marginLeft="10dp" />
 
     <CheckBox
         android:layout_width="wrap_content"
@@ -63,7 +59,8 @@
         android:text="Video games"
         android:id="@+id/videoGames_checkbox"
         android:layout_weight="0.03"
-        android:checked="true" />
+        android:checked="true"
+        android:layout_marginLeft="10dp" />
 
     <CheckBox
         android:layout_width="wrap_content"
@@ -71,7 +68,8 @@
         android:text="Food"
         android:id="@+id/food_checkbox"
         android:layout_weight="0.03"
-        android:checked="true" />
+        android:checked="true"
+        android:layout_marginLeft="10dp" />
 
     <Space
         android:layout_width="match_parent"
@@ -99,6 +97,7 @@
         android:text="Allow mixed gender groups"
         android:id="@+id/mixedGender_switch"
         android:layout_weight="0.03"
-        android:checked="true"/>
+        android:checked="true"
+        android:layout_marginLeft="10dp" />
 
 </LinearLayout>

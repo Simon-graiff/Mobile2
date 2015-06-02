@@ -251,9 +251,8 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         final String sport = sharedPref.getString("Sport", null);
         final String music = sharedPref.getString("Music", null);
         final String chilling = sharedPref.getString("Chilling", null);
-        final String drinking = sharedPref.getString("Drinking", null);
-        final String disco = sharedPref.getString("Disco", null);
-        final String videoGames = sharedPref.getString("VideoGames", null);
+        final String dancing = sharedPref.getString("Dancing", null);
+        final String videoGames = sharedPref.getString("Video Games", null);
         final String food = sharedPref.getString("Food", null);
         final boolean mixedGenders = sharedPref.getBoolean("MixedGenders", true);
 
@@ -313,12 +312,11 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
                                 if(!category.equals(sport)){
                                     if(!category.equals(music)){
                                         if(!category.equals(chilling)){
-                                            if(!category.equals(drinking)){
-                                                if(!category.equals(disco)){
-                                                    if(!category.equals(videoGames)){
-                                                        if(!category.equals(food)){
-                                                            drawMarker(tmpLatLng, tmpTitle, eventID);
-                                                        }
+                                            if(!category.equals(dancing)){
+                                                if(!category.equals(videoGames)){
+                                                    if(!category.equals(food)){
+                                                        drawMarker(tmpLatLng, tmpTitle, eventID);
+                                                        Log.d("Main", "Drew marker: "+tmpTitle);
                                                     }
                                                 }
                                             }
@@ -326,7 +324,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
                                     }
                                 }
                             }
-                        }
+                        }//End for-loop for eventList
                     }
 
                 } else {

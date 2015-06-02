@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.TimePickerDialog;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -58,6 +59,7 @@ public class CreateEventFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         rootView = inflater.inflate(R.layout.fragment_create_event, container, false);
+        rootView.setBackgroundColor(Color.rgb(240, 240, 240));
 
         mEditText_title = (EditText) rootView.findViewById(R.id.editText_title);
         mEditText_duration = (EditText) rootView.findViewById(R.id.editText_duration);
