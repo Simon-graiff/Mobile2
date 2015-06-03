@@ -48,7 +48,7 @@
             android:value="@string/facebook_app_id" />
         <meta-data
             android:name="com.parse.push.notification_icon"
-            android:resource="@drawable/ic_launcher" />
+            android:resource="@drawable/ic_logo" />
 
         <activity
             android:name=".MainScreen"
