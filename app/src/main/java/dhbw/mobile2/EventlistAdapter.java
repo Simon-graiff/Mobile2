@@ -66,7 +66,7 @@ public class EventlistAdapter extends ArrayAdapter<String> {
             case "Music":
                 categoryImage.setImageResource(R.drawable.ic_music_blue);
                 break;
-            case "Videogames":
+            case "Video Games":
                 categoryImage.setImageResource(R.drawable.ic_videogames_blue);
                 break;
 

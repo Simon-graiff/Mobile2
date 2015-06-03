@@ -3,7 +3,12 @@ package dhbw.mobile2;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.app.TimePickerDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -58,6 +63,7 @@ public class CreateEventFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         rootView = inflater.inflate(R.layout.fragment_create_event, container, false);
+        rootView.setBackgroundColor(Color.rgb(240, 240, 240));
 
         mEditText_title = (EditText) rootView.findViewById(R.id.editText_title);
         mEditText_duration = (EditText) rootView.findViewById(R.id.editText_duration);
@@ -135,14 +141,30 @@ public class CreateEventFragment extends Fragment
             @Override
             public void done(ParseException e) {
                 ParseUser.getCurrentUser().put("eventId", event.getObjectId());
-                ParseUser.getCurrentUser().saveInBackground();
+                ParseUser.getCurrentUser().saveEventually(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        Toast.makeText(getActivity().getBaseContext(), "Have fun!", Toast.LENGTH_LONG).show();
+
+                        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        String eventId = "";
+                        editor.putString("eventId", event.getObjectId());
+                        editor.apply();
+                        Log.d("Main", "eventId: " + eventId);
+
+                        Fragment fragment = new EventDetailFragment();
+                        FragmentManager fragmentManager = getFragmentManager();
+                        FragmentTransaction transaction = fragmentManager.beginTransaction();
+                        transaction.replace(R.id.frame_container, fragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+                    }
+                });
+
             }
         });
 
-        Toast.makeText(getActivity().getBaseContext(), "Have fun!", Toast.LENGTH_LONG).show();
-
-        Fragment fragment = new MapFragment();
-        getFragmentManager().beginTransaction().replace(R.id.frame_container, fragment).commit();
     }
 
     private void sendEventRequest() {

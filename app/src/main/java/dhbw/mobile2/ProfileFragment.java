@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -18,8 +19,10 @@ import android.text.Editable;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -36,7 +39,7 @@ import com.parse.ParseUser;
 
 import static dhbw.mobile2.R.*;
 
-public class ProfileFragment extends Fragment implements View.OnClickListener {
+public class ProfileFragment extends Fragment implements View.OnClickListener, View.OnTouchListener {
 
     private String userID;
     private String username;
@@ -58,19 +61,9 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         return f;
     }
 
-    @Override
-    public void onPause() {
-        EditText aboutMeTextField = (EditText) rootView.findViewById(id.editText_about);
-        String newAboutMe = aboutMeTextField.getText().toString();
 
-        if(!aboutMe.equals(newAboutMe)){
-            ParseUser.getCurrentUser().put("aboutMe", newAboutMe);
-            ParseUser.getCurrentUser().saveInBackground();
-            Toast.makeText(getActivity().getWindow().getContext(), "Your changes are saved!", Toast.LENGTH_LONG).show();
-        }
 
-        super.onPause();
-    }
+
 
 
 
@@ -79,13 +72,16 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         progressDialog = ProgressDialog.show(getActivity(), "Loading", "Please wait.."); //Show loading dialog until data has been pulled from parse
         rootView = inflater.inflate(layout.fragment_profile, container, false);
         userID= getArguments().getString("UserID");
+        rootView.setBackgroundColor(Color.rgb(240, 240, 240));
 
 
         //Add OnClickListener to the Profile data Change Entry
-        rootView.findViewById(id.imageView_change).setOnClickListener(this);
-        rootView.findViewById(id.textView_change).setOnClickListener(this);
-        rootView.findViewById(id.textView_reloadFacebookData).setOnClickListener(this);
+        rootView.findViewById(id.layout_change).setOnClickListener(this);
+        rootView.findViewById(id.layout_reload).setOnClickListener(this);
 
+        //Add OnClickListener to the Profile data Change Entry
+        rootView.findViewById(id.layout_profile_fragment).setOnTouchListener(this);
+        rootView.findViewById(id.editText_username).setOnTouchListener(this);
 
 
         if(userID.equals(ParseUser.getCurrentUser().getObjectId())){
@@ -99,9 +95,29 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
             pullUserDataFromParse();
         }
 
+/*
+        rootView.findViewById(id.editText_about).setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+
+                    }
+                }
+            }
+        });*/
+
+
+
 
         return rootView;
     }
+
+    private void hideSoftKeyboard() {
+        InputMethodManager inputMethodManager = (InputMethodManager)  getActivity().getSystemService(getActivity().INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
+    }
+
+
 
     private void updateLayout() {
 
@@ -223,13 +239,13 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
 
-        if(v.getId()!= id.textView_reloadFacebookData) {
+        if(v.getId()!= id.layout_reload) {
             //Hide Change Buttons
             rootView.findViewById(id.layout_change).setVisibility(View.GONE);
             rootView.findViewById(id.editText_about).setVisibility(View.VISIBLE);
             rootView.findViewById(id.editText_about).setFocusableInTouchMode(true);
             rootView.findViewById(id.editText_about).setFocusable(true);
-            rootView.findViewById(id.textView_reloadFacebookData).setVisibility(View.VISIBLE);
+            rootView.findViewById(id.layout_reload).setVisibility(View.VISIBLE);
 
         }
         else{
@@ -259,5 +275,28 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         mDrawerList.setSelection(0);
         ActionBar actionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
         actionBar.setTitle(username);
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+           hideSoftKeyboard();
+
+        //Check if any changes were made
+        EditText aboutMeTextField = (EditText) rootView.findViewById(id.editText_about);
+        String newAboutMe = aboutMeTextField.getText().toString();
+        if (!aboutMe.equals(newAboutMe)) {
+            //Save changes
+            aboutMe = newAboutMe;
+            ParseUser.getCurrentUser().put("aboutMe", newAboutMe);
+            ParseUser.getCurrentUser().saveInBackground();
+            //Inform user that the changes are saved
+            Toast.makeText(getActivity().getWindow().getContext(), "Saved changes!", Toast.LENGTH_LONG).show();
+
+            FragmentManager fragmentManager = getFragmentManager();
+            Fragment fragment = ProfileFragment.newInstance(ParseUser.getCurrentUser().getObjectId());
+            fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+        }
+
+        return false;
     }
 }

@@ -37,6 +37,7 @@ import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickListener {
 
@@ -95,8 +96,8 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         //MapsInitializer.initialize(this.getActivity());
 
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
+       // locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
+       // locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
 
         /*try{
             MapsInitializer.initialize(this.getActivity());
@@ -139,8 +140,8 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         if(myMapView!=null){
             myMapView.onResume();
         }
-        locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
+      //  locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
+       // locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
 
         ((MainScreen) getActivity()).setMapShown(true);
         getActivity().invalidateOptionsMenu();
@@ -251,9 +252,8 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         final String sport = sharedPref.getString("Sport", null);
         final String music = sharedPref.getString("Music", null);
         final String chilling = sharedPref.getString("Chilling", null);
-        final String drinking = sharedPref.getString("Drinking", null);
-        final String disco = sharedPref.getString("Disco", null);
-        final String videoGames = sharedPref.getString("VideoGames", null);
+        final String dancing = sharedPref.getString("Dancing", null);
+        final String videoGames = sharedPref.getString("Video Games", null);
         final String food = sharedPref.getString("Food", null);
         final boolean mixedGenders = sharedPref.getBoolean("MixedGenders", true);
 
@@ -272,6 +272,28 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
                     Log.d("Main", "Retrieved " + eventList.size() + " events");
 
                     if (!eventList.isEmpty()) {
+
+                        //Query: Get all events in the reach of five kilometers
+                        ParseQuery<ParseObject> query = ParseQuery.getQuery("FilteredEvents");
+                        query.fromLocalDatastore();
+
+                        Log.d("Main", "Waiting for Callback...");
+                        ArrayList<ParseObject> eventArray = new ArrayList<>();
+
+                        //Executing query
+                        query.findInBackground(new FindCallback<ParseObject>() {
+                            public void done(List<ParseObject> eventList, ParseException e) {
+                                Log.d("Main", "Received " + eventList.size() + " events");
+                                if (e == null) {
+                                    for (int i=0; i < eventList.size(); i++){
+                                        eventList.get(i).unpinInBackground();
+                                    }
+
+                                } else {
+                                    Log.d("Main", "No events existed in background");
+                                }
+                            }
+                        });
                         for (int i = 0; i < eventList.size(); i++) {
                             //Extraction of latitude and longitude from recieved GeoPoints
                             ParseGeoPoint tmpPoint = (ParseGeoPoint) eventList.get(i).get("geoPoint");
@@ -310,15 +332,22 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
 
                                 //An event can only belong to one category. If any of the following
                                 //conditions fails, there is no need for checking the others.
+
+
                                 if(!category.equals(sport)){
                                     if(!category.equals(music)){
                                         if(!category.equals(chilling)){
-                                            if(!category.equals(drinking)){
-                                                if(!category.equals(disco)){
-                                                    if(!category.equals(videoGames)){
-                                                        if(!category.equals(food)){
-                                                            drawMarker(tmpLatLng, tmpTitle, eventID);
+                                            if(!category.equals(dancing)){
+                                                if(!category.equals(videoGames)){
+                                                    if(!category.equals(food)){
+                                                        try {
+                                                            eventArray.add(eventList.get(i).fetchIfNeeded());
+                                                            Log.d("Main", "geoPoint: " + eventArray.get(eventArray.size() - 1).getParseGeoPoint("geoPoint"));
+                                                        } catch (ParseException e1) {
+                                                            e1.printStackTrace();
                                                         }
+                                                        Log.d("Main", "Drew marker: "+tmpTitle);
+                                                        drawMarker(tmpLatLng, tmpTitle, eventID);
                                                     }
                                                 }
                                             }
@@ -326,7 +355,10 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
                                     }
                                 }
                             }
-                        }
+                        }//End for-loop for eventList
+                        ParseObject listOfFilteredEvents = new ParseObject("FilteredEvents");
+                        listOfFilteredEvents.put("list", eventArray);
+                        listOfFilteredEvents.pinInBackground();
                     }
 
                 } else {

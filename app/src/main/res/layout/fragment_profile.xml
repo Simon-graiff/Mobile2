@@ -8,6 +8,7 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:weightSum="1"
+    android:id="@+id/layout_profile_fragment"
     android:showDividers="middle">
 
 
@@ -114,22 +115,42 @@
         android:paddingRight="10dp"
         android:focusable="false"
         android:padding="10dp"
-
         android:visibility="gone"/>
 
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="35dp"
-        android:onClick="changeProfile"
-        android:id="@+id/textView_reloadFacebookData"
-        android:text="Reload data from Facebook"
-        android:background="#ffffff"
-        android:textColor="@android:color/holo_blue_light"
-        android:textSize="@dimen/textFieldFontSize"
-        android:paddingLeft="10dp"
-        android:gravity="center"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_marginTop="1dp"
-        android:visibility="gone"/>
+        android:gravity="center"
+        android:id="@+id/layout_reload"
+        android:visibility="gone"
+        android:background="#ffffff">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/imageView_facebookIcon"
+            android:layout_gravity="center"
+            android:tintMode="src_over"
+            android:tint="@color/com_facebook_blue"
+            android:src="@drawable/com_facebook_button_icon"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:onClick="changeProfile"
+            android:id="@+id/textView_reloadFacebookData"
+            android:text="Reload data from Facebook"
+            android:background="#ffffff"
+            android:textColor="@android:color/holo_blue_light"
+            android:textSize="@dimen/textFieldFontSize"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:gravity="center"
+            android:layout_marginTop="1dp"
+            android:focusable="false" />
+    </LinearLayout>
 
 
 </LinearLayout>

@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,6 +13,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -28,6 +30,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -64,6 +67,10 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     //EventObject
     public ParseObject eventObject;
 
+    //ProgressDialog
+    private ProgressDialog progressDialog;
+
+
     //Relevant Users
     ParseUser currentUser;
     List<ParseUser> listParticipants;
@@ -82,6 +89,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     private Button detailButtonListParticipants;
     private Button detailButtonNavigate;
     private View rootView;
+    private LinearLayout creatorView;
 
     //Map Elements
     private GoogleMap map = null;
@@ -96,6 +104,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_event_detail, container, false);
+        rootView.setBackgroundColor(Color.rgb(240, 240, 240));
 
         //Map initialization
         myMapView = (MapView) rootView.findViewById(R.id.mapView);
@@ -113,6 +122,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         detailLocationNameDynamic = (TextView) (rootView.findViewById(R.id.detail_location_name_dynamic));
         detailCreatorNameDynamic = (TextView) (rootView.findViewById(R.id.detail_creator_dynamic));
         detailCreationTimeDynamic = (TextView) (rootView.findViewById(R.id.detail_creation_time_dynamic));
+        creatorView = (LinearLayout) (rootView.findViewById(R.id.creator_view));
 
         //initialize Buttons and set their listeners
         detailButtonParticipate = (Button) rootView.findViewById(R.id.detail_button_participate);
@@ -121,6 +131,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         detailButtonListParticipants.setOnClickListener(this);
         detailButtonNavigate = (Button) rootView.findViewById(R.id.detail_button_navigate);
         detailButtonNavigate.setOnClickListener(this);
+        creatorView.setOnClickListener(this);
 
         return rootView;
     }
@@ -129,15 +140,23 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
     @Override
     public void onResume(){
+        //Initialize progressDialog
+        progressDialog = ProgressDialog.show(getActivity(), "Loading", "Please wait..");
+
         super.onResume();
         if(myMapView!=null){
             myMapView.onResume();
         }
 
-        ListView mDrawerList;
-        mDrawerList = (ListView) getActivity().findViewById(R.id.list_slidermenu);
-        mDrawerList.setItemChecked(1, true);
-        mDrawerList.setSelection(1);
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        boolean myEventActivated = sharedPref.getBoolean("myEventActivated", false);
+        if (!myEventActivated) {
+            ListView mDrawerList;
+            mDrawerList = (ListView) getActivity().findViewById(R.id.list_slidermenu);
+
+            mDrawerList.setItemChecked(1, true);
+            mDrawerList.setSelection(1);
+        }
         retrieveParseData();
     }
 
@@ -196,8 +215,9 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
                     //asynchronous call to map
                     if (myMapView != null) {
                         myMapView.getMapAsync(EventDetailFragment.this);
-                    }
-                } else {
+                    } progressDialog.dismiss();
+                }
+                else {
                     System.out.print("Object could not be received");
                 }
 
@@ -343,21 +363,27 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     }
 
     private void checkParticipationStatus(ParseObject object){
-        String eventIdOfUser = currentUser.getString("eventId");
-        // user is not already in an event if his attribute eventId is null or if it equals no_event
-        if (eventIdOfUser != null){
-           if (!eventIdOfUser.equals("no_event")) {
-               if (eventIdOfUser.equals(object.getObjectId())) {
-                   changeParticipationToTrue();
-               } else {
-                   statusParticipation = true;
-               }
-           } else {
-                   changeParticipationToFalse();
-           }
-       } else {
-           changeParticipationToFalse();
+        String eventIdOfUser = "";
+        try {
+            eventIdOfUser = ParseUser.getCurrentUser().fetch().getString("eventId");
+            // user is not already in an event if his attribute eventId is null or if it equals no_event
+            if (eventIdOfUser != null){
+                if (!eventIdOfUser.equals("no_event")) {
+                    if (eventIdOfUser.equals(object.getObjectId())) {
+                        changeParticipationToTrue();
+                    } else {
+                        statusParticipation = true;
+                    }
+                } else {
+                    changeParticipationToFalse();
+                }
+            } else {
+                changeParticipationToFalse();
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
+
     }
 
     @Override
@@ -368,6 +394,18 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
             linkParticipantsActivity();
         } else if (view == detailButtonNavigate){
             navigateToEvent();
+        } else if (view == creatorView){
+            Fragment fragment;
+            try {
+                fragment = ProfileFragment.newInstance(eventObject.getParseUser("creator").fetchIfNeeded().getObjectId());
+                FragmentManager fragmentManager = getFragmentManager();
+                FragmentTransaction transaction = fragmentManager.beginTransaction();
+                transaction.replace(R.id.frame_container, fragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
     }
 

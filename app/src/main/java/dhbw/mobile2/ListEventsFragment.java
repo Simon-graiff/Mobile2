@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -82,6 +83,7 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         screenView = inflater.inflate(R.layout.fragment_events_list, container, false);
+        screenView.setBackgroundColor(Color.rgb(240, 240, 240));
 
         // Set the adapter
         mListView = (AbsListView) screenView.findViewById(android.R.id.list);
@@ -177,79 +179,102 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
         LocationManager locationManager =  (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         Location userLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         final ParseGeoPoint point = new ParseGeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
-
+        Log.d("Main", point.getLatitude() + ", " + point.getLongitude());
 
         //Query: Get all events in the reach of five kilometers
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
-        query.whereWithinKilometers("geoPoint", point, 5);
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("FilteredEvents");
+        query.fromLocalDatastore();
 
         Log.d("Main", "Waiting for Callback...");
 
         //Executing query
         query.findInBackground(new FindCallback<ParseObject>() {
             public void done(List<ParseObject> eventList, ParseException e) {
-                Log.d("Main", "Received "+eventList.size()+" events");
+                Log.d("Main", "Received " + eventList.size() + " events");
+
                 if (e == null) {
-                    for (int i=0; i < eventList.size(); i++){
+                    for (int j=0; j < eventList.size(); j++) {
                         //get single event object from query
-                        ParseObject event = eventList.get(i);
-                        //add title to Event List object
-                        titleArray.add(event.getString("title"));
-                        //add id to Event List object
-                        idArray.add(event.getObjectId());
-                        //add category to Event List object
-                        categoryArray.add(event.getString("category"));
-
-                        //calculate distance and add it to Event List object
-                        ParseGeoPoint eventPoint = event.getParseGeoPoint("geoPoint");
-                        double distance = eventPoint.distanceInKilometersTo(point);
-                        //get just the kilometer amount with one digit behind the comma
-                        distance = ((int) distance * 10)/10.0;
-                        distanceArray.add(distance);
-
-                        //start: get the time of the event, create a string out of it and add it to Event List object
-                        Date creationTime;
-                        Date finishTime;
-                        creationTime = event.getCreatedAt();
-                        finishTime = event.getDate("duration");
-                        Calendar calendar = GregorianCalendar.getInstance();
-
-                        calendar.setTime(creationTime);
-                        String creationTimeString = calendar.get(Calendar.HOUR_OF_DAY)+ ":";
-                        if (calendar.get(Calendar.MINUTE)< 10){
-                            creationTimeString += "0";}
-                        creationTimeString += calendar.get(Calendar.MINUTE);
-
-                        calendar.setTime(finishTime);
-                        String finishTimeString = calendar.get(Calendar.HOUR_OF_DAY)+ ":";
-                        if (calendar.get(Calendar.MINUTE)< 10){
-                            finishTimeString += "0";}
-                        finishTimeString += calendar.get(Calendar.MINUTE);
-                        String time = creationTimeString + " - " + finishTimeString;
-                        timeArray.add(time);
-                        //end: get the time of the event, create a string out of it and add it to Event List object
-
-                        //get a string from the current participants and maximum amount of them, add
-                        //it to Event object
-                        List<ParseUser> listParticipants = event.getList("participants");
-                        int maxMembers = event.getInt("maxMembers");
+                        ParseObject event = null;
+                        List<ParseObject> list;
                         try {
-                            String textParticipants = listParticipants.size() + "/" + maxMembers;
+                            list = eventList.get(0).fetchIfNeeded().getList("list");
+                            for (int i = 0; i < list.size(); i++) {
 
-                            participantCountArray.add(textParticipants);
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
+
+                                event = list.get(i);
+
+                                //add title to Event List object
+                                titleArray.add(event.getString("title"));
+                                Log.d("Main", "title: " + event.getString("title"));
+                                //add id to Event List object
+                                idArray.add(event.getObjectId());
+                                //add category to Event List object
+                                categoryArray.add(event.getString("category"));
+
+                                //calculate distance and add it to Event List object
+                                ParseGeoPoint eventPoint = event.getParseGeoPoint("geoPoint");
+                                Log.d("Main", "eventPoint: " + eventPoint);
+                                double distance = eventPoint.distanceInKilometersTo(point);
+                                //get just the kilometer amount with one digit behind the comma
+                                distance = ((int) distance * 10) / 10.0;
+                                distanceArray.add(distance);
+
+                                //start: get the time of the event, create a string out of it and add it to Event List object
+                                Date creationTime;
+                                Date finishTime;
+                                creationTime = event.getCreatedAt();
+                                finishTime = event.getDate("duration");
+                                Calendar calendar = GregorianCalendar.getInstance();
+
+                                calendar.setTime(creationTime);
+                                String creationTimeString = calendar.get(Calendar.HOUR_OF_DAY) + ":";
+                                if (calendar.get(Calendar.MINUTE) < 10) {
+                                    creationTimeString += "0";
+                                }
+                                creationTimeString += calendar.get(Calendar.MINUTE);
+
+                                calendar.setTime(finishTime);
+                                String finishTimeString = calendar.get(Calendar.HOUR_OF_DAY) + ":";
+                                if (calendar.get(Calendar.MINUTE) < 10) {
+                                    finishTimeString += "0";
+                                }
+                                finishTimeString += calendar.get(Calendar.MINUTE);
+                                String time = creationTimeString + " - " + finishTimeString;
+                                timeArray.add(time);
+                                //end: get the time of the event, create a string out of it and add it to Event List object
+
+                                //get a string from the current participants and maximum amount of them, add
+                                //it to Event object
+                                List<ParseUser> listParticipants = event.getList("participants");
+                                int maxMembers = event.getInt("maxMembers");
+                                try {
+                                    String textParticipants = listParticipants.size() + "/" + maxMembers;
+
+                                    participantCountArray.add(textParticipants);
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
+                                }
+
+                            }
+
+
+                        } catch (ParseException e1) {
+                            e1.printStackTrace();
                         }
-                    }
+                        eventList.get(0).unpinInBackground();
 
-                    //add all event object content to the Event List
-                    mAdapter = new EventlistAdapter(getActivity(),
-                            titleArray,
-                            categoryArray,
-                            distanceArray,
-                            timeArray,
-                            participantCountArray);
-                    mListView.setAdapter(mAdapter);
+                        //add all event object content to the Event List
+                        mAdapter = new EventlistAdapter(getActivity(),
+                                titleArray,
+                                categoryArray,
+                                distanceArray,
+                                timeArray,
+                                participantCountArray);
+                        mListView.setAdapter(mAdapter);
+
+
+                    }
                 }else {
                     Log.d("Main", "Exception: "+e);
                 }

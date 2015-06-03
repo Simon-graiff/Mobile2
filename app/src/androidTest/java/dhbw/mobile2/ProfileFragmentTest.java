@@ -2,24 +2,28 @@ package dhbw.mobile2;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.opengl.Visibility;
 import android.support.test.espresso.Espresso;
 import android.test.ActivityInstrumentationTestCase2;
+import android.view.View;
 
 import com.parse.ParseUser;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
-
+import static org.hamcrest.Matchers.not;
 
 /**
- * Created by Christian on 19.05.15.
+ * Created by christian on 29.05.15.
  */
-public class LogoutFragmentTest extends ActivityInstrumentationTestCase2<MainScreen> {
+public class ProfileFragmentTest extends ActivityInstrumentationTestCase2<MainScreen> {
 
-    public LogoutFragmentTest() {
+    public ProfileFragmentTest() {
         super(MainScreen.class);
     }
 
@@ -31,29 +35,33 @@ public class LogoutFragmentTest extends ActivityInstrumentationTestCase2<MainScr
         if(ParseUser.getCurrentUser()==null){
             ParseUser.logIn("TestUser", "1234");
         }
+
         getActivity();
         Espresso.closeSoftKeyboard();
 
     }
 
+    public void testOwnProfileAllFieldsAreCorrect(){
 
-    public void testLogoutCorrectRedirectIfLogoutContinue(){
-
-        Fragment fragment = new LogoutFragment();
+        Fragment fragment = ProfileFragment.newInstance("mF3LMXzDIW");
         FragmentManager fragmentManager = getActivity().getFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commitAllowingStateLoss();
-        onView(withText("Yes")).perform(click());
-        onView(withText("Login with Facebook")).check(matches(isDisplayed()));
+
+        onView(withId(R.id.textView_change)).check(matches(isDisplayed()));
+        onView(withId(R.id.editText_username)).check(matches(isDisplayed()));
+        onView(withId(R.id.textView_reloadFacebookData)).check(matches(not(isDisplayed())));
     }
 
-    public void testLogoutCorrectRedirectIfLogoutCanceled(){
+    public void testOtherUsersProfile(){
 
-        Fragment fragment = new LogoutFragment();
+        Fragment fragment = ProfileFragment.newInstance("sGcknYlkNI");
         FragmentManager fragmentManager = getActivity().getFragmentManager();
-        fragmentManager.beginTransaction().add(R.id.frame_container, fragment).commit();
-        onView(withText("No")).perform(click());
-    }
+        fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commitAllowingStateLoss();
 
+        onView(withId(R.id.textView_change)).check(doesNotExist());
+        onView(withId(R.id.editText_username)).check(matches(isDisplayed()));
+        onView(withId(R.id.editText_about)).check(matches(isDisplayed()));
+    }
 
 
 }
