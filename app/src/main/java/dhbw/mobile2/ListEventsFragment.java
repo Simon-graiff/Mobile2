@@ -189,20 +189,21 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
 
         //Executing query
         query.findInBackground(new FindCallback<ParseObject>() {
-            public void done(List<ParseObject> eventList, ParseException e) {
-                Log.d("Main", "Received " + eventList.size() + " events");
+            public void done(List<ParseObject> listOfEventList, ParseException e) {
+                Log.d("Main", "Received " + listOfEventList.size() + " events");
 
-                if (e == null) {
-                    for (int j=0; j < eventList.size(); j++) {
+                if (e == null && listOfEventList.size() > 0) {
+                    for (int j=0; j < listOfEventList.size(); j++) {
                         //get single event object from query
-                        ParseObject event = null;
-                        List<ParseObject> list;
+                        ParseObject event;
+                        List<ParseObject> listEvents;
                         try {
-                            list = eventList.get(0).fetchIfNeeded().getList("list");
-                            for (int i = 0; i < list.size(); i++) {
+                            listEvents = listOfEventList.get(0).fetchIfNeeded().getList("list");
+                            if (listEvents.size() > 0){
+                            for (int i = 0; i < listEvents.size(); i++) {
 
 
-                                event = list.get(i);
+                                event = listEvents.get(i).fetchIfNeeded();
 
                                 //add title to Event List object
                                 titleArray.add(event.getString("title"));
@@ -255,6 +256,7 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
                                 } catch (Exception ex) {
                                     ex.printStackTrace();
                                 }
+                            }
 
                             }
 
@@ -262,7 +264,7 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
                         } catch (ParseException e1) {
                             e1.printStackTrace();
                         }
-                        eventList.get(0).unpinInBackground();
+                        listOfEventList.get(0).unpinInBackground();
 
                         //add all event object content to the Event List
                         mAdapter = new EventlistAdapter(getActivity(),

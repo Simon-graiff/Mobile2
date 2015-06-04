@@ -42,9 +42,6 @@ public class ParticipantsListFragment extends Fragment implements View.OnClickLi
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         eventId = sharedPref.getString("eventId", "LyRCMu490k");
 
-        backToEventDetailButton = (Button) rootView.findViewById(R.id.participantsListBackButton);
-        backToEventDetailButton.setOnClickListener(this);
-
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
         query.fromLocalDatastore();
         query.getInBackground(eventId, new GetCallback<ParseObject>() {

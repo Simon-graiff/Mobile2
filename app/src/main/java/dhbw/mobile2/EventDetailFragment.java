@@ -98,7 +98,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     public List<EventManagerItem> eventManager = new ArrayList<>();
     private ArrayList<Marker> markers = new ArrayList<>();
 
-    //constructur
+    //constructor
     public EventDetailFragment(){}
 
     @Override
@@ -112,7 +112,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
         //fetch from local DB which event to display
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        eventId = sharedPref.getString("eventId", "LyRCMu490k");
+        eventId = sharedPref.getString("eventId", "no_event");
 
         currentUser = ParseUser.getCurrentUser();
 
@@ -163,19 +163,28 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public void onPause(){
         super.onPause();
-        myMapView.onPause();
+        if (myMapView != null) {
+            myMapView.onPause();
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        myMapView.onDestroy();
+        if (myMapView != null) {
+            myMapView.onDestroy();
+        }
+        if (eventObject != null){
+            eventObject.unpinInBackground();
+        }
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        myMapView.onLowMemory();
+        if (myMapView != null) {
+            myMapView.onLowMemory();
+        }
     }
 
     @Override
@@ -204,7 +213,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
                     eventId = object.getObjectId();
 
                     //for Participantlist to use the event is pinned in local DB
-                    object.pinInBackground();
+                    eventObject.pinInBackground();
 
 
                     listParticipants = eventObject.getList("participants");
@@ -363,7 +372,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     }
 
     private void checkParticipationStatus(ParseObject object){
-        String eventIdOfUser = "";
+        String eventIdOfUser;
         try {
             eventIdOfUser = ParseUser.getCurrentUser().fetch().getString("eventId");
             // user is not already in an event if his attribute eventId is null or if it equals no_event
@@ -394,6 +403,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
             linkParticipantsActivity();
         } else if (view == detailButtonNavigate){
             navigateToEvent();
+            //creatorView: Textfield with creator name or picture of creator
         } else if (view == creatorView){
             Fragment fragment;
             try {

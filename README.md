@@ -112,3 +112,32 @@ If the current user sees his own profile he can edit the about me textfield whic
         }
 `````
 
+#EventDetail(Fragment)
+
+On the EventDetail Screen the user can see all data of the relevant event on one glance. The creator of the event is shown, a description, further information like the category of the event and the location, but also dynamic data like the number of participants for the event, the distance and a map showing the user himself and the event. The user has the ability to participate in the event and be navigated to it via two buttons. The number of participants is also clickable and links to the ParticipantList(Fragment) where the list of participants is shown.
+
+EventDetail is composed of the files:
+
+java/dhbw.mobile2/EventDetailFragment.java
+res/layout/fragment_event_detail.xml
+
+The data for the event is retrieved from Parse. Any Screen which call EventDetail saves the ID of the event locally so the fragment just has to fetch it. After this, the data is taken from the retrieved ParseObject and filled into the relevant fields.
+
+`````   
+    SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+    eventId = sharedPref.getString("eventId", "no_event");
+`````   
+
+Users can participate only once at a time in an event and also can only participate in only one event at all. The method checkParticipationStatus(ParseObject object) checks wether the user already participates in this event or if he participates in another. The Participate Button is dependantly labeled and the logic changes to ensure the explained business rule.
+
+Dependant on the category of the event, a different picture is shown in the upper left corner. In the upper right corner a picture of the user is shown who created the event. If the picture or his name is clicked, his profile page is shown.
+
+#ParticipantsList(Fragment)
+
+On the ParticipantsList Screen every user who takes part in an event is shown with his picture and his name. The screen is composed out of the files:
+
+java/dhbw.mobile2/ParticipantsListFragment.java
+java/dhbw.mobile2/ParticipantsListAdapter.java
+res/layout/list_participants.xml
+participants_list_fragment.xml
+

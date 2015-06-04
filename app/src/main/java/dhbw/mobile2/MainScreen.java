@@ -34,14 +34,17 @@ import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
 import com.parse.FunctionCallback;
+import com.parse.GetCallback;
 import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -97,7 +100,11 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
             Intent intent = new Intent(getApplicationContext(), LogInActivity.class);
             startActivity(intent);
         } else {
-            currentUser = ParseUser.getCurrentUser();
+            try {
+                currentUser = ParseUser.getCurrentUser().fetchIfNeeded();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
 
 
@@ -111,7 +118,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.list_slidermenu);
 
-        navDrawerItems = new ArrayList<NavDrawerItem>();
+        navDrawerItems = new ArrayList<>();
 
         //Adding items to array, counter is deactivated:
         //0 = Profile
@@ -216,9 +223,34 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
                         switch (which){
                             case DialogInterface.BUTTON_POSITIVE:
                                 //Yes button clicked
-                                ParseUser.getCurrentUser().put("eventId", "no_event");
-                                ParseUser.getCurrentUser().saveInBackground();
-                                createEventFragment();
+                                ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
+                                try {
+                                    String previousEventId = ParseUser.getCurrentUser().fetchIfNeeded().getString("eventId");
+                                    query.getInBackground(previousEventId, new GetCallback<ParseObject>() {
+                                        @Override
+                                        public void done(ParseObject object, ParseException queryException) {
+                                            if (queryException == null) {
+                                                List<ParseUser> listParticipants = object.getList("participants");
+                                                try {
+                                                    listParticipants.remove(ParseUser.getCurrentUser().fetchIfNeeded());
+                                                    Log.d("Main", "User has been removed from " + object.getString("title"));
+                                                } catch (ParseException e) {
+                                                    Log.d("Main", "User could not been removed from " + object.getString("title"));
+                                                }
+                                                object.put("participants", listParticipants);
+                                                object.saveInBackground();
+                                                statusParticipation = false;
+                                                ParseUser.getCurrentUser().put("eventId", "no_event");
+                                                ParseUser.getCurrentUser().saveInBackground();
+                                                displayView(2);
+                                            } else {
+                                                System.out.print("Object could not be received");
+                                            }
+
+                                        }});
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
+                                }
                                 break;
 
                             case DialogInterface.BUTTON_NEGATIVE:

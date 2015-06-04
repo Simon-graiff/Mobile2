@@ -8,12 +8,6 @@
     android:orientation="vertical"
     tools:context="dhbw.mobile2.ParticipantsListFragment">
 
-    <Button
-        android:id="@+id/participantsListBackButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/participants_back_button"/>
-
     <ListView
         android:id="@+id/participatorsListView"
         android:layout_width="match_parent"

@@ -65,6 +65,8 @@
             android:layout_gravity="center_horizontal"
             android:paddingStart="20sp"
             android:paddingEnd="10sp"
+            android:paddingTop="10sp"
+            android:paddingBottom="10sp"
             android:gravity="center_horizontal"
             />
 

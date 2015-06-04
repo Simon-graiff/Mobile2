@@ -222,7 +222,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
     }//End of setUpMap
 
     private Location getUserPosition() {
-
+        locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
         Location userPosition = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         return userPosition;
     }
@@ -386,7 +386,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
             SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putString("eventId", eventID);
-            editor.commit();
+            editor.apply();
 
             //Direction to EventDetailFragment
             Fragment eventDetailFragment = new EventDetailFragment();
