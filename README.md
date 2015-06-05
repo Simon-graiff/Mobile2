@@ -10,22 +10,7 @@ Just clone this projekt and build it with e.g. AndroidStudio or right away with 
 That's it. You are ready to go!
 
 #App Structure
-The app starts the MainScreenen 
-
-#Main Screen
-The MainScreen is the main Activity. The app launches this activity by default. To ensure that the user is logged in the following check is performed:
-````
-        //Check if User is logged in
-        if(ParseUser.getCurrentUser() == null){
-            //If the user is not logged in call the loginActiviy
-            Intent intent = new Intent(getApplicationContext(), LogInActivity.class);
-            startActivity(intent);
-        } else {
-            currentUser = ParseUser.getCurrentUser();
-        }
-````
-If the user is not logged in yet, the user is redirected to the LoginActivity to handel the login
-
+WhereU consists of two activities. The LoginActivity and the MainScreen. The LoginActivity is responsible for providing a login, which leads to user identification by the app. The only way to start the MainScreen-activity is a successful login. The MainScrren manages the actual content delivery and is dependent from a successful login. Both activities and their features are documented below.
 
 #LoginActivity
 The app uses the ParseFacebookUtils library to call the Facebook SDK ([more information see Parse Doku] (https://www.parse.com/docs/android/guide#users-facebook-users))
@@ -90,6 +75,49 @@ ParseFile file = new ParseFile("profilepicture.jpg", data);
 ParseUser.getCurrentUser().put("profilepicture", file);
 ParseUser.getCurrentUser().saveInBackground();
 `````
+
+#Main Screen
+The MainScreen is the actual activity behind WhereU. It extends an ActionBarActivity and displays only an ActionBar. The more it is responsible for handling clicks in the side menu or sliding gestures, which open the SideBar. Most of the screen belongs to the contentView, in which fragments are placed in by FragmentTransactions. The FragmentTransactions are mostly activated by the user, by pressing an element from the sidebar, or the Android back button. So every screen in the app is a fragment and not an activity. This has several advantages. One is a performance optimization because there is no need for stating intends. This can especially be seen in an emulator environment, but has also a huge impact on real devices. Another advantage is the differentiation between a controller - which handles the navigation through the app - and the UI, which is represented by the fragments (except the ActionBar). Another benefit of this architecture is the use and easy implementation of a back navigation. This is possible by the use of the Android BackStack.
+
+
+
+The app launches this activity by default. To ensure that the user is logged in the following check is performed:
+````
+        //Check if User is logged in
+        if(ParseUser.getCurrentUser() == null){
+            //If the user is not logged in call the loginActiviy
+            Intent intent = new Intent(getApplicationContext(), LogInActivity.class);
+            startActivity(intent);
+        } else {
+            currentUser = ParseUser.getCurrentUser();
+        }
+````
+If the user is not logged in yet, the user is redirected to the LoginActivity to handel the login.
+
+After this check, the SideBar is built up. One SideBar element consists of an icon and a text. Both are stored in arrays and imported during onCreate. After the import, the icons are added to an ArrayList, called "navDrawerItems", which consists special objects, the NavDrawerItems:
+````
+navMenuTitles = getResources().getStringArray(R.array.nav_drawer_items);
+navMenuIcons = getResources().obtainTypedArray(R.array.nav_drawer_icons);
+...
+navDrawerItems.add(new NavDrawerItem(navMenuTitles[0], navMenuIcons.getResourceId(0, -1)));
+````
+
+NavDrawerItem is a special class which makes it possible to display an icon and a text in the SideBar. This class consists just of a constructor and getters/setters. After that a second class is used, the NavDrawerListAdapter. This class extends BaseAdapter and is returning Views - the SideBar elements. It also converts the icons (which are to this point drawables) to ImageViews, which can be seen below:
+````
+if(position==0){
+    imgIcon.setImageBitmap(Bitmap.createScaledBitmap(bitmap, heightPixels, heightPixels, false));
+    txtTitle.setText(ParseUser.getCurrentUser().getUsername());
+}else{
+    imgIcon.setImageResource(navDrawerItems.get(position).getIcon());
+    txtTitle.setText(navDrawerItems.get(position).getTitle());
+}
+````
+
+
+
+
+
+
 
 #ProfileScreen
 The ProfileScreen is used for the own user to show his information and to see other users information.
