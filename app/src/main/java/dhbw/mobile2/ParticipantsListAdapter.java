@@ -17,7 +17,7 @@ public class ParticipantsListAdapter extends ArrayAdapter {
     private final ArrayList<Bitmap> img;
 
     public ParticipantsListAdapter(Activity context, ArrayList<String> itemname, ArrayList<Bitmap> img) {
-        super(context, R.layout.list_participants, itemname);
+        super(context, R.layout.list_item_participants, itemname);
 
         this.context=context;
         this.itemname=itemname;
@@ -26,7 +26,7 @@ public class ParticipantsListAdapter extends ArrayAdapter {
 
     public View getView(int position,View view,ViewGroup parent) {
         LayoutInflater inflater=context.getLayoutInflater();
-        View rowView=inflater.inflate(R.layout.list_participants, null,true);
+        View rowView=inflater.inflate(R.layout.list_item_participants, null,true);
 
         TextView userName = (TextView) rowView.findViewById(R.id.user_name);
         ImageView userPicture = (ImageView) rowView.findViewById(R.id.user_picture);

@@ -34,16 +34,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 
-
-/**
- * A fragment representing a list of Items.
- * <p/>
- * Large screen devices (such as tablets) are supported by replacing the ListView
- * with a GridView.
- * <p/>
- * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
- * interface.
- */
 public class ListEventsFragment extends Fragment implements AdapterView.OnItemClickListener {
 
 
@@ -52,15 +42,7 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
 
     ArrayList<String> idArray;
 
-    /**
-     * The fragment's ListView/GridView.
-     */
     private AbsListView mListView;
-    View screenView;
-    /**
-     * The Adapter which will be used to populate the ListView/GridView with
-     * Views.
-     */
     private ListAdapter mAdapter;
 
 
@@ -82,7 +64,7 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        screenView = inflater.inflate(R.layout.fragment_events_list, container, false);
+        View screenView = inflater.inflate(R.layout.fragment_events_list, container, false);
         screenView.setBackgroundColor(Color.rgb(240, 240, 240));
 
         // Set the adapter
@@ -184,8 +166,6 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
         //Query: Get all events in the reach of five kilometers
         ParseQuery<ParseObject> query = ParseQuery.getQuery("FilteredEvents");
         query.fromLocalDatastore();
-
-        Log.d("Main", "Waiting for Callback...");
 
         //Executing query
         query.findInBackground(new FindCallback<ParseObject>() {

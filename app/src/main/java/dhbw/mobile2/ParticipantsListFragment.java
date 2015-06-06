@@ -3,12 +3,12 @@ package dhbw.mobile2;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,11 +37,13 @@ public class ParticipantsListFragment extends Fragment implements View.OnClickLi
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        View rootView = inflater.inflate(R.layout.participants_list_fragment, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_participants_list, container, false);
 
+        //get the eventId from local Storage
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        eventId = sharedPref.getString("eventId", "LyRCMu490k");
+        eventId = sharedPref.getString("eventId", "no_event");
 
+        //get the event object with the participants list from the local datastore saved from EventDetailFragment
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
         query.fromLocalDatastore();
         query.getInBackground(eventId, new GetCallback<ParseObject>() {
@@ -49,6 +51,7 @@ public class ParticipantsListFragment extends Fragment implements View.OnClickLi
                 if (e == null) {
                     listParticipants = object.getList("participants");
                     createParticipantsList();
+                    object.unpinInBackground();
                 }
             }
         });
@@ -94,10 +97,12 @@ public class ParticipantsListFragment extends Fragment implements View.OnClickLi
             // fragment is attached to one) that an item has been selected.
             mListener.onParticipantInteraction(listParticipants.get(position).getObjectId());
 
-            Log.d("Main", "got into Listener");
-            Fragment fragment = ProfileFragment.newInstance(listParticipants.get(position).getObjectId());
             FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+            Fragment fragment = ProfileFragment.newInstance(listParticipants.get(position).getObjectId());
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            transaction.replace(R.id.frame_container, fragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
         }
     }
 
@@ -119,8 +124,7 @@ public class ParticipantsListFragment extends Fragment implements View.OnClickLi
         }
         ParticipantsListAdapter adapter = new ParticipantsListAdapter(getActivity(),
                 arrayListParticipantNames, arrayListParticipantPictures);
-        //ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
-          //      R.layout.list_participants, R.id.Itemname, arrayListParticipantNames);
+
         participantsListView.setAdapter(adapter);
     }
 
