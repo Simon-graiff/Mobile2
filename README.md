@@ -147,6 +147,7 @@ On the EventDetail Screen the user can see all data of the relevant event on one
 EventDetail is composed of the files:
 
 `java/dhbw.mobile2/EventDetailFragment.java`
+
 `res/layout/fragment_event_detail.xml`
 
 The data for the event is retrieved from Parse. Any Screen which call EventDetail saves the ID of the event locally so the fragment just has to fetch it. After this, the data is taken from the retrieved ParseObject and filled into the relevant fields.
@@ -165,13 +166,20 @@ Dependant on the category of the event, a different picture is shown in the uppe
 On the ParticipantsList Screen every user who takes part in an event is shown with his picture and his name. The screen works with a ListView, in which each List Item represents one user with his name and his profile picture. Each List Item is clickable and redirects to the Profile Page of the user. The screen is composed out of the files:
 
 `java/dhbw.mobile2/ParticipantsListFragment.java`:
+
 Fills the List View with the name and picture of the participants (saved in the event object from Parse).
 In onItemClick() the user is redirected to the respective Profile Page.
+
 `java/dhbw.mobile2/ParticipantsListAdapter.java`:
+
 Contains the data of the ListView
+
 `res/layout/list_item_participants.xml`:
+
 Represents the structure of one participant list item
+
 `res/layout/fragment_participants_list.xml`:
+
 Contains just the ListView
 
 #ListEvents(Fragment)
@@ -184,19 +192,29 @@ If an event item is clicked, the EventDetail-Page of the respective event is sho
 The ListEvents Page is composed of the files:
 
 `java/dhbw.mobile2/EventListAdapter.java`:
+
 Contains the data of the ListView of all events
+
 `java/dhbw.mobile2/ListEventsFragment.java`:
+
 Contains the logic of the Page. This page has two main goals:
+
 1. Get the data of the relevant events
+
 2. Pass this data to the EventListAdapter
 
 To 1.:
+
 The data for the relevant events is taken from the AppMapFragment. The EventList Page is opened through an ActionBar Item that is shown only on the MapView. When the MapView fetches events and filters them, they are saved in a localDataStore ParseObject. This object is fetched in getEventData() and the the relevant data for the ListView is then extracted in the callback to pass it to the EventListAdapter.
 
 To 2.:
+
 The EventListAdapter takes the data of the events with ArrayLists containing the single data items. Apart from the category, only strings are passed to the Adapter, which are just shown to the user. The Adapter can easily iterate through these arrays. For the category the EventListFragement sends the String name of the category to the Adapter and the Adapter looks for the matching icon. Apart from the String objects, the ID of the Events objects has to be send as well, so the user can be redirected to the EventDetail Page of this ID when it is called. 
 
 `res/layout/fragment_events_list.xml`:
+
 Contains just the ListView with the events.
+
 `res/layout/list_item_events.xml`:
+
 Contains the structure of one single Event Item in the List. 
