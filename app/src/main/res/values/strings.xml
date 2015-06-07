@@ -20,7 +20,6 @@
         <item>Profile</item>
         <item>Events</item>
         <item>Create new event</item>
-        <item>My event</item>
         <item>Filter events</item>
         <item>Logout</item>
     </string-array>
@@ -30,7 +29,6 @@
         <item>@drawable/ic_profile</item>
         <item>@drawable/ic_map_blue</item>
         <item>@drawable/ic_new_event</item>
-        <item>@drawable/ic_communities</item>
         <item>@drawable/ic_settings</item>
         <item>@drawable/ic_logout</item>
     </array>

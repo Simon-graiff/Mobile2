@@ -48,10 +48,25 @@ public class NavDrawerListAdapter extends BaseAdapter {
         ImageView imgIcon = (ImageView) convertView.findViewById(R.id.icon);
         int heightPixels = 75;
         TextView txtTitle = (TextView) convertView.findViewById(R.id.title);
+        boolean statusParticipation=false;
+        String eventIdOfUser = ParseUser.getCurrentUser().getString("eventId");
+        if (eventIdOfUser != null){
+            statusParticipation = !eventIdOfUser.equals("no_event");
+        }
 
-        if(position==0){
+        if(position==0) {
             imgIcon.setImageBitmap(Bitmap.createScaledBitmap(bitmap, heightPixels, heightPixels, false));
             txtTitle.setText(ParseUser.getCurrentUser().getUsername());
+        }else if(position==2){
+            if(statusParticipation==false){
+                //display createEvent
+                imgIcon.setImageResource(navDrawerItems.get(position).getIcon());
+                txtTitle.setText(navDrawerItems.get(position).getTitle());
+            }else{
+                //display myEvent
+                imgIcon.setImageResource(R.drawable.ic_my_event);
+                txtTitle.setText("My Event");
+            }
         }else{
             imgIcon.setImageResource(navDrawerItems.get(position).getIcon());
             txtTitle.setText(navDrawerItems.get(position).getTitle());

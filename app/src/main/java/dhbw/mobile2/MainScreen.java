@@ -122,17 +122,15 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         //Adding items to array, counter is deactivated:
         //0 = Profile
         //1 = Map
-        //2 = Create new Event
-        //3 = My event
-        //4 = Settings
-        //5 = Logout
+        //2 = Create new Event or MyEvent
+        //3 = Settings
+        //4 = Logout
 
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[0], navMenuIcons.getResourceId(0, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[1], navMenuIcons.getResourceId(0, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[2], navMenuIcons.getResourceId(2, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[3], navMenuIcons.getResourceId(3, -1)));
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[4], navMenuIcons.getResourceId(4, -1)));
-        navDrawerItems.add(new NavDrawerItem(navMenuTitles[5], navMenuIcons.getResourceId(5, -1)));
 
         //Recycle the typed array
         navMenuIcons.recycle();
@@ -164,6 +162,8 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
 
             public void onDrawerOpened(View drawerView) {
                 getSupportActionBar().setTitle(mDrawerTitle);
+
+                mDrawerList.invalidateViews();
 
                 Log.d("Main", "onDrawerOpened");
                 InputMethodManager inputMethodManager = (InputMethodManager)
