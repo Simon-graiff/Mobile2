@@ -1,5 +1,6 @@
 package dhbw.mobile2;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -21,6 +22,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -82,8 +84,6 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
     private String mCurrentGeoFenceId;
     private Boolean mInGeofence = false;
 
-
-
     public static FragmentManager fragmentManager;
 
     //currentUser
@@ -117,7 +117,6 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.list_slidermenu);
-
         navDrawerItems = new ArrayList<>();
 
         //Adding items to array, counter is deactivated:
@@ -165,6 +164,11 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
 
             public void onDrawerOpened(View drawerView) {
                 getSupportActionBar().setTitle(mDrawerTitle);
+
+                Log.d("Main", "onDrawerOpened");
+                InputMethodManager inputMethodManager = (InputMethodManager)
+                        getSystemService(Activity.INPUT_METHOD_SERVICE);
+                inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
 
                 //Calling onPrepareOptionsMenu() to hide action bar icons
                 invalidateOptionsMenu();
