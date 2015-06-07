@@ -98,6 +98,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
        // locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
        // locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
+        locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
 
         /*try{
             MapsInitializer.initialize(this.getActivity());
@@ -140,6 +141,7 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
         if(myMapView!=null){
             myMapView.onResume();
         }
+        locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
       //  locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
        // locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
 

@@ -221,83 +221,31 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         }else if(position==2){
             checkParticipation();
             if (statusParticipation){
-                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which){
-                            case DialogInterface.BUTTON_POSITIVE:
-                                //Yes button clicked
-                                ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
-                                try {
-                                    String previousEventId = ParseUser.getCurrentUser().fetchIfNeeded().getString("eventId");
-                                    query.getInBackground(previousEventId, new GetCallback<ParseObject>() {
-                                        @Override
-                                        public void done(ParseObject object, ParseException queryException) {
-                                            if (queryException == null) {
-                                                List<ParseUser> listParticipants = object.getList("participants");
-                                                try {
-                                                    listParticipants.remove(ParseUser.getCurrentUser().fetchIfNeeded());
-                                                    Log.d("Main", "User has been removed from " + object.getString("title"));
-                                                } catch (ParseException e) {
-                                                    Log.d("Main", "User could not been removed from " + object.getString("title"));
-                                                }
-                                                object.put("participants", listParticipants);
-                                                object.saveInBackground();
-                                                statusParticipation = false;
-                                                ParseUser.getCurrentUser().put("eventId", "no_event");
-                                                ParseUser.getCurrentUser().saveInBackground();
-                                                displayView(2);
-                                            } else {
-                                                System.out.print("Object could not be received");
-                                            }
 
-                                        }});
-                                } catch (ParseException e) {
-                                    e.printStackTrace();
-                                }
-                                break;
+                mDrawerList.setItemChecked(3, true);
+                mDrawerList.setSelection(3);
+                SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putBoolean("myEventActivated", true);
+                String eventId = "";
+                try {
+                    eventId = ParseUser.getCurrentUser().fetch().getString("eventId");
+                    editor.putString("eventId", eventId);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                editor.apply();
+                Log.d("Main", "eventId: " + eventId);
 
-                            case DialogInterface.BUTTON_NEGATIVE:
-                                //No button clicked
-                                break;
-                        }
-                    }
-
-
-                };
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage(
-                        "You already participate in an event. " +
-                                "Cancel other event to create new one?").setPositiveButton(
-                        "Yes", dialogClickListener)
-                        .setNegativeButton("No", dialogClickListener).show();
+                fragment = new EventDetailFragment();
             } else {
                 fragment = new CreateEventFragment();
             }
 
+
         }else if(position==3){
-            mDrawerList.setItemChecked(3, true);
-            mDrawerList.setSelection(3);
-            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putBoolean("myEventActivated", true);
-            String eventId = "";
-            try {
-                eventId = ParseUser.getCurrentUser().fetch().getString("eventId");
-                editor.putString("eventId", eventId);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-            editor.apply();
-            Log.d("Main", "eventId: " + eventId);
-
-            fragment = new EventDetailFragment();
-
-
-        }else if(position==4){
             fragment = new SettingsFragment();
-        }else if(position==5){
+        }else if(position==4){
             fragment = new LogoutFragment();
         }
 
