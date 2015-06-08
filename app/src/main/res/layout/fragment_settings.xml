@@ -12,7 +12,8 @@
         android:layout_alignBaseline="@+id/music_switch"
         android:layout_alignBottom="@+id/music_switch"
         android:layout_alignParentStart="true"
-        android:paddingTop="10dp" />
+        android:paddingTop="10dp"
+        android:paddingBottom="15dp" />
 
     <Switch
         android:layout_width="wrap_content"
@@ -24,7 +25,8 @@
         android:layout_marginRight="10dp"
         android:layout_marginTop="10dp"
         android:checked="true"
-        android:paddingTop="10dp" />
+        android:paddingTop="15dp"
+        android:paddingBottom="20dp" />
 
     <Switch
         android:layout_width="wrap_content"
@@ -34,7 +36,8 @@
         android:checked="true"
         android:layout_below="@+id/sport_switch"
         android:layout_alignStart="@+id/sport_switch"
-        android:paddingTop="10dp" />
+        android:paddingTop="10dp"
+        android:paddingBottom="15dp" />
 
     <Switch
         android:layout_width="wrap_content"
@@ -44,7 +47,8 @@
         android:checked="true"
         android:layout_below="@+id/music_switch"
         android:layout_alignStart="@+id/music_switch"
-        android:paddingTop="10dp" />
+        android:paddingTop="10dp"
+        android:paddingBottom="15dp" />
 
     <Switch
         android:layout_width="wrap_content"
@@ -54,7 +58,8 @@
         android:checked="true"
         android:layout_below="@+id/chilling_switch"
         android:layout_alignStart="@+id/chilling_switch"
-        android:paddingTop="10dp" />
+        android:paddingTop="10dp"
+        android:paddingBottom="15dp" />
 
     <Switch
         android:layout_width="wrap_content"
@@ -64,7 +69,8 @@
         android:checked="true"
         android:layout_below="@+id/dancing_switch"
         android:layout_alignStart="@+id/dancing_switch"
-        android:paddingTop="10dp" />
+        android:paddingTop="10dp"
+        android:paddingBottom="15dp" />
 
     <Switch
         android:layout_width="wrap_content"
@@ -74,7 +80,8 @@
         android:checked="true"
         android:layout_below="@+id/videoGames_switch"
         android:layout_alignStart="@+id/videoGames_switch"
-        android:paddingTop="10dp" />
+        android:paddingTop="10dp"
+        android:paddingBottom="15dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -86,7 +93,8 @@
         android:layout_alignBaseline="@+id/chilling_switch"
         android:layout_alignBottom="@+id/chilling_switch"
         android:layout_alignParentStart="true"
-        android:paddingTop="10dp" />
+        android:paddingTop="10dp"
+        android:paddingBottom="15dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -98,7 +106,8 @@
         android:layout_alignBaseline="@+id/videoGames_switch"
         android:layout_alignBottom="@+id/videoGames_switch"
         android:layout_alignParentStart="true"
-        android:paddingTop="10dp" />
+        android:paddingTop="10dp"
+        android:paddingBottom="15dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -109,7 +118,8 @@
         android:layout_marginLeft="10dp"
         android:layout_alignBaseline="@+id/food_switch"
         android:layout_alignBottom="@+id/food_switch"
-        android:paddingTop="10dp" />
+        android:paddingTop="10dp"
+        android:paddingBottom="15dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -121,7 +131,8 @@
         android:layout_alignBaseline="@+id/dancing_switch"
         android:layout_alignBottom="@+id/dancing_switch"
         android:layout_alignParentStart="true"
-        android:paddingTop="10dp" />
+        android:paddingTop="10dp"
+        android:paddingBottom="15dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -133,7 +144,8 @@
         android:layout_alignBaseline="@+id/sport_switch"
         android:layout_alignBottom="@+id/sport_switch"
         android:layout_alignParentStart="true"
-        android:paddingTop="10dp" />
+        android:paddingTop="15dp"
+        android:paddingBottom="20dp" />
 
     <Switch
         android:layout_width="wrap_content"
@@ -144,7 +156,8 @@
         android:paddingTop="10dp"
         android:layout_marginTop="56dp"
         android:layout_below="@+id/food_switch"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:paddingBottom="15dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -155,6 +168,7 @@
         android:layout_marginLeft="10dp"
         android:paddingTop="10dp"
         android:layout_alignBottom="@+id/mixedGender_switch"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:paddingBottom="15dp" />
 
 </RelativeLayout>
