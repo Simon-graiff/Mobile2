@@ -260,7 +260,7 @@ Assuming those two tests passed the geoPoint is created. Therefore another insta
 ParseGeoPoint geoPoint = new ParseGeoPoint();
         geoPoint.setLatitude(mLocation.getLatitude());
         geoPoint.setLongitude(mLocation.getLongitude());
-        ````
+````
 
 Subsequently an ArrayList is created which will contain all users, that participate in this event. At creation time the creator is obviously the only participant.
 
