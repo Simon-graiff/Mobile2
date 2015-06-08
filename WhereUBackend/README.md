@@ -35,15 +35,15 @@ query.equalTo("user", user)
 If the query can be executed successfully and a geofence is found the response's "inGeoFence"-Flag is set true and addtitionally the ID of the geofence is added to the response as "data". Otherwise, when a query is executed successfully but there no geofences which fit the criteria, the flag is set false and no data is returned. 
 `````
 if (results.length > 0) {
-                response.success({
-                    inGeoFence: true,
-                    data: results[0].get("requestId")
-                })
-            } else {
-                response.success({
-                    inGeoFence: false
-                })
-            }
+  response.success({
+    inGeoFence: true,
+    data: results[0].get("requestId")
+  })
+} else {
+  response.success({
+    inGeoFence: false
+  })
+}
 `````
 
 In case an error is thrown this error is passed to the client to be handled.
