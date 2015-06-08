@@ -145,8 +145,6 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
       //  locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
        // locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
 
-        ((MainScreen) getActivity()).setMapShown(true);
-        getActivity().invalidateOptionsMenu();
 
         ListView mDrawerList;
         mDrawerList = (ListView) getActivity().findViewById(R.id.list_slidermenu);
@@ -207,8 +205,12 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
 
                 //map.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinates, 13));
 
+                double lat = userPosition.getLatitude();
+                double lon = userPosition.getLongitude();
+                LatLng position = new LatLng(lat, lon);
+
                 CameraPosition cameraPosition = new CameraPosition.Builder()
-                        .target(coordinates)
+                        .target(position)
                         .zoom(16)
                         .tilt(40)
                         .build();
@@ -361,6 +363,8 @@ public class AppMapFragment extends Fragment implements GoogleMap.OnMarkerClickL
                         ParseObject listOfFilteredEvents = new ParseObject("FilteredEvents");
                         listOfFilteredEvents.put("list", eventArray);
                         listOfFilteredEvents.pinInBackground();
+                        ((MainScreen) getActivity()).setMapShown(true);
+                        getActivity().invalidateOptionsMenu();
                     }
 
                 } else {

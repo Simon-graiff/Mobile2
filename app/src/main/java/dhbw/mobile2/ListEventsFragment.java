@@ -36,7 +36,7 @@ import java.util.List;
 
 public class ListEventsFragment extends Fragment implements AdapterView.OnItemClickListener {
 
-
+    private HelperClass helperObject = new HelperClass();
 
     private OnFragmentInteractionListener mListener;
 
@@ -194,48 +194,16 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
                                 categoryArray.add(event.getString("category"));
 
                                 //calculate distance and add it to Event List object
-                                ParseGeoPoint eventPoint = event.getParseGeoPoint("geoPoint");
-                                Log.d("Main", "eventPoint: " + eventPoint);
-                                double distance = eventPoint.distanceInKilometersTo(point);
-                                //get just the kilometer amount with one digit behind the comma
-                                distance = ((int) distance * 10) / 10.0;
+                                double distance = helperObject.calculateDistance(point, event.getParseGeoPoint("geoPoint"));
                                 distanceArray.add(distance);
 
                                 //start: get the time of the event, create a string out of it and add it to Event List object
-                                Date creationTime;
-                                Date finishTime;
-                                creationTime = event.getCreatedAt();
-                                finishTime = event.getDate("duration");
-                                Calendar calendar = GregorianCalendar.getInstance();
-
-                                calendar.setTime(creationTime);
-                                String creationTimeString = calendar.get(Calendar.HOUR_OF_DAY) + ":";
-                                if (calendar.get(Calendar.MINUTE) < 10) {
-                                    creationTimeString += "0";
-                                }
-                                creationTimeString += calendar.get(Calendar.MINUTE);
-
-                                calendar.setTime(finishTime);
-                                String finishTimeString = calendar.get(Calendar.HOUR_OF_DAY) + ":";
-                                if (calendar.get(Calendar.MINUTE) < 10) {
-                                    finishTimeString += "0";
-                                }
-                                finishTimeString += calendar.get(Calendar.MINUTE);
-                                String time = creationTimeString + " - " + finishTimeString;
-                                timeArray.add(time);
+                                timeArray.add(helperObject.getTimeScopeString(event));
                                 //end: get the time of the event, create a string out of it and add it to Event List object
 
                                 //get a string from the current participants and maximum amount of them, add
                                 //it to Event object
-                                List<ParseUser> listParticipants = event.getList("participants");
-                                int maxMembers = event.getInt("maxMembers");
-                                try {
-                                    String textParticipants = listParticipants.size() + "/" + maxMembers;
-
-                                    participantCountArray.add(textParticipants);
-                                } catch (Exception ex) {
-                                    ex.printStackTrace();
-                                }
+                                participantCountArray.add(helperObject.getParticipantsString(event));
                             }
 
                             }
@@ -244,22 +212,23 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
                         } catch (ParseException e1) {
                             e1.printStackTrace();
                         }
-                        listOfEventList.get(0).unpinInBackground();
 
-                        //add all event object content to the Event List
-                        mAdapter = new EventlistAdapter(getActivity(),
-                                titleArray,
-                                categoryArray,
-                                distanceArray,
-                                timeArray,
-                                participantCountArray);
-                        mListView.setAdapter(mAdapter);
 
 
                     }
                 }else {
                     Log.d("Main", "Exception: "+e);
                 }
+                listOfEventList.get(0).unpinInBackground();
+
+                //add all event object content to the Event List
+                mAdapter = new EventlistAdapter(getActivity(),
+                        titleArray,
+                        categoryArray,
+                        distanceArray,
+                        timeArray,
+                        participantCountArray);
+                mListView.setAdapter(mAdapter);
             }
         });
     }

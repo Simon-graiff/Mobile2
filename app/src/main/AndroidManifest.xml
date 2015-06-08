@@ -59,17 +59,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".EventDetailActivity"
-            android:configChanges="keyboardHidden|orientation"
-            android:label="@string/title_activity_event_detail"
-            android:launchMode="singleTop"
-            android:parentActivityName=".MainScreen"
-            android:screenOrientation="portrait" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="dhbw.mobile2.MainScreen" />
-        </activity>
+
         <activity
             android:name=".LogInActivity"
             android:label="@string/title_activity_log_in" >

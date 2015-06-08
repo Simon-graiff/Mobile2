@@ -79,6 +79,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     private int maxMembers;
     private String eventId;
     private boolean statusParticipation = false;
+
     //Views
     private TextView detailCategoryDynamic;
     private TextView detailDescriptionDynamic;
@@ -98,6 +99,9 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     public List<EventManagerItem> eventManager = new ArrayList<>();
     private ArrayList<Marker> markers = new ArrayList<>();
 
+    //HelperClass
+    private HelperClass helperObject = new HelperClass();
+
     //constructor
     public EventDetailFragment(){}
 
@@ -115,6 +119,8 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         eventId = sharedPref.getString("eventId", "no_event");
 
         currentUser = ParseUser.getCurrentUser();
+
+        boolean myEventActivated;
 
         //declare TextViews
         detailCategoryDynamic = (TextView) (rootView.findViewById(R.id.detail_category_dynamic));
@@ -148,6 +154,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
             myMapView.onResume();
         }
 
+        //Set the NavDrawer Item "MyEvent" if it isnt activated
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         boolean myEventActivated = sharedPref.getBoolean("myEventActivated", false);
         ListView mDrawerList;
@@ -159,6 +166,8 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
             mDrawerList.setItemChecked(2, true);
             mDrawerList.setSelection(2);
         }
+
+        //With this every necessary data is fetched for the event details
         retrieveParseData();
     }
 
@@ -220,15 +229,15 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
                     listParticipants = eventObject.getList("participants");
 
-                    EventDetailFragment.this.fillDynamicData(object);
+                    EventDetailFragment.this.fillDynamicData();
                     EventDetailFragment.this.checkParticipationStatus(object);
 
                     //asynchronous call to map
                     if (myMapView != null) {
                         myMapView.getMapAsync(EventDetailFragment.this);
-                    } progressDialog.dismiss();
-                }
-                else {
+                    }
+                    progressDialog.dismiss();
+                } else {
                     System.out.print("Object could not be received");
                 }
 
@@ -259,7 +268,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         return output;
     }
 
-    private void fillDynamicData(ParseObject object){
+    private void fillDynamicData(){
 
         //simple Types
         fillSimpleType("category", detailCategoryDynamic);
@@ -273,47 +282,36 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         if ((title != null) && (actionBar != null)){
             actionBar.setTitle(title);
         }
+        //fill more complicated types
+        detailCreationTimeDynamic.setText(helperObject.getTimeScopeString(eventObject));
+        fillCreatorName();
+
+        //fill Participants String
+        detailButtonListParticipants.setText(helperObject.getParticipantsString(eventObject) + " participants");
 
         //fill categoryPicture
         String category = eventObject.getString("category");
         ImageView categoryImage = (ImageView) rootView.findViewById(R.id.category_picture);
-        switch (category){
-            case "Sport":
-                categoryImage.setImageResource(R.drawable.ic_sport_blue);
-                break;
-            case "Chilling":
-                categoryImage.setImageResource(R.drawable.ic_chilling_blue);
-                break;
-            case "Dancing":
-                categoryImage.setImageResource(R.drawable.ic_dance_blue);
-                break;
-            case "Food":
-                categoryImage.setImageResource(R.drawable.ic_food_blue);
-                break;
-            case "Music":
-                categoryImage.setImageResource(R.drawable.ic_music_blue);
-                break;
-            case "Video Games":
-                categoryImage.setImageResource(R.drawable.ic_videogames_blue);
-                break;
-            default:
-                categoryImage.setImageResource(R.drawable.ic_sport_blue);
-                break;
-        }
-
-        //fill more complex types
-        fillTime(object);
-        fillParticipants(object);
-        fillCreatorName(object);
+        helperObject.setCategoryImage(categoryImage, category);
 
         //load ProfilePicture
         loadProfilePicture();
     }
 
-    private void fillCreatorName(ParseObject object){
+    /*  Task of fillSimpleType: Fill a TextView with the respective attribute of the eventObject
+        It needs the name of the attribute in the ParseObject to fetch the necessary data and the
+        TextView in which it should fill the data.
+        Then the data is taken out of the event object into the TextView.
+     */
+    public void fillSimpleType (String dynamicField, TextView textViewToFill){
+        String stringFromObject = eventObject.getString(dynamicField);
+        textViewToFill.setText(stringFromObject);
+    }
+
+    private void fillCreatorName(){
                try {
                    //set Name of the creator of the event
-                   String creatorName = object.getParseUser("creator").fetchIfNeeded().getUsername();
+                   String creatorName = eventObject.getParseUser("creator").fetchIfNeeded().getUsername();
                    detailCreatorNameDynamic.setText(creatorName);
 
                } catch (Exception e) {
@@ -331,48 +329,31 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         transaction.commit();
     }
 
-    //fill a TextView with the respective attribute of the eventObject
-    public void fillSimpleType (String dynamicField, TextView textViewToFill){
-        String stringFromObject = eventObject.getString(dynamicField);
-        textViewToFill.setText(stringFromObject);
-    }
+
 
     //set the time of the Event in a String
-    private void fillTime(ParseObject object){
+    private void fillTime(){
         Date creationTime;
         Date finishTime;
-        creationTime = object.getCreatedAt();
-        finishTime = object.getDate("duration");
-        Calendar calendar = GregorianCalendar.getInstance();
+        creationTime = eventObject.getCreatedAt();
+        finishTime = eventObject.getDate("duration");
 
-        calendar.setTime(creationTime);
-        String creationTimeString = calendar.get(Calendar.HOUR_OF_DAY)+ ":";
-        if (calendar.get(Calendar.MINUTE)< 10){
-            creationTimeString += "0";}
-        creationTimeString += calendar.get(Calendar.MINUTE);
-
-        calendar.setTime(finishTime);
-        String finishTimeString = calendar.get(Calendar.HOUR_OF_DAY)+ ":";
-        if (calendar.get(Calendar.MINUTE)< 10){
-            finishTimeString += "0";}
-        finishTimeString += calendar.get(Calendar.MINUTE);
-
-
-        detailCreationTimeDynamic.setText(creationTimeString + " - " + finishTimeString);
+        detailCreationTimeDynamic.setText(helperObject.convertDateToString(creationTime)
+                + " - " +
+                helperObject.convertDateToString(finishTime));
     }
+
 
     // fill a string with the size of the participants
-    private void fillParticipants(ParseObject object){
-        listParticipants = eventObject.getList("participants");
-        maxMembers = object.getInt("maxMembers");
-        try {
-            String textParticipants = listParticipants.size() + "/" + maxMembers + " participants";
-            detailButtonListParticipants.setText(textParticipants);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private void fillParticipants(){
+
     }
 
+    /* Every ParseUser contains a field "eventId". In this field is either the Object-ID of the
+    event the user participates in or, if the user does not participate in any event, the field is
+    null or filled with "no_event". To check whether the user participates in any event,
+    it has therefore to be checked whether his eventId-field is null or "no_event".
+     */
     private void checkParticipationStatus(ParseObject object){
         String eventIdOfUser;
         try {
@@ -394,7 +375,6 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         } catch (ParseException e) {
             e.printStackTrace();
         }
-
     }
 
     @Override
@@ -405,7 +385,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
             linkParticipantsActivity();
         } else if (view == detailButtonNavigate){
             navigateToEvent();
-            //creatorView: Textfield with creator name or picture of creator
+            //creatorView: TextField with creator name or picture of creator
         } else if (view == creatorView){
             Fragment fragment;
             try {
@@ -457,9 +437,14 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         if (!statusParticipation) {
             //user can only participate if maximum amount of participants has not yet been reached
             if (listParticipants.size() <= maxMembers) {
+                //add User to Participators List of the event
                 listParticipants.add(currentUser);
                 eventObject.put("participants", listParticipants);
                 eventObject.saveInBackground();
+
+                //fill eventId of user with this event
+                ParseUser.getCurrentUser().put("eventId", eventId);
+                ParseUser.getCurrentUser().saveInBackground();
 
                 changeParticipationToTrue();
             } else {
@@ -473,7 +458,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
                 toast.show();
             }
         } else {
-            //if user already participates in an event ask him wether he wants to cancel the other one
+            //if user already participates in an event ask him whether he wants to cancel the other one
             DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -494,8 +479,6 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
                                         removeUserFromList(object);
                                         statusParticipation = false;
                                         activateParticipation();
-                                    } else {
-                                        System.out.print("Object could not be received");
                                     }
 
                                 }});
@@ -523,10 +506,22 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
     }
 
+    private void deactivateParticipation(){
+        if (statusParticipation) {
+            removeUserFromList(eventObject);
+            changeParticipationToFalse();
+
+            ParseUser.getCurrentUser().put("eventId", R.string.detail_no_event);
+            ParseUser.getCurrentUser().saveInBackground();
+
+            helperObject.switchToMap(getFragmentManager());
+        }
+    }
+
     //Switch all things so user cannot participate in this event
     private void changeParticipationToTrue(){
         statusParticipation = true;
-        fillParticipants(eventObject);
+        fillParticipants();
         detailButtonParticipate.setText("Don\'t participate");
         detailButtonParticipate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -535,14 +530,12 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
             }
         });
 
-        ParseUser.getCurrentUser().put("eventId", eventId);
-        ParseUser.getCurrentUser().saveInBackground();
     }
 
     //Switch all things so user can participate in this event
-    private void changeParticipationToFalse(){
+    private void changeParticipationToFalse() {
         statusParticipation = false;
-        fillParticipants(eventObject);
+        fillParticipants();
         detailButtonParticipate.setText("Participate");
         detailButtonParticipate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -550,9 +543,6 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
                 EventDetailFragment.this.activateParticipation();
             }
         });
-
-        ParseUser.getCurrentUser().put("eventId", R.string.detail_no_event);
-        ParseUser.getCurrentUser().saveInBackground();
     }
 
     //remove the current user from the participant list
@@ -566,13 +556,6 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         }
         object.put("participants", listParticipants);
         object.saveInBackground();
-    }
-
-    private void deactivateParticipation(){
-        if (statusParticipation) {
-            removeUserFromList(eventObject);
-            changeParticipationToFalse();
-        }
     }
 
 
@@ -646,21 +629,15 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         String eventID = eventObject.getObjectId();
         drawMarker(tmpLatLng, tmpTitle, color, eventID);
 
-        //fill distance
-        ParseGeoPoint currentLocation = new ParseGeoPoint (userLocation.getLatitude(), userLocation.getLongitude());
-        double distance = currentLocation.distanceInKilometersTo(eventObject.getParseGeoPoint("geoPoint"));
-        distance = distance * 10;
-        int distanceInt = (int) distance;
-        distance = distanceInt/10.0;
-        TextView distanceView = (TextView) rootView.findViewById(R.id.detail_distance_dynamic);
-        if ((distance % 10) == 0){
-            int intDistance = (int) distance;
-            distanceView.setText(  intDistance + " km");
-        } else {
-            distanceView.setText(distance + " km");
-        }
+        fillDistance();
     }
 
+    private void fillDistance(){
+        //fill distance
+        ParseGeoPoint currentLocation = new ParseGeoPoint (getUserPosition().getLatitude(), getUserPosition().getLongitude());
+        TextView distanceView = (TextView) rootView.findViewById(R.id.detail_distance_dynamic);
+        distanceView.setText(helperObject.calculateDistance(currentLocation, eventObject.getParseGeoPoint("geoPoint")) + " km");
+    }
 
     public void navigateToEvent(){
         String[] mode = {"driving", "walking", "bicycling"};
