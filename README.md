@@ -221,3 +221,82 @@ Contains just the ListView with the events.
 `res/layout/list_item_events.xml`:
 
 Contains the structure of one single Event Item in the List. 
+
+#CreateEvent(Fragment)
+This fragment is designed as a formular for the user to insert all data, that are necessary to create a new event. For the different attributes that are inserted and how they are stored please check the database-documentation in the whereU-Backend-folder.
+
+The class implements three interfaces in total. First of all the onClickListener is necessary to get notified when a button is clicked and to call the proper action. Besides that the ConnectionCallbacks and the OnConnectionFailedListener are implemented to be able to use the googleApiClient. This client, besides other class-variables like references to the ui-elements, is set up during the creating process of the screen and this object in the onCreateView method. Since this code is trivial we think no further explanations are necessary for this method. Solely the instantiation of the api client contains something mentionable. Only the Location Api is set up. Nothing else is needed in this fragment.
+
+``````
+mGoogleApiClient = new GoogleApiClient.Builder(getActivity().getBaseContext())
+        .addConnectionCallbacks(this)
+        .addOnConnectionFailedListener(this)
+        .addApi(LocationServices.API)
+        .build();
+``````
+
+The next method should be explained in a little more detail because it contains the main functionality of this fragment. CreateEvent (ca. line 95-170) is called after clicking on the "Start the awesome" button on the screen by the OnClickListener ( ca. line 199-210). First thing it does is checking whether the content of the maxMembers-field is convertable to an integer and if the end time is set.
+
+`````
+        try {
+            maxMembers = Integer.parseInt(mEditText_maxMembers.getText().toString());
+
+            if(!mEditText_duration.getText().toString().contains("Until:")){
+                Toast.makeText(getActivity().getBaseContext(), "Please set a duration!", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+        } catch (NumberFormatException nfe) {
+            Toast.makeText(getActivity().getBaseContext(), "MaxMembers is not a number!", Toast.LENGTH_LONG).show();
+            return;
+        }
+`````
+
+If the members field isn't convertable a NumberFormatException is thrown and caught showing a toast which informs the user about the problem. In case this Exception is thrown the method returns. Additionally it is checked whether the duration editText-field contains "Until:". The reason for that is that if someone clicks the field a dateTimePicker is shown to select the date, which is afterwards converted into a string starting with "Until: ", that can be analyzed in later steps easily. With that workaround we avoid error concerning the formatting
+
+Assuming those two tests passed the geoPoint is created. Therefore another instance variable mLocation is used. This is set by the callbackHandler of the googleApiClient as soon as it is connected in ca. line 215. At this point we can suppose that getLastLocation() provides a Location because the same method is used in the MainScreen earlier. There it is ensured that this method doesn't return null.
+
+`````
+ParseGeoPoint geoPoint = new ParseGeoPoint();
+        geoPoint.setLatitude(mLocation.getLatitude());
+        geoPoint.setLongitude(mLocation.getLongitude());
+        ````
+
+Subsequently an ArrayList is created which will contain all users, that participate in this event. At creation time the creator is obviously the only participant.
+
+`````
+ArrayList<ParseUser> participants = new ArrayList<>();
+        try {
+            participants.add(ParseUser.getCurrentUser().fetchIfNeeded());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+````
+
+This step is followed by reading the end time of the event from the mEditText_duration field. Here the simple string handling of the time comes into play. The präfix "Until: " is cut via a substring call. With the same method the hour and the minute are separated and casted into int values. If the given hour is earlier than the hour now we expect the event to last until the next day which might be the case for a party-event. Events that are longer are not representable by this application.
+
+``````
+String endTime = mEditText_duration.getText().toString().substring(7);
+int hourOfEnd = Integer.parseInt(endTime.substring(0, 2));
+int minuteOfEnd = Integer.parseInt(endTime.substring(3));
+Boolean endsNextDay = hourOfEnd < Calendar.getInstance().HOUR_OF_DAY;
+Date endDate = new Date();
+endDate.setHours(hourOfEnd);
+endDate.setMinutes(minuteOfEnd);
+if(endsNextDay)
+        endDate.setDate(Calendar.getInstance().DAY_OF_MONTH+1);
+`````
+
+The string we are talking about is created in ca. lines 259-270 the onTimeSet method of the TimePickerFragment which is shown as soon as the user wants to insert the time. The minutes und hours smaller than ten are filled by a leading 0 and the präfix "Until: " is set.
+
+``````
+String hourFiller = "";
+if(hourOfDay < 10)
+        hourFiller = "0";
+
+[...]
+
+toEdit.setText("Until: " + hourFiller + hourOfDay + ":" + minuteFiller + minute);
+``````
+
+The next few lines collect all these data together into a single event-object, which is then saved via the "saveInBackground" method provided by Parse. Afterwards the user is headed to the eventDetail-Screen in which he can see his recently created event.
