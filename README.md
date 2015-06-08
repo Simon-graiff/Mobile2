@@ -77,9 +77,12 @@ ParseUser.getCurrentUser().saveInBackground();
 `````
 
 #Main Screen
-The MainScreen is the actual activity behind WhereU. It extends an ActionBarActivity and displays only an ActionBar. The more it is responsible for handling clicks in the side menu or sliding gestures, which open the SideBar. Most of the screen belongs to the contentView, in which fragments are placed in by FragmentTransactions. The FragmentTransactions are mostly activated by the user, by pressing an element from the sidebar, or the Android back button. So every screen in the app is a fragment and not an activity. This has several advantages. One is a performance optimization because there is no need for stating intends. This can especially be seen in an emulator environment, but has also a huge impact on real devices. Another advantage is the differentiation between a controller - which handles the navigation through the app - and the UI, which is represented by the fragments (except the ActionBar). Another benefit of this architecture is the use and easy implementation of a back navigation. This is possible by the use of the Android BackStack.
-
-
+The MainScreen is the actual activity behind WhereU. It extends an ActionBarActivity and displays only an ActionBar. The more it is responsible for handling clicks in the side menu or sliding gestures, which open the SideBar. Most of the screen belongs to the contentView, in which fragments are placed in by FragmentTransactions. The FragmentTransactions are mostly activated by the user, by pressing an element from the sidebar, or the Android back button. So every screen in the app is a fragment and not an activity. This has several advantages:
+<ul>
+    <li>One is a performance optimization because there is no need for stating intends. This can especially be seen in an emulator environment, but has also a huge impact on real devices.</li>
+    <li>Another advantage is the differentiation between a controller - which handles the navigation through the app - and the UI, which is represented by the fragments (except the ActionBar).</li>
+    <li>Another benefit of this architecture is the use and easy implementation of a back navigation. This is possible by the use of the Android BackStack.</li>
+  </ul>
 
 The app launches this activity by default. To ensure that the user is logged in the following check is performed:
 ````
