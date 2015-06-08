@@ -15,17 +15,17 @@ import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.Switch;
 
-public class SettingsFragment extends Fragment implements CompoundButton.OnCheckedChangeListener {
+public class EventFilterFragment extends Fragment implements CompoundButton.OnCheckedChangeListener {
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
 
-    public SettingsFragment (){}
+    public EventFilterFragment(){}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        View rootView = inflater.inflate(R.layout.fragment_settings, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_event_filter, container, false);
         rootView.setBackgroundColor(Color.rgb(240, 240, 240));
 
         Switch sport_switch = (Switch) rootView.findViewById(R.id.sport_switch);
@@ -48,7 +48,7 @@ public class SettingsFragment extends Fragment implements CompoundButton.OnCheck
         editor = sharedPref.edit();
 
         //Using String instead of boolean offers the advantage of the String.equals(...) method.
-        //This simplifies the check in AppMapFragment.
+        //This simplifies the check in EventMap.
         final String sport = sharedPref.getString("Sport", null);
         final String music = sharedPref.getString("Music", null);
         final String chilling = sharedPref.getString("Chilling", null);

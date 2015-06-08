@@ -2,10 +2,8 @@ package dhbw.mobile2;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.opengl.Visibility;
 import android.support.test.espresso.Espresso;
 import android.test.ActivityInstrumentationTestCase2;
-import android.view.View;
 
 import com.parse.ParseUser;
 
@@ -21,10 +19,10 @@ import static org.hamcrest.Matchers.not;
 /**
  * Created by christian on 29.05.15.
  */
-public class ProfileFragmentTest extends ActivityInstrumentationTestCase2<MainScreen> {
+public class ProfileFragmentTest extends ActivityInstrumentationTestCase2<MainActivity> {
 
     public ProfileFragmentTest() {
-        super(MainScreen.class);
+        super(MainActivity.class);
     }
 
     @Override

@@ -36,37 +36,26 @@ import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
 import com.parse.FunctionCallback;
-import com.parse.GetCallback;
 import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
-import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
-public class MainScreen extends ActionBarActivity implements ListEventsFragment.OnFragmentInteractionListener, ParticipantsListFragment.OnParticipantInteractionListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status> {
+public class MainActivity extends ActionBarActivity implements ListEventsFragment.OnFragmentInteractionListener, ParticipantsListFragment.OnParticipantInteractionListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status> {
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
 
-    // nav drawer title
+    //NavDrawer title, stored app title, menu items for slide menu
     private CharSequence mDrawerTitle;
-
-    // used to store app title
     private CharSequence mTitle;
-
-    // slide menu items
     private String[] navMenuTitles;
-    private TypedArray navMenuIcons;
-
-    private ArrayList<NavDrawerItem> navDrawerItems;
-    private NavDrawerListAdapter adapter;
 
     private boolean statusParticipation = false;
     private boolean cancelOtherEvent = false;
@@ -84,8 +73,6 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
     private String mCurrentGeoFenceId;
     private Boolean mInGeofence = false;
 
-    public static FragmentManager fragmentManager;
-
     //currentUser
     ParseUser currentUser;
 
@@ -93,6 +80,10 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
+
+        TypedArray navMenuIcons;
+        ArrayList<NavDrawerItem> navDrawerItems;
+        NavDrawerListAdapter adapter;
 
         //Check if User is logged in
         if(ParseUser.getCurrentUser() == null){
@@ -149,9 +140,9 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         mDrawerToggle = new ActionBarDrawerToggle(
                 this,
                 mDrawerLayout,
-                R.drawable.ic_drawer, //nav menu toggle icon  war mal ic_drawer
-                R.string.app_name, // nav drawer open - description for accessibility
-                R.string.app_name // nav drawer close - description for accessibility
+                R.drawable.ic_drawer, //Menu toggle icon
+                R.string.app_name, //Description if drawer opens
+                R.string.app_name //Description if drawer closes
         ) {
             public void onDrawerClosed(View view) {
                 getSupportActionBar().setTitle(mTitle);
@@ -165,10 +156,9 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
 
                 mDrawerList.invalidateViews();
 
-                Log.d("Main", "onDrawerOpened");
                 InputMethodManager inputMethodManager = (InputMethodManager)
                         getSystemService(Activity.INPUT_METHOD_SERVICE);
-                inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+                    inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
 
                 //Calling onPrepareOptionsMenu() to hide action bar icons
                 invalidateOptionsMenu();
@@ -178,7 +168,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
 
         if (savedInstanceState == null) {
             //Setting MapFragment as default fragment
-            Fragment fragment = new AppMapFragment();
+            Fragment fragment = new EventMap();
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
         }
@@ -217,7 +207,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         if(position==0) {
             fragment = ProfileFragment.newInstance(ParseUser.getCurrentUser().getObjectId());
         }else if(position==1){
-            fragment = new AppMapFragment();
+            fragment = new EventMap();
         }else if(position==2){
             checkParticipation();
             if (statusParticipation){
@@ -244,7 +234,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
 
 
         }else if(position==3){
-            fragment = new SettingsFragment();
+            fragment = new EventFilterFragment();
         }else if(position==4){
             fragment = new LogoutFragment();
         }
@@ -266,7 +256,6 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
             mDrawerLayout.closeDrawer(mDrawerList);
 
             FragmentManager fragmentManager = getFragmentManager();
-            //fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
             FragmentTransaction transaction = fragmentManager.beginTransaction();
             transaction.replace(R.id.frame_container, fragment);
             transaction.addToBackStack(null);
@@ -343,7 +332,7 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
             }
 
     private void openMap(){
-              Fragment fragment = new AppMapFragment();
+              Fragment fragment = new EventMap();
                 FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.replace(R.id.frame_container, fragment);
@@ -371,11 +360,6 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
         mTitle = title;
         getSupportActionBar().setTitle(mTitle);
     }
-
-    /**
-     * When using the ActionBarDrawerToggle, you must call it during
-     * onPostCreate() and onConfigurationChanged()...
-     */
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -406,8 +390,6 @@ public class MainScreen extends ActionBarActivity implements ListEventsFragment.
 
     @Override
     public void onBackPressed(){
-        Log.d("Main", "onBackPressed");
-
         FragmentManager fragmentManager = getFragmentManager();
         if(fragmentManager.getBackStackEntryCount()!=0){
             fragmentManager.popBackStack();

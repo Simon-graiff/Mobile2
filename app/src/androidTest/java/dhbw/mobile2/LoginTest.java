@@ -12,9 +12,9 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 /**
  * Created by Christian on 25.05.15.
  */
-public class LoginTest extends ActivityInstrumentationTestCase2<MainScreen> {
+public class LoginTest extends ActivityInstrumentationTestCase2<MainActivity> {
     public LoginTest() {
-        super(MainScreen.class);
+        super(MainActivity.class);
     }
 
 

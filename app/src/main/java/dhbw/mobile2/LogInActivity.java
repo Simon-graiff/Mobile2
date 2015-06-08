@@ -16,7 +16,6 @@ import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.parse.LogInCallback;
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
 import com.parse.ParseFile;
@@ -97,12 +96,12 @@ public class LogInActivity extends ActionBarActivity {
                     ProgressDialog.show(LogInActivity.this, "Creating Account", "Please wait.."); //Show loading dialog until data has been pulled from parse
                     retriveFacebookData();
                     redirectToMainScreen();
-                    //Redirect to MainScreen is executed in redirectToMainScreen()
+                    //Redirect to MainActivity is executed in redirectToMainScreen()
                     //=> This task takes the longest and only if all Data is retrived its supposed to be redirected
 
                 } else {
                     Log.d("MyApp", "User logged in with Facebook!");
-                    Intent intent = new Intent(getApplicationContext(), MainScreen.class);
+                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                     startActivity(intent);
                 }
             }
@@ -115,7 +114,7 @@ public class LogInActivity extends ActionBarActivity {
     private void redirectToMainScreen(){
         callbackCount++;
                 if(callbackCount >3){
-                    Intent intent = new Intent(getApplicationContext(), MainScreen.class);
+                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                     startActivity(intent);
                 }
     }

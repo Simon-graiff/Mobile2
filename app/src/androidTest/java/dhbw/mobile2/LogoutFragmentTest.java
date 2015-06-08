@@ -17,10 +17,10 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 /**
  * Created by Christian on 19.05.15.
  */
-public class LogoutFragmentTest extends ActivityInstrumentationTestCase2<MainScreen> {
+public class LogoutFragmentTest extends ActivityInstrumentationTestCase2<MainActivity> {
 
     public LogoutFragmentTest() {
-        super(MainScreen.class);
+        super(MainActivity.class);
     }
 
     @Override

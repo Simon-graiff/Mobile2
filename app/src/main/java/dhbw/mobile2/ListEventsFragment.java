@@ -81,7 +81,7 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
     public void onResume() {
         super.onResume();
         //activate the ActionBar Button for the Map; reload ActionBar
-        ((MainScreen) getActivity()).setListShown(true);
+        ((MainActivity) getActivity()).setListShown(true);
         getActivity().invalidateOptionsMenu();
 
         //add eventTitle to ActionBar
@@ -95,7 +95,7 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
     public void onPause() {
         super.onPause();
         //deactivate the ActionBar Button for the Map; reload ActionBar
-        ((MainScreen) getActivity()).setListShown(false);
+        ((MainActivity) getActivity()).setListShown(false);
         getActivity().invalidateOptionsMenu();
     }
 

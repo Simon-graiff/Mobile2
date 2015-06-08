@@ -2,7 +2,6 @@ package dhbw.mobile2;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -11,7 +10,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +27,6 @@ public class NavDrawerListAdapter extends BaseAdapter {
 
     private Context context;
     private ArrayList<NavDrawerItem> navDrawerItems;
-    SharedPreferences sharedPref;
 
     public NavDrawerListAdapter(Context context, ArrayList<NavDrawerItem> navDrawerItems){
         this.context = context;
@@ -55,10 +52,10 @@ public class NavDrawerListAdapter extends BaseAdapter {
         }
 
         if(position==0) {
-            imgIcon.setImageBitmap(Bitmap.createScaledBitmap(bitmap, heightPixels, heightPixels, false));
+            imgIcon.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 75, heightPixels, false));
             txtTitle.setText(ParseUser.getCurrentUser().getUsername());
         }else if(position==2){
-            if(statusParticipation==false){
+            if(!statusParticipation){
                 //display createEvent
                 imgIcon.setImageResource(navDrawerItems.get(position).getIcon());
                 txtTitle.setText(navDrawerItems.get(position).getTitle());

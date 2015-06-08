@@ -10,7 +10,12 @@ Just clone this projekt and build it with e.g. AndroidStudio or right away with 
 That's it. You are ready to go!
 
 #App Structure
-WhereU consists of two activities. The LoginActivity and the MainScreen. The LoginActivity is responsible for providing a login, which leads to user identification by the app. The only way to start the MainScreen-activity is a successful login. The MainScrren manages the actual content delivery and is dependent from a successful login. Both activities and their features are documented below.
+WhereU consists of two activities: The LoginActivity and the MainActivity. The LoginActivity is responsible for providing a login, which leads to user identification by the app. The only way to start the MainActivity is a successful login. The MainScrren manages the actual content delivery and is dependent from a successful login. It is the actual activity behind WhereU. It extends an ActionBarActivity and displays only an ActionBar. The more it is responsible for handling clicks in the side menu or sliding gestures, which open the SideBar. Most of the screen belongs to the contentView, in which fragments are placed in by FragmentTransactions. The FragmentTransactions are mostly activated by the user, by pressing an element from the sidebar, or the Android back button. So every screen in the app is a fragment and not an activity. This has several advantages:
+<ul>
+    <li>One is a performance optimization because there is no need for stating intends. This can especially be seen in an emulator environment, but has also a huge impact on real devices.</li>
+    <li>The more this concept provides a differentiation between a controller - which handles the navigation through the app - and the UI, which is represented by the fragments (except the ActionBar).</li>
+    <li>Another benefit of this architecture is the use and easy implementation of a back navigation. This is possible by the use of the Android BackStack.</li>
+  </ul>
 
 #LoginActivity
 The app uses the ParseFacebookUtils library to call the Facebook SDK ([more information see Parse Doku] (https://www.parse.com/docs/android/guide#users-facebook-users))
@@ -25,20 +30,20 @@ The app uses the ParseFacebookUtils library to call the Facebook SDK ([more info
                 } else if (user.isNew()) {
                     Log.d("MyApp", "User signed up and logged in through Facebook!");
                     retriveFacebookData();
-                    Intent intent = new Intent(LogInActivity.this, MainScreen.class);
+                    Intent intent = new Intent(LogInActivity.this, MainActivity.class);
                     startActivity(intent);
                 } else {
                     Log.d("MyApp", "User logged in with Facebook!");
-                    Intent intent = new Intent(LogInActivity.this, MainScreen.class);
+                    Intent intent = new Intent(LogInActivity.this, MainActivity.class);
                     startActivity(intent);
                 }
             }
         });
 ````
 The user can now sign up with Facebook or if he already has signed up with Facebook log in with his connected Facebook account.
-If the user has already signed up and just logs in he will be linked back to the MainScreen to use the App.
+If the user has already signed up and just logs in he will be linked back to the MainActivity to use the App.
 
-If the user needs to sign up with his Facebook account his Facebook profile data are retrived by calling the function `retriveFacebookData()` and after that the user is linked to the MainScreen as well.
+If the user needs to sign up with his Facebook account his Facebook profile data are retrived by calling the function `retriveFacebookData()` and after that the user is linked to the MainActivity as well.
 
 **retriveFacebookData()**
 
@@ -53,7 +58,7 @@ The Facebook GrahphAPI returns the username and the gender of the the user which
                         ParseUser.getCurrentUser().put("gender", user.getString("gender"));
                         ParseUser.getCurrentUser().put("aboutMe", "");
                         ParseUser.getCurrentUser().saveInBackground();
-                        redirectToMainScreen();
+                        redirectToMainActivity();
 
                     } catch (Exception e) {
                         Log.e("Error from FB Data", e.getMessage());
@@ -76,22 +81,19 @@ ParseUser.getCurrentUser().put("profilepicture", file);
 ParseUser.getCurrentUser().saveInBackground();
 `````
 
-#Main Screen
-The MainScreen is the actual activity behind WhereU. It extends an ActionBarActivity and displays only an ActionBar. The more it is responsible for handling clicks in the side menu or sliding gestures, which open the SideBar. Most of the screen belongs to the contentView, in which fragments are placed in by FragmentTransactions. The FragmentTransactions are mostly activated by the user, by pressing an element from the sidebar, or the Android back button. So every screen in the app is a fragment and not an activity. This has several advantages. One is a performance optimization because there is no need for stating intends. This can especially be seen in an emulator environment, but has also a huge impact on real devices. Another advantage is the differentiation between a controller - which handles the navigation through the app - and the UI, which is represented by the fragments (except the ActionBar). Another benefit of this architecture is the use and easy implementation of a back navigation. This is possible by the use of the Android BackStack.
-
-
-
-The app launches this activity by default. To ensure that the user is logged in the following check is performed:
+#MainActivity 
+**onCreate**
+The app launches this activity by default, which executes the code, which is stated in the onCreate-Method. To ensure that the user is logged in (which is critical) the following check is performed:
 ````
-        //Check if User is logged in
-        if(ParseUser.getCurrentUser() == null){
-            //If the user is not logged in call the loginActiviy
-            Intent intent = new Intent(getApplicationContext(), LogInActivity.class);
-            startActivity(intent);
-        } else {
-            currentUser = ParseUser.getCurrentUser();
-        }
-```
+//Check if User is logged in
+if(ParseUser.getCurrentUser() == null){
+    //If the user is not logged in call the loginActiviy
+    Intent intent = new Intent(getApplicationContext(), LogInActivity.class);
+    startActivity(intent);
+} else {
+    currentUser = ParseUser.getCurrentUser();
+}
+````
 If the user is not logged in yet, the user is redirected to the LoginActivity to handel the login.
 
 After this check, the SideBar is built up. One SideBar element consists of an icon and a text. Both are stored in arrays and imported during onCreate. After the import, the icons are added to an ArrayList, called "navDrawerItems", which consists special objects, the NavDrawerItems:
@@ -100,18 +102,58 @@ navMenuTitles = getResources().getStringArray(R.array.nav_drawer_items);
 navMenuIcons = getResources().obtainTypedArray(R.array.nav_drawer_icons);
 ...
 navDrawerItems.add(new NavDrawerItem(navMenuTitles[0], navMenuIcons.getResourceId(0, -1)));
-```
+````
 
 NavDrawerItem is a special class which makes it possible to display an icon and a text in the SideBar. This class consists just of a constructor and getters/setters. After that a second class is used, the NavDrawerListAdapter. This class extends BaseAdapter and is returning Views - the SideBar elements. It also converts the icons (which are to this point drawables) to ImageViews, which can be seen below:
 ````
-if(position==0){
-    imgIcon.setImageBitmap(Bitmap.createScaledBitmap(bitmap, heightPixels, heightPixels, false));
+if(position==0) {
+    imgIcon.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 75, heightPixels, false));
     txtTitle.setText(ParseUser.getCurrentUser().getUsername());
+}else if(position==2){
+    if(!statusParticipation){
+        //display createEvent
+        imgIcon.setImageResource(navDrawerItems.get(position).getIcon());
+        txtTitle.setText(navDrawerItems.get(position).getTitle());
+    }else{
+        //display myEvent
+        imgIcon.setImageResource(R.drawable.ic_my_event);
+        txtTitle.setText("My Event");
+    }
 }else{
     imgIcon.setImageResource(navDrawerItems.get(position).getIcon());
     txtTitle.setText(navDrawerItems.get(position).getTitle());
 }
 ````
+The snippet above also shows the manipulation of the menu entries. The adapter returns every NavDrawerItem in the Sidebar individually. Position is the index of the SideBar position (0 is the first entry). This provides the opportunity for customizing them. Since the icons and the text for the SideBar items are stored in an array, they are all determined before the app is even started. To improve the look and feel of the WhereU the entry, which provides the link to the user profile, is customized with the Facebook profile picture of the user as icon and his name as text. It is obvious that these information have to be gathered from parse objects because there is no other connection to Facebook. The if-statement for ````position==2```` shows another example for the mentioned customization. The executed code changes the menu entry dependent from the user's participation in an event.
+
+After that a drawer listener has to be assigned to the SideBar with: ````mDrawerLayout.setDrawerListener(mDrawerToggle);````. mDrawerToggle is a customized ActionBarDrawerToggle. The only reasons for customization is the implementation of code, which hides the Android soft keyboard, in case it is open and setting the WhereU-Slogan to the ActionBar. The listener opens the SideBar and is also responsible for a close.
+
+To be able to handle the clicks on the SideBar entries, another ClickListener has to be assigned: ````mDrawerList.setOnItemClickListener(new SlideMenuClickListener());```` This listener returns the position of the clicked element in the SideBar.
+
+
+**Routing forward**
+Routing forward through the app implicates the handling of user clicks. Since the just mentioned ClickListener returns the position, a simple if-statement provides the ability to perform custom code on a click. This custom code is mostly the creation of a certain fragment, e.g. a ProfileFragment, in case the user clicks on the profile entry in the SideBar. No matter which entry is clicked, the fragment is called same. This supports the execution of a universal FragmentTrasaction:
+````
+FragmentManager fragmentManager = getFragmentManager();
+FragmentTransaction transaction = fragmentManager.beginTransaction();
+transaction.replace(R.id.frame_container, fragment);
+transaction.addToBackStack(null);
+transaction.commit();
+````
+Goal of the FragmentTransaction is replacing the shown fragment (from user's view the current screen) with another, without changing the activity. The FragmentManager handles the actual transaction. The replace method needs two important parameters: the "container" which shall show the replacing fragment, and the content (the fragment) which will be displayed. It is important to mention that the transaction will <i>replace</i> a fragment. This means that the first fragment is forced to enter the "onPause" state. It is not longer active. The opposite would be to use the <i>add</i> method. After declaring the target container and fragment, the paused fragment has to be thrown on top of the BackStack. This stack is a collection which stores after every FragmentTransaction the replaced fragment. This enables a proper back navigation.
+
+
+**Routing backward**
+The back navigation is an essential part of every Android app. This can be shown by the fact that Android phones have a back button, which can be used at any time, in any app. According to the Android design guidelines the implementation of an own back button is not recommended. This is why WhereU takes advantage of the ````onBackPressed()```` method. Every time the back button is pressed, this method is executed. The executed code is pretty simple:
+````
+FragmentManager fragmentManager = getFragmentManager();
+if(fragmentManager.getBackStackEntryCount()!=0){
+    fragmentManager.popBackStack();
+}else{
+    super.onBackPressed();
+}
+````
+Since all former shown fragments are stored on a stack, the last fragment is the first on the stack. In case the stack is not empty, the currently shown fragment is replaced with the first fragment on the stack. In case there is no fragment left, the app will exit.
 
 
 **Geofencing**

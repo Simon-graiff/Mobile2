@@ -584,7 +584,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         }
     }
 
-    //same as in AppMapFragment
+    //same as in EventMap
     public void drawEvent(){
         //Creating ParseGeoPoint with user's current location
         Location userLocation = getUserPosition();
