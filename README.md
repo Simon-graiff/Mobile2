@@ -114,7 +114,70 @@ if(position==0){
 ````
 
 
+**Geofencing**
 
+Now we’re going to take a deeper look into the functions handling the geofences. First there is „checkIfInGeofence“. This method is called by the GoogleApiCallbackHandler which is created similar as in the createEventFragment. To not overfill this section the description of the googleApiClient-usage has been put there. The parameters that have to be passed are the longitude, the latitude and the user’s Id. These parameters are put into a background call of the „checkIfInGeofence“ function in the cloud-code (more details in backend-documentation) so that this method can be seen as the implementation of a remote procedure call. Additionally the background-method takes a callback which will be executed after the cloud code. It assigns the result, a boolean value into the class-variable "mInGeofence", which is used to determine whether the „createGeofence“ oder the „deleteGeofence“ button has to be shown in the actionbar. Other than that the „mCurrentGeofenceId“-field is set to the id of the geofence which is returned from the backend as well.
+
+``````
+param.put("longitude", longitude);
+param.put("latitude", latitude);
+param.put("userId", user);
+
+ParseCloud.callFunctionInBackground("checkIfInGeoFence", param, new FunctionCallback<Map<String, Object>>() {
+        @Override
+        public void done(Map<String, Object> stringObjectMap, ParseException e) {
+                [...]//Callback
+        }
+});
+        `````
+
+The functionality of the mentioned buttons will be the content of the following lines. To be able to follow a geofence’s lifecycle let’s start with the „createGeofence“-function. At the beginning it is figured out whether the „createGeofence“ button is called for the first time using the SharedPreferences in the „checkIfFirstGeofence“-function.
+
+`````
+SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+if(!prefs.getBoolean("firstTime", false)) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("firstTime", true);
+        editor.commit();
+        return true;
+}
+return false;
+`````
+
+If the button is clicked for the first time an AlertDialog is shown to explain the user what he just did and how he can revert his actions. Therefore the „showFirstTimeNotification“-function is called. A little special is that the OnClickListener of the button stays empty. This is because we don't want anything to happen here. It's just a little information for our users to make the use of this app more convenient.
+
+`````
+new AlertDialog.Builder(this)
+        .setTitle("Creating Geofence")
+                .setMessage("From now on you'll be notified if any events are up in this area. To stop notifications just push the button again.")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {}
+                })
+                .setIcon(android.R.drawable.ic_dialog_info)
+                .show();
+````
+
+As soon as the user has confirmed the notification or the button isn’t pressed for the first time, the requestId is built which uniquely represents the geofence to be created. We configure the geofence to be at the user’s location with a radius of 250 metres. Besides that, it shall never expire, it can only be deleted by the user himself. The last line sets the „mCreatingGeofence“-flag true, so that the callback can decide whether a new geofence is created or an existing one is deleted.
+
+`````
+mGeoFenceList.add(new Geofence.Builder()
+        .setRequestId(requestId)
+        .setCircularRegion(mLocation.getLongitude(), mLocation.getLatitude(), 500) //long,lat,radius
+        .setExpirationDuration(Geofence.NEVER_EXPIRE)//millis
+        .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+        .build());
+````
+
+After the geofence has been created internally the „onResult“-callback is called. Assuming the geofence-creation didn’t throw any error, it calls the „submitGeofenceToDatabase“. Those lines of code create a new database object in the Parse backend and finalizes the creation of the geofence. In this finalizing process
+the „mInGeofence“-flag is set true
+the „mCreatingGeofence“-flag is set false and
+the „mCurrentGeofenceId“-field is set to the id of the recently created geofence
+Since all these statements are simple assignments of variables no code has to be shown here.
+
+Now the button in the upper right changed to „deleteGeofence“ which calls the „removeGeofence“-function. The mCurrentGeofenceId is put into an ArrayList (requirement of android API) and the LocationServices API is called to remove the geofence internally. Furthermore the class-variables are changed accordingly.
+As soon as the internal removal of the geofence could be executed successfully, the „onResult“-callback is called again, which in turn calls the „removeGeofenceFromDatabase“. This method takes the ID of the current user as well as the assigned „mCurrentGeofenceId“ to call the „removeGeofence“-function of the cloud code. The callback changes the app’s variables again so that the user can create a new geofence in this area if he wants to.
+
+In both cases the Parse-backend is changed only if the client and the internal android system could handle the geofence successfully so that we keep both in sync all the time.
 
 
 
