@@ -23,5 +23,33 @@ The geofence-table is a representation of all geofences, that were created by th
 #Cloud-Code
 Cloud-Code is a possibility offered by parse to write some functions in a javascript-file and submit them to the app's parse-cloud to add functionality, which isn't provided by Parse yet. You can find the javascript file "main.js" in this repo in the cloud folder or in the Cloud-Code section on the parse-website. In total we created three cloud functions, which are now going to be described in proper detail:
 
-##GetNearEvents
-Blablabla
+**CheckIfInGeoFence**
+
+This method is called when the user gets to the MainScreen. It takes the user's ID and his long/lat as parameters. Then it creates a query searching for all geofences which belong to this user and are not further away than one kilometer.
+
+`````
+var query = new Parse.Query("GeoFence")
+query.withinKilometers("center", userGeoPoint, 1)
+query.equalTo("user", user)
+`````
+If the query can be executed successfully and a geofence is found the response's "inGeoFence"-Flag is set true and addtitionally the ID of the geofence is added to the response as "data". Otherwise, when a query is executed successfully but there no geofences which fit the criteria, the flag is set false and no data is returned. 
+`````
+if (results.length > 0) {
+                response.success({
+                    inGeoFence: true,
+                    data: results[0].get("requestId")
+                })
+            } else {
+                response.success({
+                    inGeoFence: false
+                })
+            }
+`````
+
+In case an error is thrown this error is passed to the client to be handled.
+
+**removeGeofence**
+
+**GetNearEvents**
+
+This method is called as soon as a user
