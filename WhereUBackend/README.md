@@ -23,5 +23,5 @@ The geofence-table is a representation of all geofences, that were created by th
 #Cloud-Code
 Cloud-Code is a possibility offered by parse to write some functions in a javascript-file and submit them to the app's parse-cloud to add functionality, which isn't provided by Parse yet. You can find the javascript file "main.js" in this repo in the cloud folder or in the Cloud-Code section on the parse-website. In total we created three cloud functions, which are now going to be described in proper detail:
 
-* getNearEvents
+##GetNearEvents
 Blablabla
