@@ -68,4 +68,15 @@ The geofence, that was found is destroyed. Otherwise, in case destroying isn't p
 
 **GetNearEvents**
 
-This method is called as soon as a user
+We wanted our users to be notified in their specified locations (their geofences) about recent events as soon as they walk in. Therefore this method is called by the client when the "ENTER" Event of a geofence is triggered. The user's ID and his location is passed as parameter. With these information a query is built the determine whether some events are up in user's area or not. In case one or more events could be found a push is sent to the user's smartphone and detailed information are passed to the app to be handled and displayed.
+
+``````
+Parse.Push.send({
+  where: query,
+  data: {
+    alert: "There is an awesome event in this area!"
+  }
+})
+
+response.success(results)
+````
