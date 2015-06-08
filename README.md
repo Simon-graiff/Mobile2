@@ -83,6 +83,7 @@ ParseUser.getCurrentUser().saveInBackground();
 
 #MainActivity 
 **onCreate**
+
 The app launches this activity by default, which executes the code, which is stated in the onCreate-Method. To ensure that the user is logged in (which is critical) the following check is performed:
 ````
 //Check if User is logged in
@@ -132,6 +133,7 @@ To be able to handle the clicks on the SideBar entries, another ClickListener ha
 
 
 **Routing forward**
+
 Routing forward through the app implicates the handling of user clicks. Since the just mentioned ClickListener returns the position, a simple if-statement provides the ability to perform custom code on a click. This custom code is mostly the creation of a certain fragment, e.g. a ProfileFragment, in case the user clicks on the profile entry in the SideBar. No matter which entry is clicked, the fragment is called same. This supports the execution of a universal FragmentTrasaction:
 ````
 FragmentManager fragmentManager = getFragmentManager();
@@ -144,6 +146,7 @@ Goal of the FragmentTransaction is replacing the shown fragment (from user's vie
 
 
 **Routing backward**
+
 The back navigation is an essential part of every Android app. This can be shown by the fact that Android phones have a back button, which can be used at any time, in any app. According to the Android design guidelines the implementation of an own back button is not recommended. This is why WhereU takes advantage of the ````onBackPressed()```` method. Every time the back button is pressed, this method is executed. The executed code is pretty simple:
 ````
 FragmentManager fragmentManager = getFragmentManager();
