@@ -91,7 +91,7 @@ The app launches this activity by default. To ensure that the user is logged in 
         } else {
             currentUser = ParseUser.getCurrentUser();
         }
-````
+```
 If the user is not logged in yet, the user is redirected to the LoginActivity to handel the login.
 
 After this check, the SideBar is built up. One SideBar element consists of an icon and a text. Both are stored in arrays and imported during onCreate. After the import, the icons are added to an ArrayList, called "navDrawerItems", which consists special objects, the NavDrawerItems:
@@ -100,7 +100,7 @@ navMenuTitles = getResources().getStringArray(R.array.nav_drawer_items);
 navMenuIcons = getResources().obtainTypedArray(R.array.nav_drawer_icons);
 ...
 navDrawerItems.add(new NavDrawerItem(navMenuTitles[0], navMenuIcons.getResourceId(0, -1)));
-````
+```
 
 NavDrawerItem is a special class which makes it possible to display an icon and a text in the SideBar. This class consists just of a constructor and getters/setters. After that a second class is used, the NavDrawerListAdapter. This class extends BaseAdapter and is returning Views - the SideBar elements. It also converts the icons (which are to this point drawables) to ImageViews, which can be seen below:
 ````
@@ -142,7 +142,7 @@ if(!prefs.getBoolean("firstTime", false)) {
         return true;
 }
 return false;
-`````
+```
 
 If the button is clicked for the first time an AlertDialog is shown to explain the user what he just did and how he can revert his actions. Therefore the „showFirstTimeNotification“-function is called. A little special is that the OnClickListener of the button stays empty. This is because we don't want anything to happen here. It's just a little information for our users to make the use of this app more convenient.
 
@@ -155,7 +155,7 @@ new AlertDialog.Builder(this)
                 })
                 .setIcon(android.R.drawable.ic_dialog_info)
                 .show();
-````
+```
 
 As soon as the user has confirmed the notification or the button isn’t pressed for the first time, the requestId is built which uniquely represents the geofence to be created. We configure the geofence to be at the user’s location with a radius of 250 metres. Besides that, it shall never expire, it can only be deleted by the user himself. The last line sets the „mCreatingGeofence“-flag true, so that the callback can decide whether a new geofence is created or an existing one is deleted.
 
@@ -166,7 +166,7 @@ mGeoFenceList.add(new Geofence.Builder()
         .setExpirationDuration(Geofence.NEVER_EXPIRE)//millis
         .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
         .build());
-````
+```
 
 After the geofence has been created internally the „onResult“-callback is called. Assuming the geofence-creation didn’t throw any error, it calls the „submitGeofenceToDatabase“. Those lines of code create a new database object in the Parse backend and finalizes the creation of the geofence. In this finalizing process
 the „mInGeofence“-flag is set true
