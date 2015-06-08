@@ -68,7 +68,26 @@ The geofence, that was found is destroyed. Otherwise, in case destroying isn't p
 
 **GetNearEvents**
 
-We wanted our users to be notified in their specified locations (their geofences) about recent events as soon as they walk in. Therefore this method is called by the client when the "ENTER" Event of a geofence is triggered. The user's ID and his location is passed as parameter. With these information a query is built to determine whether some events are up in user's area or not. The query-creation isquite similar to the in the previous method. In case one or more events could be found a push is sent to the user's smartphone and detailed information are passed to the app to be handled and displayed.
+We wanted our users to be notified in their specified locations (their geofences) about recent events as soon as they walk in. Therefore this method is called by the client when the "ENTER" Event of a geofence is triggered. The user's ID and his location is passed as parameter. With these information a query is built to determine whether some events are up in user's area or not. The query-creation isquite similar to the in the previous method. Additionally a helper-method is called which checks for each event that is in the user's geofence if the user is interested in the event's category. The helper method creates a query looking up the user's settings in the appropriate table. In case an error occurs we decided to return false as a standard value to increase the app's stability. With false as default value we accept, that some notifications might not be sent even if they should be, but we can be sure, that no notification will be sent, that shouldn't.
+
+`````
+query.equalTo("user", user)
+
+query.find({
+  success: function (results) {
+    if (results[0].get(category.toLowerCase()))
+      return true
+    else
+      return false
+    },
+    error: function (error) {
+      console.log(error)
+      return false
+    }
+})
+`````
+
+He can define his interests in the settings screen (more details in client documentation). In case one or more events of interest could be found a push is sent to the user's smartphone and detailed information are passed to the app to be handled and displayed.
 
 ``````
 Parse.Push.send({
