@@ -68,34 +68,40 @@ The geofence, that was found is destroyed. Otherwise, in case destroying isn't p
 
 **GetNearEvents**
 
-We wanted our users to be notified in their specified locations (their geofences) about recent events as soon as they walk in. Therefore this method is called by the client when the "ENTER" Event of a geofence is triggered. The user's ID and his location is passed as parameter. With these information a query is built to determine whether some events are up in user's area or not. The query-creation isquite similar to the in the previous method. Additionally a helper-method is called which checks for each event that is in the user's geofence if the user is interested in the event's category. The helper method creates a query looking up the user's settings in the appropriate table. In case an error occurs we decided to return false as a standard value to increase the app's stability. With false as default value we accept, that some notifications might not be sent even if they should be, but we can be sure, that no notification will be sent, that shouldn't.
+We wanted our users to be notified in their specified locations (their geofences) about recent events as soon as they walk in. Therefore this method is called by the client when the "ENTER" Event of a geofence is triggered. The user's ID and his location is passed as parameter. With these information a query is built to determine whether some events are up in user's area or not. Since we also want to know if the user is actually interested in those type of events we need to build two queries using promises. The first query fetches all events which are in the user's area.
 
 `````
-query.equalTo("user", user)
+ var query = new Parse.Query("Event")
+  query.withinKilometers("geoPoint", userGeoPoint, 1)
 
-query.find({
-  success: function (results) {
-    if (results[0].get(category.toLowerCase()))
-      return true
-    else
-      return false
-    },
-    error: function (error) {
-      console.log(error)
-      return false
-    }
-})
+  query.find().then(function (events) {...}
 `````
 
-He can define his interests in the settings screen (more details in client documentation). In case one or more events of interest could be found a push is sent to the user's smartphone and detailed information are passed to the app to be handled and displayed.
+If no events are found the result is returned, no push is sent and the method is done. Otherwise the settings representing the user's interests are fetched from the User_Settings table. He can define his interests in the settings screen (more details in client documentation). The category of each event, that is closed to him (result fo first query) is checked. In case the user likes the category the event is added to the result-array. After every event has been checked a push is sent assuming there was one event of interesed close to him and the result array is passed to the client to be processed there.
 
 ``````
-Parse.Push.send({
-  where: query,
-  data: {
-    alert: "There is an awesome event in this area!"
+var settingsQuery = new Parse.Query("User_Settings")
+settingsQuery.equalTo("user", user)
+settingsQuery.find().then(function (settings) {
+  var result = []
+  for (var i = 0; i < events.length; i++) {
+    var category = events[i].get("category").toLowerCase().replace(' ', '').toString()
+    if (settings[0].get(category)) {
+      result.push(events[i])
+    }
   }
-})
 
-response.success(results)
+  if (result.length > 0) {
+    Parse.Push.send({
+     //where: query,
+      data: {
+        alert: "There is an awesome event in this area!"
+      }
+    })
+  }
+  
+  response.success({
+    events: result
+  })
+})
 ````
