@@ -1,0 +1,14 @@
+{
+  "global": {
+    "parseVersion": "1.4.2"
+  },
+  "applications": {
+    "WhereU": {
+      "applicationId": "XtayL1TkW4GF7OyZPikWIRvdWlr4LrnOs1OjsFCO",
+      "masterKey": "AuyFCtazGCAq8elKbwsMKpzif9Ss0kJWRYjR8Skc"
+    },
+    "_default": {
+      "link": "WhereU"
+    }
+  }
+}
