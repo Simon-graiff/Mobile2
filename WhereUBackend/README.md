@@ -18,7 +18,13 @@ The event-table stores all the events, that were created by our users. Therefore
 - maxMembers the maximum amount of participators,
 - and some more Parse-internal attributes, which are not relevant.
 
-The geofence-table is a representation of all geofences, that were created by the users. We need this table to determine whether a user is currently in a geofence or not. If that is the case we offer him to delete this geofence, so that he won't be notified again by any events taken place in this geofence. If that is not the case he can create a geofence to enable the notification-service. Since the geofence API doesn't offer anything like getting a list of all geofences created by a particular user or determining whether a user is currently in one - besides the enter and dwell notificition, which is not quite what we needed - we were to build this workaround. The Code, which is necessary to complete the workaround is described in the following section.
+The geofence-table is a representation of all geofences, that were created by the users. It contains the following attributes:
+
+- center as the location of the user where he created the geofence
+- userId a link to the user himself
+- and a requestId containing center and userId as a string seperated by ";". This might seem a little redundand in the first place but it makes life and code a lot easier. The client uses this ID as the ID of the android-geofence which this dataset belongs to.
+
+We need this table to determine whether a user is currently in a geofence or not. If that is the case we offer him to delete this geofence, so that he won't be notified again by any events taken place in this geofence. If that is not the case he can create a geofence to enable the notification-service. Since the geofence API doesn't offer anything like getting a list of all geofences created by a particular user or determining whether a user is currently in one - besides the enter and dwell notificition, which is not quite what we needed - we were to build this workaround. The Code, which is necessary to complete the workaround is described in the following section.
 
 #Cloud-Code
 Cloud-Code is a possibility offered by parse to write some functions in a javascript-file and submit them to the app's parse-cloud to add functionality, which isn't provided by Parse yet. You can find the javascript file "main.js" in this repo in the cloud folder or in the Cloud-Code section on the parse-website. In total we created three cloud functions, which are now going to be described in proper detail:
@@ -49,6 +55,16 @@ if (results.length > 0) {
 In case an error is thrown this error is passed to the client to be handled.
 
 **removeGeofence**
+
+If the previous method returned true, the user has the ability to disbale the notifications in this area. Therefore he deletes the geofence (more detail in the client's documentation) and along with this we delete the geofence object from our database using this method. The method takes the user's and the geofence's Id as parameters to create a query, that finds the geofence, which the user is currently in.
+
+``````
+var query = new Parse.Query("GeoFence")
+query.equalTo("user", user)
+query.equalTo("requestId", geoFenceId)
+```````
+
+The geofence, that was found is destroyed. Otherwise, in case destroying isn't possible, no geofence was found or an error occured fetching the data from the database appropriate information is passed to the client.
 
 **GetNearEvents**
 
