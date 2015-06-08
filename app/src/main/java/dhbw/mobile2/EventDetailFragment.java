@@ -150,12 +150,14 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         boolean myEventActivated = sharedPref.getBoolean("myEventActivated", false);
+        ListView mDrawerList;
+        mDrawerList = (ListView) getActivity().findViewById(R.id.list_slidermenu);
         if (!myEventActivated) {
-            ListView mDrawerList;
-            mDrawerList = (ListView) getActivity().findViewById(R.id.list_slidermenu);
-
             mDrawerList.setItemChecked(1, true);
             mDrawerList.setSelection(1);
+        }else{
+            mDrawerList.setItemChecked(2, true);
+            mDrawerList.setSelection(2);
         }
         retrieveParseData();
     }

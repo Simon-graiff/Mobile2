@@ -1,5 +1,6 @@
 package dhbw.mobile2;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
@@ -197,6 +198,9 @@ public class CreateEventFragment extends Fragment
     @Override
     public void onClick(View view) {
         if (view == mButton_createEvent) {
+            InputMethodManager inputMethodManager = (InputMethodManager)
+                    getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
+            inputMethodManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
             createEvent();
         } else if (view == mButton_test) {
             sendEventRequest();

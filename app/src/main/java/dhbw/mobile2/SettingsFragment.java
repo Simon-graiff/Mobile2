@@ -11,15 +11,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.Switch;
 
-import dhbw.mobile2.R;
-
-public class SettingsFragment extends Fragment
-        implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
+public class SettingsFragment extends Fragment implements CompoundButton.OnCheckedChangeListener {
 
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
@@ -32,20 +28,20 @@ public class SettingsFragment extends Fragment
         View rootView = inflater.inflate(R.layout.fragment_settings, container, false);
         rootView.setBackgroundColor(Color.rgb(240, 240, 240));
 
-        CheckBox sports_checkbox = (CheckBox) rootView.findViewById(R.id.sports_checkbox);
-        CheckBox music_checkbox = (CheckBox) rootView.findViewById(R.id.music_checkbox);
-        CheckBox chilling_checkbox = (CheckBox) rootView.findViewById(R.id.chilling_checkbox);
-        CheckBox dancing_checkbox = (CheckBox) rootView.findViewById(R.id.dancing_checkbox);
-        CheckBox videoGames_checkbox = (CheckBox) rootView.findViewById(R.id.videoGames_checkbox);
-        CheckBox food_checkbox = (CheckBox) rootView.findViewById(R.id.food_checkbox);
+        Switch sport_switch = (Switch) rootView.findViewById(R.id.sport_switch);
+        Switch music_switch = (Switch) rootView.findViewById(R.id.music_switch);
+        Switch chilling_switch = (Switch) rootView.findViewById(R.id.chilling_switch);
+        Switch dancing_switch = (Switch) rootView.findViewById(R.id.dancing_switch);
+        Switch videoGames_switch = (Switch) rootView.findViewById(R.id.videoGames_switch);
+        Switch food_switch = (Switch) rootView.findViewById(R.id.food_switch);
         Switch mixedGenderSwitch = (Switch) rootView.findViewById(R.id.mixedGender_switch);
 
-        sports_checkbox.setOnClickListener(this);
-        music_checkbox.setOnClickListener(this);
-        chilling_checkbox.setOnClickListener(this);
-        dancing_checkbox.setOnClickListener(this);
-        videoGames_checkbox.setOnClickListener(this);
-        food_checkbox.setOnClickListener(this);
+        sport_switch.setOnCheckedChangeListener(this);
+        music_switch.setOnCheckedChangeListener(this);
+        chilling_switch.setOnCheckedChangeListener(this);
+        dancing_switch.setOnCheckedChangeListener(this);
+        videoGames_switch.setOnCheckedChangeListener(this);
+        food_switch.setOnCheckedChangeListener(this);
         mixedGenderSwitch.setOnCheckedChangeListener(this);
 
         sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
@@ -72,27 +68,27 @@ public class SettingsFragment extends Fragment
         Log.d("Main", "+++++++++++++++");
 
         if(sport!=null){
-            sports_checkbox.setChecked(false);
+            sport_switch.setChecked(false);
         }
 
         if(music!=null){
-            music_checkbox.setChecked(false);
+            music_switch.setChecked(false);
         }
 
         if(chilling!=null){
-            chilling_checkbox.setChecked(false);
+            chilling_switch.setChecked(false);
         }
 
         if(dancing!=null){
-            dancing_checkbox.setChecked(false);
+            dancing_switch.setChecked(false);
         }
 
         if(videoGames!=null){
-            videoGames_checkbox.setChecked(false);
+            videoGames_switch.setChecked(false);
         }
 
         if(food!=null){
-            food_checkbox.setChecked(false);
+            food_switch.setChecked(false);
         }
 
         if(mixedGenders==false){
@@ -103,77 +99,67 @@ public class SettingsFragment extends Fragment
     }
 
     @Override
-    public void onClick(View v){
-
-        boolean checked = ((CheckBox) v).isChecked();
-        int id = v.getId();
-
-        if(id == R.id.sports_checkbox){
-            if(checked){
-                removeQueryParameter("Sport");
-            }else{
-                setQueryParameter("Sport");
-            }
-        }else if(id == R.id.music_checkbox){
-            if(checked){
-                removeQueryParameter("Music");
-            }else{
-                setQueryParameter("Music");
-            }
-        }else if(id == R.id.chilling_checkbox){
-            if(checked){
-                removeQueryParameter("Chilling");
-            }else{
-                setQueryParameter("Chilling");
-            }
-        }else if(id == R.id.dancing_checkbox){
-            if(checked){
-                removeQueryParameter("Dancing");
-            }else{
-                setQueryParameter("Dancing");
-            }
-        }else if(id == R.id.videoGames_checkbox){
-            if(checked){
-                removeQueryParameter("Video Games");
-            }else{
-                setQueryParameter("Video Games");
-            }
-        }else if(id == R.id.food_checkbox){
-            if(checked){
-                removeQueryParameter("Food");
-            }else{
-                setQueryParameter("Food");
-            }
-        }
-    }
-
-    @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked){
-        if(isChecked){
-            Log.d("Main", "Checked");
-            editor.remove("MixedGenders");
-            editor.commit();
-        }else{
-            Log.d("Main", "Not Checked");
-            editor.putBoolean("MixedGenders", false);
-            editor.commit();
+
+        int id = buttonView.getId();
+
+        if(id == R.id.sport_switch){
+            if(isChecked){
+                editor.remove("Sport");
+                editor.commit();
+            }else{
+                editor.putString("Sport", "Sport");
+                editor.commit();
+            }
+        }else if(id == R.id.music_switch){
+            if(isChecked){
+                editor.remove("Music");
+                editor.commit();
+            }else{
+                editor.putString("Music", "Music");
+                editor.commit();
+            }
+        }else if(id == R.id.chilling_switch){
+            if(isChecked){
+                editor.remove("Chilling");
+                editor.commit();
+            }else{
+                editor.putString("Chilling", "Chilling");
+                editor.commit();
+            }
+        }else if(id == R.id.dancing_switch){
+            if(isChecked){
+                editor.remove("Dancing");
+                editor.commit();
+            }else{
+                editor.putString("Dancing", "Dancing");
+                editor.commit();
+            }
+        }else if(id == R.id.videoGames_switch) {
+            if (isChecked) {
+                editor.remove("Video Games");
+                editor.commit();
+            } else {
+                editor.putString("Video Games", "Video Games");
+                editor.commit();
+            }
+        }else if(id == R.id.food_switch){
+            if(isChecked){
+                editor.remove("Food");
+                editor.commit();
+            }else{
+                editor.putString("Food", "Food");
+                editor.commit();
+            }
+        }else if(id == R.id.mixedGender_switch){
+            if(isChecked){
+                editor.remove("MixedGenders");
+                editor.commit();
+            }else{
+                editor.putBoolean("MixedGenders", false);
+                editor.commit();
+            }
         }
-    }
-
-    private void removeQueryParameter(String category){
-        Log.d("Main", "removeParameter: "+category);
-
-        editor.remove(category);
-        editor.commit();
-    }
-
-    //Sets SharedPreference for filtering the received event list in AppMapFragment
-    private void setQueryParameter(String category){
-
-        Log.d("Main", "setParameter: " + category);
-
-        editor.putString(category, category);
-        editor.commit();
     }
 
     @Override
@@ -182,10 +168,9 @@ public class SettingsFragment extends Fragment
 
         ListView mDrawerList;
         mDrawerList = (ListView) getActivity().findViewById(R.id.list_slidermenu);
-        mDrawerList.setItemChecked(4, true);
-        mDrawerList.setSelection(4);
+        mDrawerList.setItemChecked(3, true);
+        mDrawerList.setSelection(3);
         ActionBar actionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
-        actionBar.setTitle("Settings");
-
+        actionBar.setTitle("Filter events");
     }
 }
