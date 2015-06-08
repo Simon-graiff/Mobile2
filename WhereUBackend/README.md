@@ -14,7 +14,7 @@ The event-table stores all the events, that were created by our users. Therefore
 - name and description as a string,
 - category as one of multiple strings which are defined in the strings.xml of the android project,
 - creator as a seperate link to the user who created this event,
-- locationName which can be choosen by the creator without any restrictions,
+- locationName which can be chosen by the creator without any restrictions,
 - maxMembers the maximum amount of participators,
 - and some more Parse-internal attributes, which are not relevant.
 
