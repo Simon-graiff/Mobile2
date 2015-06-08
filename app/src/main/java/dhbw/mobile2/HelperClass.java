@@ -21,34 +21,26 @@ import java.util.List;
  */
 public class HelperClass {
 
+    /*
+    The method convertDateToString(Date date) does what its name already tells:
+    It converts a variable in a Date Format into a variable in a String format.
+     */
     public String convertDateToString(Date date){
         Calendar calendar = GregorianCalendar.getInstance();
-
         calendar.setTime(date);
         String dateString = calendar.get(Calendar.HOUR_OF_DAY)+ ":";
+
+        //if the minutes are below 10 add a zero to make every number have the same length
         if (calendar.get(Calendar.MINUTE)< 10){
             dateString += "0";}
-        dateString += calendar.get(Calendar.MINUTE);
+            dateString += calendar.get(Calendar.MINUTE);
         return dateString;
     }
 
-    public void switchToMap(FragmentManager fragmentManager){
-        //Switch to Map
-        Fragment fragment = new AppMapFragment();
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.replace(R.id.frame_container, fragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
-    }
-
-    public String getParticipantsString(ParseObject object){
-        List<ParseUser> listParticipants = object.getList("participants");
-        int maxMembers = object.getInt("maxMembers");
-        String textParticipants = listParticipants.size() + "/" + maxMembers;
-        return textParticipants;
-
-    }
-
+    /*
+    The method getTimeScopeString(ParseObject object) takes an EventObject and
+    builds its creationTime and finishTime into a String to have the time scope for the whole event.
+     */
     public String getTimeScopeString(ParseObject object){
         Date creationTime;
         Date finishTime;
@@ -59,6 +51,27 @@ public class HelperClass {
                 + " - " +
                 this.convertDateToString(finishTime);
         return timeScopeString;
+
+    }
+
+    //switches to the specified fragment
+    public void switchToFragment(FragmentManager fragmentManager, Fragment fragment){
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.frame_container, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
+    }
+
+    //the ProfileFragment differs slightly so it needs a special method
+    public void switchToProfileFragment(FragmentManager fragmentManager, String userId){
+        switchToFragment(fragmentManager, ProfileFragment.newInstance(userId));
+    }
+
+    public String getParticipantsString(ParseObject object){
+        List<ParseUser> listParticipants = object.getList("participants");
+        int maxMembers = object.getInt("maxMembers");
+        String textParticipants = listParticipants.size() + "/" + maxMembers;
+        return textParticipants;
 
     }
 

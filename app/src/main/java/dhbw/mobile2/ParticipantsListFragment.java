@@ -26,13 +26,15 @@ import com.parse.ParseUser;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ParticipantsListFragment extends Fragment implements View.OnClickListener, AdapterView.OnItemClickListener {
+public class ParticipantsListFragment extends Fragment implements AdapterView.OnItemClickListener {
     private OnParticipantInteractionListener mListener;
 
     ListView participantsListView;
     String eventId;
     List<ParseUser> listParticipants;
     Button backToEventDetailButton;
+
+    HelperClass helperObject = new HelperClass();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -81,28 +83,15 @@ public class ParticipantsListFragment extends Fragment implements View.OnClickLi
 
 
     @Override
-    public void onClick(View view){
-        if (view == backToEventDetailButton){
-            Fragment fragment;
-            fragment = new EventDetailFragment();
-            FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
-        }
-    }
-
-    @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
             mListener.onParticipantInteraction(listParticipants.get(position).getObjectId());
 
-            FragmentManager fragmentManager = getFragmentManager();
-            Fragment fragment = ProfileFragment.newInstance(listParticipants.get(position).getObjectId());
-            FragmentTransaction transaction = fragmentManager.beginTransaction();
-            transaction.replace(R.id.frame_container, fragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
+            helperObject.switchToProfileFragment(
+                    getFragmentManager(),
+                    listParticipants.get(position).getObjectId());
         }
     }
 

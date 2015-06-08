@@ -335,11 +335,32 @@ public void fillSimpleType (String dynamicField, TextView textViewToFill){
     }
 ````
 
-After this more complicated types are filled.
+After this more complicated types are filled. For these methods from the HelperClass are used (for more information to this look at the documentation of the HelperClass). First the title of the event is set as the ActionBar title, then the creator name is set with fillCreatorName(). It takes the name from the eventObject attribute creator which returns the ParseUser with the name. Subsequently the time scope text is set with the HelperClass method getTimeScopeString(). Afterwards the participants description is filled with the method getParticipantsString(ParseObject object) from the HelperClass. Lastly the Category Picture is drawn with the method from the HelperClass "setCategoryImage()".
 
-To fill the time, the attributes "createdAt" and "duration" are needed. These are transformed into String with the format "beginTime - endTime". For this, it converts the Date format to String format with the method of convertDateToString(Date date) the HelperClass (for more information to this look at the documentation of the HelperClass). The method then just inserts the two converted string with a minus in between in a new string.
+**Navigation To The Event**
 
-Afterwards the participants description is filled. 
+If the Button with the caption "Navigate Me" is called, a navigation to the event location is started. The user is asked how he/she will get to the event. Options are "driving", "walking" and "bycicling", stored in the array mode. The question is asked with an AlertDialog. To start the navigation an intent has to be sent to the Google Maps Application (it has to be installed on the device). 
+
+The intent is created with a class named Uri which parses the specifications given to the navigation. After the String "google.navigation:q=" for the navigation the latitude and the longitude have to be given in the String. In this case these are the latitude and longitude of the event location. Lastly after the String "&mode=" the mode of follows. In this mode d is passed if the user chose driving, w is passed if the user chose walking and b is passed if the user bhose bicycling. After this an intent is created out of the parsed String, the Application is selected with mapIntent.setpackage() and the navigation activity is started.
+
+````
+Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + ", " + longitude + "&mode=" + mode1);
+                      Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                      mapIntent.setPackage("com.google.android.apps.maps");
+                      EventDetailFragment.this.startActivity(mapIntent);
+````
+
+#HelperClass
+
+**convertDateToString and getTimeScopeString**
+
+The method convertDateToString(Date date) does what its name already tells: It converts a variable in a Date Format into a variable in a String format. This is done with the GregorianCalendar Class. Then a zero is added before the minutes if the minutes are below 10 to have always the same format.
+
+The method getTimeScopeString(ParseObject object) takes an EventObject and builds its creationTime and finishTime into a String to have the time scope for the whole event. It takes the Dates out of the EventObject and puts a minus sign in between them.
+
+**switchToFragment and switchToProfileFragment**
+
+The method switchToFragment switches to the specified fragment. It uses the strategy explained in the capter "MainScreen". switchToProfileFragement switches to the Profile Fragement which is slightly another strategy than the other fragments as explained in the chapter "Profile Page". It creates the ProfileFragment and then calls switchToFragment().
 
 #ParticipantsList(Fragment)
 
