@@ -129,7 +129,7 @@ ParseCloud.callFunctionInBackground("checkIfInGeoFence", param, new FunctionCall
                 [...]//Callback
         }
 });
-        `````
+`````
 
 The functionality of the mentioned buttons will be the content of the following lines. To be able to follow a geofence’s lifecycle let’s start with the „createGeofence“-function. At the beginning it is figured out whether the „createGeofence“ button is called for the first time using the SharedPreferences in the „checkIfFirstGeofence“-function.
 
