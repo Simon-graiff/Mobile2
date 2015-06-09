@@ -10,12 +10,7 @@ Just clone this projekt and build it with e.g. AndroidStudio or right away with 
 That's it. You are ready to go!
 
 #App Structure
-WhereU consists of two activities: The LoginActivity and the MainActivity. The LoginActivity is responsible for providing a login, which leads to user identification by the app. The only way to start the MainActivity is a successful login. The MainScrren manages the actual content delivery and is dependent from a successful login. It is the actual activity behind WhereU. It extends an ActionBarActivity and displays only an ActionBar. The more it is responsible for handling clicks in the side menu or sliding gestures, which open the SideBar. Most of the screen belongs to the contentView, in which fragments are placed in by FragmentTransactions. The FragmentTransactions are mostly activated by the user, by pressing an element from the sidebar, or the Android back button. So every screen in the app is a fragment and not an activity. This has several advantages:
-<ul>
-    <li>One is a performance optimization because there is no need for stating intends. This can especially be seen in an emulator environment, but has also a huge impact on real devices.</li>
-    <li>The more this concept provides a differentiation between a controller - which handles the navigation through the app - and the UI, which is represented by the fragments (except the ActionBar).</li>
-    <li>Another benefit of this architecture is the use and easy implementation of a back navigation. This is possible by the use of the Android BackStack.</li>
-  </ul>
+WhereU consists of two activities. The LoginActivity and the MainScreen. The LoginActivity is responsible for providing a login, which leads to user identification by the app. The only way to start the MainScreen-activity is a successful login. The MainScrren manages the actual content delivery and is dependent from a successful login. Both activities and their features are documented below.
 
 #LoginActivity
 The app uses the ParseFacebookUtils library to call the Facebook SDK ([more information see Parse Doku] (https://www.parse.com/docs/android/guide#users-facebook-users))
@@ -30,20 +25,20 @@ The app uses the ParseFacebookUtils library to call the Facebook SDK ([more info
                 } else if (user.isNew()) {
                     Log.d("MyApp", "User signed up and logged in through Facebook!");
                     retriveFacebookData();
-                    Intent intent = new Intent(LogInActivity.this, MainActivity.class);
+                    Intent intent = new Intent(LogInActivity.this, MainScreen.class);
                     startActivity(intent);
                 } else {
                     Log.d("MyApp", "User logged in with Facebook!");
-                    Intent intent = new Intent(LogInActivity.this, MainActivity.class);
+                    Intent intent = new Intent(LogInActivity.this, MainScreen.class);
                     startActivity(intent);
                 }
             }
         });
 ````
 The user can now sign up with Facebook or if he already has signed up with Facebook log in with his connected Facebook account.
-If the user has already signed up and just logs in he will be linked back to the MainActivity to use the App.
+If the user has already signed up and just logs in he will be linked back to the MainScreen to use the App.
 
-If the user needs to sign up with his Facebook account his Facebook profile data are retrived by calling the function `retriveFacebookData()` and after that the user is linked to the MainActivity as well.
+If the user needs to sign up with his Facebook account his Facebook profile data are retrived by calling the function `retriveFacebookData()` and after that the user is linked to the MainScreen as well.
 
 **retriveFacebookData()**
 
@@ -58,7 +53,7 @@ The Facebook GrahphAPI returns the username and the gender of the the user which
                         ParseUser.getCurrentUser().put("gender", user.getString("gender"));
                         ParseUser.getCurrentUser().put("aboutMe", "");
                         ParseUser.getCurrentUser().saveInBackground();
-                        redirectToMainActivity();
+                        redirectToMainScreen();
 
                     } catch (Exception e) {
                         Log.e("Error from FB Data", e.getMessage());
@@ -81,20 +76,22 @@ ParseUser.getCurrentUser().put("profilepicture", file);
 ParseUser.getCurrentUser().saveInBackground();
 `````
 
-#MainActivity 
-**onCreate**
+#Main Screen
+The MainScreen is the actual activity behind WhereU. It extends an ActionBarActivity and displays only an ActionBar. The more it is responsible for handling clicks in the side menu or sliding gestures, which open the SideBar. Most of the screen belongs to the contentView, in which fragments are placed in by FragmentTransactions. The FragmentTransactions are mostly activated by the user, by pressing an element from the sidebar, or the Android back button. So every screen in the app is a fragment and not an activity. This has several advantages. One is a performance optimization because there is no need for stating intends. This can especially be seen in an emulator environment, but has also a huge impact on real devices. Another advantage is the differentiation between a controller - which handles the navigation through the app - and the UI, which is represented by the fragments (except the ActionBar). Another benefit of this architecture is the use and easy implementation of a back navigation. This is possible by the use of the Android BackStack.
 
-The app launches this activity by default, which executes the code, which is stated in the onCreate-Method. To ensure that the user is logged in (which is critical) the following check is performed:
+
+
+The app launches this activity by default. To ensure that the user is logged in the following check is performed:
 ````
-//Check if User is logged in
-if(ParseUser.getCurrentUser() == null){
-    //If the user is not logged in call the loginActiviy
-    Intent intent = new Intent(getApplicationContext(), LogInActivity.class);
-    startActivity(intent);
-} else {
-    currentUser = ParseUser.getCurrentUser();
-}
-````
+        //Check if User is logged in
+        if(ParseUser.getCurrentUser() == null){
+            //If the user is not logged in call the loginActiviy
+            Intent intent = new Intent(getApplicationContext(), LogInActivity.class);
+            startActivity(intent);
+        } else {
+            currentUser = ParseUser.getCurrentUser();
+        }
+```
 If the user is not logged in yet, the user is redirected to the LoginActivity to handel the login.
 
 After this check, the SideBar is built up. One SideBar element consists of an icon and a text. Both are stored in arrays and imported during onCreate. After the import, the icons are added to an ArrayList, called "navDrawerItems", which consists special objects, the NavDrawerItems:
@@ -103,60 +100,18 @@ navMenuTitles = getResources().getStringArray(R.array.nav_drawer_items);
 navMenuIcons = getResources().obtainTypedArray(R.array.nav_drawer_icons);
 ...
 navDrawerItems.add(new NavDrawerItem(navMenuTitles[0], navMenuIcons.getResourceId(0, -1)));
-````
+```
 
 NavDrawerItem is a special class which makes it possible to display an icon and a text in the SideBar. This class consists just of a constructor and getters/setters. After that a second class is used, the NavDrawerListAdapter. This class extends BaseAdapter and is returning Views - the SideBar elements. It also converts the icons (which are to this point drawables) to ImageViews, which can be seen below:
 ````
-if(position==0) {
-    imgIcon.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 75, heightPixels, false));
+if(position==0){
+    imgIcon.setImageBitmap(Bitmap.createScaledBitmap(bitmap, heightPixels, heightPixels, false));
     txtTitle.setText(ParseUser.getCurrentUser().getUsername());
-}else if(position==2){
-    if(!statusParticipation){
-        //display createEvent
-        imgIcon.setImageResource(navDrawerItems.get(position).getIcon());
-        txtTitle.setText(navDrawerItems.get(position).getTitle());
-    }else{
-        //display myEvent
-        imgIcon.setImageResource(R.drawable.ic_my_event);
-        txtTitle.setText("My Event");
-    }
 }else{
     imgIcon.setImageResource(navDrawerItems.get(position).getIcon());
     txtTitle.setText(navDrawerItems.get(position).getTitle());
 }
 ````
-The snippet above also shows the manipulation of the menu entries. The adapter returns every NavDrawerItem in the Sidebar individually. Position is the index of the SideBar position (0 is the first entry). This provides the opportunity for customizing them. Since the icons and the text for the SideBar items are stored in an array, they are all determined before the app is even started. To improve the look and feel of the WhereU the entry, which provides the link to the user profile, is customized with the Facebook profile picture of the user as icon and his name as text. It is obvious that these information have to be gathered from parse objects because there is no other connection to Facebook. The if-statement for ````position==2```` shows another example for the mentioned customization. The executed code changes the menu entry dependent from the user's participation in an event.
-
-After that a drawer listener has to be assigned to the SideBar with: ````mDrawerLayout.setDrawerListener(mDrawerToggle);````. mDrawerToggle is a customized ActionBarDrawerToggle. The only reasons for customization is the implementation of code, which hides the Android soft keyboard, in case it is open and setting the WhereU-Slogan to the ActionBar. The listener opens the SideBar and is also responsible for a close.
-
-To be able to handle the clicks on the SideBar entries, another ClickListener has to be assigned: ````mDrawerList.setOnItemClickListener(new SlideMenuClickListener());```` This listener returns the position of the clicked element in the SideBar.
-
-
-**Routing forward**
-
-Routing forward through the app implicates the handling of user clicks. Since the just mentioned ClickListener returns the position, a simple if-statement provides the ability to perform custom code on a click. This custom code is mostly the creation of a certain fragment, e.g. a ProfileFragment, in case the user clicks on the profile entry in the SideBar. No matter which entry is clicked, the fragment is called same. This supports the execution of a universal FragmentTrasaction:
-````
-FragmentManager fragmentManager = getFragmentManager();
-FragmentTransaction transaction = fragmentManager.beginTransaction();
-transaction.replace(R.id.frame_container, fragment);
-transaction.addToBackStack(null);
-transaction.commit();
-````
-Goal of the FragmentTransaction is replacing the shown fragment (from user's view the current screen) with another, without changing the activity. The FragmentManager handles the actual transaction. The replace method needs two important parameters: the "container" which shall show the replacing fragment, and the content (the fragment) which will be displayed. It is important to mention that the transaction will <i>replace</i> a fragment. This means that the first fragment is forced to enter the "onPause" state. It is not longer active. The opposite would be to use the <i>add</i> method. After declaring the target container and fragment, the paused fragment has to be thrown on top of the BackStack. This stack is a collection which stores after every FragmentTransaction the replaced fragment. This enables a proper back navigation.
-
-
-**Routing backward**
-
-The back navigation is an essential part of every Android app. This can be shown by the fact that Android phones have a back button, which can be used at any time, in any app. According to the Android design guidelines the implementation of an own back button is not recommended. This is why WhereU takes advantage of the ````onBackPressed()```` method. Every time the back button is pressed, this method is executed. The executed code is pretty simple:
-````
-FragmentManager fragmentManager = getFragmentManager();
-if(fragmentManager.getBackStackEntryCount()!=0){
-    fragmentManager.popBackStack();
-}else{
-    super.onBackPressed();
-}
-````
-Since all former shown fragments are stored on a stack, the last fragment is the first on the stack. In case the stack is not empty, the currently shown fragment is replaced with the first fragment on the stack. In case there is no fragment left, the app will exit.
 
 
 **Geofencing**
@@ -225,7 +180,21 @@ As soon as the internal removal of the geofence could be executed successfully, 
 In both cases the Parse-backend is changed only if the client and the internal android system could handle the geofence successfully so that we keep both in sync all the time.
 
 
+**ActionBar Buttons**
 
+On the AppMapFragment there should be shown a list symbol to switch to the list of events and on the list there hould be a map symbol to switch to the map. Just on the AppMapFragment there should be the possibility to create a geofence or remove it. The button for it should be a symbol in the ActionBar. These ActionBar Buttons are implemented in the MainScreen.
+
+The Menu File for the ActionBar is in app/res/menu/menu_app.xml. In this the four relevant Action Buttons "List", "Map", "Notify Me" and "Don't Notify Me" are stored. In the MainScreen they are imported in the onCreateOptionsMenu method with
+
+````
+getMenuInflater().inflate(R.menu.menu_app, menu);
+````
+
+In onPrepareOptionsMenu the visibility of the Action Buttons is controlled. All buttons are visible in dependence on boolean variables. After every switch of the boolean variables as follows.
+
+"Map Button": 
+
+- dependent on the boolean mapShown(). It is activated when the AppMapFragment is put to the screen (onResume() of EventMap) and deactivated when the AppMapFragement is not active (onPause() of EventMap).
 
 #ProfileScreen
 The ProfileScreen is used for the own user to show his information and to see other users information.
@@ -346,52 +315,57 @@ if (listParticipants.size() <= maxMembers) {
             } 
 ````
 
-If the user already participates in an event, he can decide whether he wants to deactivate his participation in the other event and participate in the shown one or if he wants to stay with the other one. For this a Dialog pops up, implemented with the Dialog Interface. If the user wants to change events he will be removed from the participators list of the other event, his participation status is set to false and the method activateParticipation() is called again (this time activating the participation because the participation status is false).
+If the user already participates in an event, he can decide whether he wants to deactivate his participation in the other event and participate in the shown one or if he wants to stay with the other one. For this a Dialog pops up, implemented with Alerdialog. If the user wants to change events he will be removed from the participators list of the other event, his participation status is set to false and the method activateParticipation() is called again (this time activating the participation because the participation status is false).
 
+The Alerdialog is created in an AlerDialog.Builder. In the constructor it needs the activity and the style in which it should appear. In this app we use THEME_HOLO_LIGHT in every occurence. After this the question is asked with setMessage of the Builder and the options are created (setPositveButton and setNegativeButton). They need a DialogInterface.OnClickListener. In the method onClick is returned which dialogue gave the event and which item was selected.With a switch query the respective methods are proceeded. Lastly the Builder starts with its method show()
              
 ````
-DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    switch (which) {
-                        //if he chose Yes, remove user from other event, set ParticipationStatus to false
-                        //and try again
-                        case DialogInterface.BUTTON_POSITIVE:
-                            //Yes button clicked
-
-                            ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
-                            try {
-                                String previousEventId = ParseUser.getCurrentUser().fetchIfNeeded().getString("eventId");
-                            query.getInBackground(previousEventId, new GetCallback<ParseObject>() {
-                                @Override
-                                public void done(ParseObject object, ParseException queryException) {
-                                    if (queryException == null) {
-
-                                        removeUserFromList(object);
-                                        statusParticipation = false;
-                                        activateParticipation();
-                                    }
-
-                                }});
-                            } catch (ParseException e) {
-                                e.printStackTrace();
-                            }
-                            break;
-
-                        //if user chooses No, leave everything as it is
-                        case DialogInterface.BUTTON_NEGATIVE:
-                            //No button clicked
-                            break;
-                    }
-                }
-            };
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+ AlertDialog.Builder builder =
+                    new AlertDialog.Builder(getActivity(), AlertDialog.THEME_HOLO_LIGHT);
             builder.setMessage(
                     "You already participate in an event at the moment. " +
-                            "Do you want to cancel your other event to participate in this one?").setPositiveButton(
-                    "Yes", dialogClickListener)
-                    .setNegativeButton("No", dialogClickListener).show();
+                            "Do you want to cancel your other event to participate in this one?")
+                    .setPositiveButton("Yes", userParticipatesDialogClickListener)
+                    .setNegativeButton("No", userParticipatesDialogClickListener)
+                    .show();
+                    
+                    
+//if user already participates in an event ask him whether he wants to cancel the other one
+    DialogInterface.OnClickListener userParticipatesDialogClickListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which) {
+                //if he chose Yes, remove user from other event, set ParticipationStatus to false
+                //and try again
+                case DialogInterface.BUTTON_POSITIVE:
+                    //Yes button clicked
+
+                    ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
+                    try {
+                        String previousEventId = ParseUser.getCurrentUser().fetchIfNeeded().getString("eventId");
+                        query.getInBackground(previousEventId, new GetCallback<ParseObject>() {
+                            @Override
+                            public void done(ParseObject object, ParseException queryException) {
+                                if (queryException == null) {
+
+                                    removeUserFromList(object);
+                                    statusParticipation = false;
+                                    activateParticipation();
+                                }
+
+                            }});
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+
+                //if user chooses No, leave everything as it is
+                case DialogInterface.BUTTON_NEGATIVE:
+                    //No button clicked
+                    break;
+            }
+        }
+    };
                  
 ````
 
@@ -422,17 +396,28 @@ After this, all relevant data is fetched with retrieveParseData(). All dynamic d
 The method fillDynamicData() fills the whole EventDetail Page with data. In this section the needed functions are explained.
 
 The dynamic data of every event is stored in a ParseObject. This type of ParseObject contains the (here relevant) columns:
+
 objectId    :   String
+
 category    :   String 
+
 description :   String
+
 duration    :   Date
+
 locationName:   String
+
 maxMembers  :   Number
+
 title       :   String
+
 createdAt   :   Date
+
 creator     :   Pointer<_User>
+
 geoPoint    :   GeoPoint
-paricipants :   Array (of Pointer_<User>
+
+paricipants :   Array (of Pointer_<_User>)
 
 Some of these fields are very easy to insert, because they are in a String format and just need to be allocated to the respective TextFields with the name. This simple type is handled by the method fillSimpleType(String dynamicField, TextView textViewToFill). It needs the name of the attribute in the ParseObject to fetch the necessary data and the TextView in which it should fill the data. Then the data is taken out of the event object into the TextView. Data fields which use this method are: category, description, locationName, creator.
 

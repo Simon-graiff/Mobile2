@@ -32,7 +32,6 @@ public class ParticipantsListFragment extends Fragment implements AdapterView.On
     ListView participantsListView;
     String eventId;
     List<ParseUser> listParticipants;
-    Button backToEventDetailButton;
 
     HelperClass helperObject = new HelperClass();
 

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -60,7 +59,7 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
     private boolean statusParticipation = false;
     private boolean cancelOtherEvent = false;
 
-    private boolean mapShown = true;
+    private boolean mapShown = false;
     private boolean listShown = false;
 
     private Boolean mCreatingGeoFence = false;
@@ -75,6 +74,9 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
 
     //currentUser
     ParseUser currentUser;
+
+    //HelperObject
+    HelperClass helperObject = new HelperClass();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -212,8 +214,8 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
             checkParticipation();
             if (statusParticipation){
 
-                mDrawerList.setItemChecked(3, true);
-                mDrawerList.setSelection(3);
+                mDrawerList.setItemChecked(2, true);
+                mDrawerList.setSelection(2);
                 SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.putBoolean("myEventActivated", true);
@@ -255,11 +257,7 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
             setTitle(navMenuTitles[position]);
             mDrawerLayout.closeDrawer(mDrawerList);
 
-            FragmentManager fragmentManager = getFragmentManager();
-            FragmentTransaction transaction = fragmentManager.beginTransaction();
-            transaction.replace(R.id.frame_container, fragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
+            helperObject.switchToFragment(getFragmentManager(), fragment);
 
         } else {
             //Error in creating fragment
@@ -289,7 +287,9 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_create_event, menu);
+
+        //getMenuInflater().inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.menu_app, menu);
         return true;
     }
 
@@ -302,10 +302,12 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
         //Handle action bar actions click
         switch (item.getItemId()) {
             case R.id.action_list_events:
-                openList();
+                //switch to List of Events
+                helperObject.switchToFragment(getFragmentManager(), new ListEventsFragment());
                 return true;
             case R.id.action_map:
-                openMap();
+                //switch to Map
+                helperObject.switchToFragment(getFragmentManager(), new EventMap());
             case R.id.action_settings:
                 return true;
             case R.id.action_notify_activate:
@@ -319,26 +321,6 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
         }
     }
 
-    private void openList(){
-
-        Fragment fragment;
-        FragmentManager fragmentManager = getFragmentManager();
-        fragment = new ListEventsFragment();
-
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.replace(R.id.frame_container, fragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
-    }
-
-    private void openMap(){
-        Fragment fragment = new EventMap();
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.replace(R.id.frame_container, fragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
-    }
 
 
     //Called when invalidateOptionsMenu() is triggered
@@ -348,10 +330,12 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
         menu.findItem(R.id.action_settings).setVisible(!drawerOpen);
         return super.onPrepareOptionsMenu(menu);*/
-         menu.findItem(R.id.action_list_events).setVisible(mapShown);
+        menu.findItem(R.id.action_list_events).setVisible(mapShown);
         menu.findItem(R.id.action_map).setVisible(listShown);
-        menu.findItem(R.id.action_notify_activate).setVisible(mapShown && !mInGeofence && !mCreatingGeoFence && !mDeletingGeoFence);
-        menu.findItem(R.id.action_notify_deactivate).setVisible(mapShown && mInGeofence && !mDeletingGeoFence && !mCreatingGeoFence);
+        menu.findItem(R.id.action_notify_activate).setVisible(mapShown && !mInGeofence
+                 && !mCreatingGeoFence);
+        menu.findItem(R.id.action_notify_deactivate).setVisible(mapShown && mInGeofence
+                 && !mDeletingGeoFence);
         return super.onPrepareOptionsMenu(menu);
     }
 

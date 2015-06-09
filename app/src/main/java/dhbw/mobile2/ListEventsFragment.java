@@ -1,9 +1,7 @@
 package dhbw.mobile2;
 
 import android.app.Activity;
-import android.app.FragmentManager;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
@@ -25,12 +23,8 @@ import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
-import com.parse.ParseUser;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 
@@ -83,6 +77,7 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
         //activate the ActionBar Button for the Map; reload ActionBar
         ((MainActivity) getActivity()).setListShown(true);
         getActivity().invalidateOptionsMenu();
+        setListShown(true);
 
         //add eventTitle to ActionBar
         ActionBar actionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
@@ -96,6 +91,11 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
         super.onPause();
         //deactivate the ActionBar Button for the Map; reload ActionBar
         ((MainActivity) getActivity()).setListShown(false);
+        setListShown(false);
+    }
+
+    private void setListShown(boolean isShown){
+        ((MainActivity) getActivity()).setListShown(isShown);
         getActivity().invalidateOptionsMenu();
     }
 
@@ -125,23 +125,14 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
             mListener.onFragmentInteraction(idArray.get(position));
 
             //switch to screen "EventDetail"
-            goToEventDetails(idArray.get(position));
+            //provide the eventId of the event object for the EventDetail-Screen
+            helperObject.putEventIdToSharedPref(getActivity(), idArray.get(position));
+
+            //create a new EventDetail-Fragment for the relevant event
+            helperObject.switchToFragment(getFragmentManager(), new EventDetailFragment());
         }
     }
 
-    public void goToEventDetails(String objectId){
-
-        //provide the eventId of the event object for the EventDetail-Screen
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString("eventId", objectId);
-        editor.apply();
-
-        //create a new EventDetail-Fragment for the relevant event
-        Fragment fragment = new EventDetailFragment();
-        FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
-    }
 
     //Listener to fetch events on event items in the list
     public interface OnFragmentInteractionListener {

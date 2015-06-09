@@ -3,8 +3,6 @@ package dhbw.mobile2;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -57,9 +55,7 @@ import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+
 import java.util.List;
 
 public class EventDetailFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener, GoogleMap.OnMarkerClickListener {
@@ -77,7 +73,6 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
     List<ParseUser> listParticipants;
 
     //Dynamic Information of Event
-    private int maxMembers;
     private String eventId;
     private boolean statusParticipation = false;
 
@@ -121,7 +116,6 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
         currentUser = ParseUser.getCurrentUser();
 
-        boolean myEventActivated;
 
         //declare TextViews
         detailCategoryDynamic = (TextView) (rootView.findViewById(R.id.detail_category_dynamic));
@@ -246,28 +240,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         });
     }
 
-    //get a cropped circle out of the image, copied from the internet
-    public Bitmap getCroppedCircleBitmap(Bitmap bitmap) {
-        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
-                bitmap.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(output);
 
-        final int color = 0xff424242;
-        final Paint paint = new Paint();
-        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
-
-        paint.setAntiAlias(true);
-        canvas.drawARGB(0, 0, 0, 0);
-        paint.setColor(color);
-        // canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
-        canvas.drawCircle(bitmap.getWidth() / 2, bitmap.getHeight() / 2,
-                bitmap.getWidth() / 2, paint);
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-        canvas.drawBitmap(bitmap, rect, rect, paint);
-        //Bitmap _bmp = Bitmap.createScaledBitmap(output, 60, 60, false);
-        //return _bmp;
-        return output;
-    }
 
     private void fillDynamicData(){
 
@@ -391,7 +364,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
                     Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                     int heightPixels = EventDetailFragment.this.getActivity().getApplicationContext().getResources().getDisplayMetrics().heightPixels;
                     //Set the ProfilePicuture to the ImageView and scale it to the screen size
-                    bitmap = EventDetailFragment.this.getCroppedCircleBitmap(bitmap);
+                    bitmap = helperObject.getCroppedCircleBitmap(bitmap);
                     imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap,
                             ((int) (heightPixels * 0.1)),
                             ((int) (heightPixels * 0.1)),
@@ -409,7 +382,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         // if user does not participate in an event already, he can participate in this one
         if (!statusParticipation) {
             //user can only participate if maximum amount of participants has not yet been reached
-            if (listParticipants.size() <= maxMembers) {
+            if (listParticipants.size() <= eventObject.getInt("maxMembers")){
                 //add User to Participators List of the event
                 listParticipants.add(currentUser);
                 eventObject.put("participants", listParticipants);
@@ -433,53 +406,55 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
                 toast.show();
             }
         } else {
-            //if user already participates in an event ask him whether he wants to cancel the other one
-            DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    switch (which) {
-                        //if he chose Yes, remove user from other event, set ParticipationStatus to false
-                        //and try again
-                        case DialogInterface.BUTTON_POSITIVE:
-                            //Yes button clicked
-
-                            ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
-                            try {
-                                String previousEventId = ParseUser.getCurrentUser().fetchIfNeeded().getString("eventId");
-                            query.getInBackground(previousEventId, new GetCallback<ParseObject>() {
-                                @Override
-                                public void done(ParseObject object, ParseException queryException) {
-                                    if (queryException == null) {
-
-                                        removeUserFromList(object);
-                                        statusParticipation = false;
-                                        activateParticipation();
-                                    }
-
-                                }});
-                            } catch (ParseException e) {
-                                e.printStackTrace();
-                            }
-                            break;
-
-                        //if user chooses No, leave everything as it is
-                        case DialogInterface.BUTTON_NEGATIVE:
-                            //No button clicked
-                            break;
-                    }
-                }
-            };
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), AlertDialog.THEME_HOLO_LIGHT);
+            
+            AlertDialog.Builder builder =
+                    new AlertDialog.Builder(getActivity(), AlertDialog.THEME_HOLO_LIGHT);
             builder.setMessage(
                     "You already participate in an event at the moment. " +
-                            "Do you want to cancel your other event to participate in this one?").setPositiveButton(
-                    "Yes", dialogClickListener)
-                    .setNegativeButton("No", dialogClickListener).show();
+                            "Do you want to cancel your other event to participate in this one?")
+                    .setPositiveButton("Yes", userParticipatesDialogClickListener)
+                    .setNegativeButton("No", userParticipatesDialogClickListener)
+                    .show();
         }
 
-
     }
+
+    //if user already participates in an event ask him whether he wants to cancel the other one
+    DialogInterface.OnClickListener userParticipatesDialogClickListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which) {
+                //if he chose Yes, remove user from other event, set ParticipationStatus to false
+                //and try again
+                case DialogInterface.BUTTON_POSITIVE:
+                    //Yes button clicked
+
+                    ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
+                    try {
+                        String previousEventId = ParseUser.getCurrentUser().fetchIfNeeded().getString("eventId");
+                        query.getInBackground(previousEventId, new GetCallback<ParseObject>() {
+                            @Override
+                            public void done(ParseObject object, ParseException queryException) {
+                                if (queryException == null) {
+
+                                    removeUserFromList(object);
+                                    statusParticipation = false;
+                                    activateParticipation();
+                                }
+
+                            }});
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+
+                //if user chooses No, leave everything as it is
+                case DialogInterface.BUTTON_NEGATIVE:
+                    //No button clicked
+                    break;
+            }
+        }
+    };
 
     private void deactivateParticipation(){
         if (statusParticipation) {
