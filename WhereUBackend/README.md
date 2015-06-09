@@ -58,7 +58,7 @@ if (results.length > 0) {
 }
 `````
 
-In case an error is thrown this error is passed to the client to be handled.
+In case an error is thrown it is passed to the client to be handled.
 
 **removeGeofence**
 
@@ -70,11 +70,11 @@ query.equalTo("user", user)
 query.equalTo("requestId", geoFenceId)
 ```````
 
-The geofence, that was found is destroyed. Otherwise, in case destroying isn't possible, no geofence was found or an error occured fetching the data from the database appropriate information is passed to the client.
+The geofence, that was found, is destroyed. Otherwise, in case destroying isn't possible, no geofence was found or an error occured fetching the data from the database appropriate information is passed to the client.
 
 **GetNearEvents**
 
-We wanted our users to be notified in their specified locations (their geofences) about recent events as soon as they walk in. Therefore this method is called by the client when the "ENTER" Event of a geofence is triggered. The user's ID and his location is passed as parameter. With these information a query is built to determine whether some events are up in user's area or not. Since we also want to know if the user is actually interested in those type of events we need to build two queries using promises. The first query fetches all events which are in the user's area.
+We wanted our users to be notified in their specified locations (their geofences) about recent events as soon as they walk into the . Therefore this method is called by the client when the "ENTER" Event of a geofence is triggered. The user's ID and his location is passed as parameter. With these information a query is built to determine whether some events are up in user's area or not. Since we also want to know if the user is actually interested in those type of events we need to build two queries using promises. The first query fetches all events which are in the user's area.
 
 `````
  var query = new Parse.Query("Event")
@@ -83,7 +83,7 @@ We wanted our users to be notified in their specified locations (their geofences
   query.find().then(function (events) {...}
 `````
 
-If no events are found the result is returned, no push is sent and the method is done. Otherwise the settings representing the user's interests are fetched from the User_Settings table. He can define his interests in the settings screen (more details in client documentation). The category of each event, that is closed to him (result fo first query) is checked. In case the user likes the category the event is added to the result-array. After every event has been checked a push is sent assuming there was one event of interesed close to him and the result array is passed to the client to be processed there.
+If no events are found the result is returned, no push is sent and the method is done. Otherwise the settings representing the user's interests are fetched from the User_Settings table. He can define his interests in the settings screen (more details in client documentation). The category of each event, that is closed to him (result fo first query) is checked. In case the user likes the category, the event is added to the result-array. After every event has been checked a push is sent assuming there was one event of interesed close to him and the result array is passed to the client to be processed there.
 
 ``````
 var settingsQuery = new Parse.Query("User_Settings")
