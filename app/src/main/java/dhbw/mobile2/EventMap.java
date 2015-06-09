@@ -1,7 +1,6 @@
 package dhbw.mobile2;
 
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -13,7 +12,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,11 +35,10 @@ import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListener {
 
-    public LocationManager locationManager;
+    private LocationManager locationManager;
     private GoogleMap map = null;
     MapView myMapView = null;
     public List<EventManagerItem> eventManager = new ArrayList<>();
@@ -93,18 +90,8 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
 
         View rootView = inflater.inflate(R.layout.fragment_app_map, container, false);
 
-        //MapsInitializer.initialize(this.getActivity());
-
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-       // locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
-       // locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
         locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
-
-        /*try{
-            MapsInitializer.initialize(this.getActivity());
-        }catch (GooglePlayServicesNotAvailableException e){
-            e.printStackTrace();
-        }*/
 
         return rootView;
     }
@@ -119,11 +106,12 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
             e.printStackTrace();
         }
 
-        //myMapView = (MapView) rootView.findViewById(R.id.myMapView);
-        myMapView = (MapView) getView().findViewById(R.id.myMapView);
-        myMapView.onCreate(savedInstanceState);
+        if(getView()!=null) {
+            myMapView = (MapView) getView().findViewById(R.id.myMapView);
+            myMapView.onCreate(savedInstanceState);
 
-        map = myMapView.getMap();
+            map = myMapView.getMap();
+        }
 
         if(map!=null) {
             map.getUiSettings().setMyLocationButtonEnabled(false);
@@ -142,8 +130,6 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
             myMapView.onResume();
         }
         locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
-      //  locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 500, 5, locationListener);
-       // locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 0, locationListener);
 
         ((MainActivity) getActivity()).setMapShown(true);
         getActivity().invalidateOptionsMenu();
@@ -153,7 +139,10 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
         mDrawerList.setItemChecked(1, true);
         mDrawerList.setSelection(1);
         ActionBar actionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
-        actionBar.setTitle("Map");
+
+        if(actionBar!=null) {
+            actionBar.setTitle("Map");
+        }
     }
 
     @Override
@@ -185,27 +174,14 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
 
     private void setUpMap(){
 
-        if(map == null){
-
-            Log.d("Main", "Map was not instantiated!");
-
-            //Trying to fetch map, again
-            //map = supportMapFragment.getMap();
-
-        }else {
-
-            Log.d("Main", "Map is instantiated");
+        if(map!=null){
 
             Location userPosition = getUserPosition();
 
             if(userPosition != null){
 
-                Log.d("Main", "Last position was found");
-
                 LatLng coordinates = new LatLng(userPosition.getLatitude(),
                         userPosition.getLongitude());
-
-                //map.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinates, 13));
 
                 CameraPosition cameraPosition = new CameraPosition.Builder()
                         .target(coordinates)
@@ -225,8 +201,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
 
     private Location getUserPosition() {
         locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
-        Location userPosition = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        return userPosition;
+        return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
     }
 
     private void drawMarker(LatLng position, String title, String eventID){
@@ -321,7 +296,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                             //If tmpMale & tmpFemale are both true then the participants of the
                             //event are from both genders. In case the user wants to avoid that
                             //a preference check is needed
-                            if(tmpMale==true && tmpFemale==true && mixedGenders==false){
+                            if(tmpMale && tmpFemale && mixedGenders){
                                 Log.d("Main", "There is a mixed gender group");
                             }else{
                                 Log.d("Main", "In der if");
@@ -334,7 +309,6 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
 
                                 //An event can only belong to one category. If any of the following
                                 //conditions fails, there is no need for checking the others.
-
 
                                 if(!category.equals(sport)){
                                     if(!category.equals(music)){
@@ -392,13 +366,6 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
 
             //Direction to EventDetailFragment
             Fragment eventDetailFragment = new EventDetailFragment();
-            /*FragmentManager fragmentManager = getActivity().getFragmentManager();
-            fragmentManager
-                    .beginTransaction()
-                    .add(R.id.frame_container, eventDetailFragment, "eventDetailFragment")
-                    .addToBackStack(null)
-                    //.replace(R.id.frame_container, eventDetailFragment)
-                    .commit();*/
             FragmentTransaction transaction = getActivity().getFragmentManager().beginTransaction();
             transaction.replace(R.id.frame_container, eventDetailFragment);
             transaction.addToBackStack(null);
