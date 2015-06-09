@@ -373,7 +373,6 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
                 }
             });
         }
-
     }
 
     public void activateParticipation(){

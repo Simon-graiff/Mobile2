@@ -98,8 +98,10 @@ public class ParticipantsListFragment extends Fragment implements AdapterView.On
 
 
     private void createParticipantsList(){
+        //ArrayLists with names and pictures
         ArrayList<String> arrayListParticipantNames = new ArrayList<>();
         ArrayList<Bitmap> arrayListParticipantPictures = new ArrayList<>();
+
         for (int i = 0; i < listParticipants.size(); i++) {
             try {
                 ParseUser user = listParticipants.get(i).fetchIfNeeded();
