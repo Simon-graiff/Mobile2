@@ -1,47 +1,50 @@
 Parse.Cloud.define("getNearEvents", function (request, response) {
 
-    var query = new Parse.Query("Event")
-
     console.log(request)
     var userLong = request.params.longitude
     var userLat = request.params.latitude
     var userId = request.params.userId
+    var userGeoPoint = new Parse.GeoPoint(userLat, userLong)
 
-    query.find({
-        success: function (results) {
-            var events = []
-            for (var i = 0; i < results.length; i++) {
-                var event = results[i]
-                var geoPoint = event.get("geoPoint")
-                var geoPointUser = new Parse.GeoPoint(userLong, userLat)
-                var distance = geoPoint.kilometersTo(geoPointUser)
+    var User = Parse.Object.extend("User");
+    var user = new User()
+    user.id = userId
 
-                if (distance < 0.250) {
-                    events.push(results[i])
-                }
-            }
+    var query = new Parse.Query("Event")
+    query.withinKilometers("geoPoint", userGeoPoint, 1)
 
-            var result = {
-                events: events
-            }
-
-
-            var query = new Parse.Query("User")
-            query.equalTo('ObjectId', userId)
-
-            Parse.Push.send({
-                where: query,
-                data: {
-                    alert: "There is an awesome event in this area!"
-                }
-            });
-
-            response.success(result)
-
-        },
-        error: function () {
-            response.error("Error fetching event-data")
+    query.find().then(function (events) {
+        if (!events.length > 0) {
+            response.success({
+                events: "No Events"
+            })
+            return
         }
+        
+        var settingsQuery = new Parse.Query("User_Settings")
+        settingsQuery.equalTo("user", user)
+        settingsQuery.find().then(function (settings) {
+            var result = []
+            for (var i = 0; i < events.length; i++) {
+                var category = events[i].get("category").toLowerCase().replace(' ', '').toString()
+                if (settings[0].get(category)) {
+                    result.push(events[i])
+                }
+            }
+
+            if (result.length > 0) {
+                Parse.Push.send({
+                    //where: query,
+                    data: {
+                        alert: "There is an awesome event in this area!"
+                    }
+                })
+            }
+
+            response.success({
+    events: result
+})
+        })
     })
 })
 
@@ -49,14 +52,13 @@ Parse.Cloud.define("checkIfInGeoFence", function (request, response) {
     var userId = request.params.userId
     var userLat = request.params.latitude
     var userLong = request.params.longitude
-    var userGeoPoint = new Parse.GeoPoint(userLong, userLat)
+    var userGeoPoint = new Parse.GeoPoint(userLat, userLong)
 
     var User = Parse.Object.extend("User");
     var user = new User()
     user.id = userId
 
     var query = new Parse.Query("GeoFence")
-        //query.matchesKeyInQuery(userId, "objectId", userQuery)
     query.withinKilometers("center", userGeoPoint, 1)
     query.equalTo("user", user)
 

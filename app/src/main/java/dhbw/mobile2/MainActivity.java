@@ -417,13 +417,12 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
         if(checkIfFirstGeoFence()){
             showFirstTimeNotification();
         }
-        mCreatingGeoFence = true;
         invalidateOptionsMenu();
         if(mLocation != null) {
             String requestId = mLocation.getLongitude() + ";" + mLocation.getLatitude() + ";" + currentUser.getObjectId();
             mGeoFenceList.add(new Geofence.Builder()
                     .setRequestId(requestId)
-                    .setCircularRegion(10, 10, 2000000) //long,lat,radius
+                    .setCircularRegion(mLocation.getLongitude(), mLocation.getLatitude(), 500) //long,lat,radius
                     .setExpirationDuration(Geofence.NEVER_EXPIRE)//millis
                     .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
                     .build());
@@ -434,6 +433,7 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
                     getGeofencingRequest(),
                     getGeofencePendingIntent()
             ).setResultCallback(this);
+            mCreatingGeoFence = true;
         }else{
             Toast.makeText(getApplicationContext(), "Please wait until GPS works...", Toast.LENGTH_LONG).show();
         }
@@ -455,9 +455,7 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
                 .setTitle("Creating Geofence")
                 .setMessage("From now on you'll be notified if any events are up in this area. To stop notifications just push the button again.")
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // continue with delete
-                    }
+                    public void onClick(DialogInterface dialog, int which) {}
                 })
                 .setIcon(android.R.drawable.ic_dialog_info)
                 .show();
