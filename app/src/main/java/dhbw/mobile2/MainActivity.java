@@ -272,7 +272,7 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
 
-            // update selected item and title, then close the drawer
+            //Update selected item and title, then close the drawer
             mDrawerList.setItemChecked(2, true);
             mDrawerList.setSelection(2);
             setTitle(navMenuTitles[2]);
@@ -289,7 +289,6 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        //getMenuInflater().inflate(R.menu.main, menu);
         getMenuInflater().inflate(R.menu.menu_create_event, menu);
         return true;
     }
@@ -321,24 +320,25 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
     }
 
     private void openList(){
+
         Fragment fragment;
-                FragmentManager fragmentManager = getFragmentManager();
-                fragment = new ListEventsFragment();
+        FragmentManager fragmentManager = getFragmentManager();
+        fragment = new ListEventsFragment();
 
-                 FragmentTransaction transaction = fragmentManager.beginTransaction();
-                 transaction.replace(R.id.frame_container, fragment);
-                 transaction.addToBackStack(null);
-                 transaction.commit();
-            }
-
-    private void openMap(){
-              Fragment fragment = new EventMap();
-                FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.replace(R.id.frame_container, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
-            }
+    }
+
+    private void openMap(){
+        Fragment fragment = new EventMap();
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.frame_container, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
+    }
 
 
     //Called when invalidateOptionsMenu() is triggered
@@ -358,7 +358,9 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
     @Override
     public void setTitle(CharSequence title) {
         mTitle = title;
-        getSupportActionBar().setTitle(mTitle);
+        if(getSupportActionBar()!=null) {
+            getSupportActionBar().setTitle(mTitle);
+        }
     }
 
     @Override
