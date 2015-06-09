@@ -24,11 +24,13 @@ import com.parse.ParseFile;
 import com.parse.ParseUser;
 
 import org.apache.commons.io.IOUtils;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -142,10 +144,12 @@ public class LogInActivity extends ActionBarActivity {
      */
     private void redirectToMainScreen(){
         callbackCount++;
-                if(callbackCount >3 && !errorOccured){
-                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                    startActivity(intent);
-                }else{
+        if(!errorOccured){
+            if(callbackCount >3){
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(intent);
+            }
+        }else{
             //Reload Activity to start over with signup or login
             Intent intent = new Intent(getApplicationContext(), LogInActivity.class);
             startActivity(intent);
@@ -188,17 +192,24 @@ public class LogInActivity extends ActionBarActivity {
             @Override
             public void onCompleted(JSONObject user, GraphResponse response) {
                 if (user != null) {
-                    try {
+
                         //Retrive URL from Facebook profile picture
-                        String pictureURL = user.getJSONObject("picture").getJSONObject("data").getString("url");
-                        URL url = new URL(pictureURL);
-                        //Download the Picture from provided URL and Save it as ByteArray to Parse
+                    String pictureURL = null;
+                    try {
+                        pictureURL = user.getJSONObject("picture").getJSONObject("data").getString("url");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    URL url = null;
+                    try {
+                        url = new URL(pictureURL);
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
+                    //Download the Picture from provided URL and Save it as ByteArray to Parse
                         new DownloadPictureTask().execute(url);
                         redirectToMainScreen();
-                    } catch (Exception e) {
-                        errorOccured=true;
-                        Log.e("Error from FB Data", e.getMessage());
-                    }
+
                 }
             }
         });
