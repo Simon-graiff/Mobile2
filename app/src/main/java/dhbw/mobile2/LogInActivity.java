@@ -15,7 +15,9 @@ import android.widget.Toast;
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
+import com.parse.FunctionCallback;
 import com.parse.LogInCallback;
+import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
 import com.parse.ParseFile;
@@ -29,12 +31,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class LogInActivity extends ActionBarActivity {
 
     private int callbackCount = 0;
+    private boolean errorOccured=false;
 
 
     @Override
@@ -94,6 +99,7 @@ public class LogInActivity extends ActionBarActivity {
                 } else if (user.isNew()) {
                     Log.d("MyApp", "User signed up and logged in through Facebook!");
                     ProgressDialog.show(LogInActivity.this, "Creating Account", "Please wait.."); //Show loading dialog until data has been pulled from parse
+                    inizialieSettings();
                     retriveFacebookData();
                     redirectToMainScreen();
                     //Redirect to MainActivity is executed in redirectToMainScreen()
@@ -108,15 +114,42 @@ public class LogInActivity extends ActionBarActivity {
         });
     }
 
+
+    /*
+    This function calls a cloud code function which creates the default settings for a new user
+     */
+    private void inizialieSettings(){
+        Map<String, Object> param = new HashMap<>();
+        ParseCloud.callFunctionInBackground("initializeNewUser", param, new FunctionCallback<Map<String, Object>>() {
+            @Override
+            public void done(Map<String, Object> stringObjectMap, ParseException e) {
+                if (e == null) {
+                    Log.d("CreateUser", "successfull");
+                } else {
+                    Toast.makeText(getApplicationContext(), "error in CloudCode", Toast.LENGTH_LONG).show();
+                    errorOccured=true;
+                    //Delete created user to sign up again
+                    ParseUser.getCurrentUser().deleteInBackground();
+                    Log.e("CloudCode", e.getMessage());
+                }
+            }
+
+        });
+    }
+
     /*
     This method checks if all callbacks retruned with a positive result and redirects to main screen
      */
     private void redirectToMainScreen(){
         callbackCount++;
-                if(callbackCount >3){
+                if(callbackCount >3 && !errorOccured){
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                     startActivity(intent);
-                }
+                }else{
+            //Reload Activity to start over with signup or login
+            Intent intent = new Intent(getApplicationContext(), LogInActivity.class);
+            startActivity(intent);
+        }
     }
 
     public void retriveFacebookData() {
@@ -137,6 +170,7 @@ public class LogInActivity extends ActionBarActivity {
                         redirectToMainScreen();
 
                     } catch (Exception e) {
+                        errorOccured=true;
                         Log.e("Error from FB Data", e.getMessage());
                     }
                 }
@@ -162,6 +196,7 @@ public class LogInActivity extends ActionBarActivity {
                         new DownloadPictureTask().execute(url);
                         redirectToMainScreen();
                     } catch (Exception e) {
+                        errorOccured=true;
                         Log.e("Error from FB Data", e.getMessage());
                     }
                 }
@@ -200,6 +235,7 @@ public class LogInActivity extends ActionBarActivity {
                     redirectToMainScreen();
 
                 } catch (IOException e) {
+                    errorOccured=true;
                     e.printStackTrace();
                 }
                 if (isCancelled()) break;

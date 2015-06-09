@@ -121,3 +121,36 @@ Parse.Cloud.define("removeGeoFence", function (request, response) {
     })
 
 })
+
+Parse.Cloud.define("initializeNewUser", function(request, response) { 
+var UserSettings = Parse.Object.extend("User_Settings")
+var userSettings = new UserSettings()
+
+//userSettings.set("user", user)
+
+
+userSettings.save({
+
+chilling: true,
+dancing: true,
+food: true,
+music: true,
+sport: true,
+videogames:true,
+mixedgenders: true,
+user: request.user
+},
+           {  success: function(userSettings) {
+               // The object was saved successfully.
+               response.success({
+                   result: "deleted"
+               })
+             },
+             error: function(userSettings, error) {
+               // The save failed.
+                console.log(error)
+                response.error({
+                result: "error"
+             })}
+             })
+  })
