@@ -12,7 +12,7 @@
         android:text="Home View"/>
 
     <com.google.android.gms.maps.MapView
-        android:id="@+id/myMapView"
+        android:id="@+id/EventMapView"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"/>
 

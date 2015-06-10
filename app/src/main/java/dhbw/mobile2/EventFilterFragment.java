@@ -1,6 +1,7 @@
 package dhbw.mobile2;
 
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -28,6 +29,7 @@ public class EventFilterFragment extends Fragment implements CompoundButton.OnCh
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
     private ParseObject filter = ParseObject.create("User_Settings");
+    private ProgressDialog progressDialog;
 
     private Switch sport_switch;
     private Switch music_switch;
@@ -135,6 +137,8 @@ public class EventFilterFragment extends Fragment implements CompoundButton.OnCh
         ActionBar actionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
         actionBar.setTitle("Filter events");
 
+        progressDialog = ProgressDialog.show(getActivity(), "Loading Settings", "Please wait..");
+
         ParseQuery<ParseObject> query = ParseQuery.getQuery("User_Settings");
         query.include("user");
         query.whereEqualTo("user", ParseUser.getCurrentUser());
@@ -143,6 +147,7 @@ public class EventFilterFragment extends Fragment implements CompoundButton.OnCh
                 if (e == null) {
                     filter = retrievedList.get(0);
                     initializeSwitches();
+                    progressDialog.dismiss();
                 } else {
                     Log.d("Main", e.getMessage());
                 }

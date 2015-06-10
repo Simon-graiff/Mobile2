@@ -132,7 +132,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         return rootView;
     }
 
-    //the following have to be implemented for the map, especially myMapView.onPause()
+    //the following have to be implemented for the map, especially eventMapView.onPause()
 
     @Override
     public void onResume(){

@@ -215,7 +215,116 @@ If the current user sees his own profile he can edit the about me textfield whic
             ParseUser.getCurrentUser().saveInBackground();
             Toast.makeText(getActivity().getWindow().getContext(), "Your changes are saved!", Toast.LENGTH_LONG).show();
         }
-`````
+````
+
+#EventMap
+
+**Structure**
+
+EventMap is the fragment, the user sees first after performing a login. This fragment displays a Map, on which markers are drawn. Each marker represents an event, which is close to the user. The intention of this screen is to provide the user an intuitive way for looking nearby events up. Since every event has a category, the user shall be able to filter events, in which he doesn't want to participate. By clicking on a marker, the user is redirected to the EventDetailFragment, which displays further information on the tapped event.
+
+
+**Map initialization**
+
+The realization of a map is implemented by using a MapView, not a MapFragment. Actually an implementation with an MapFragment would be possible, too. But it turned out that the handling of a MapView is easier, since the alternative would implcate the handling of a fragment, inside a fragment. Before the user can see any events or even the map, it has to be initialized. The onCreateMethod is not suitable for that. The reason for this is that maps are highly sensetive in Android. A wrong initialization leads to a NullPointerException, which crashes the app. This is why the onCreateMethod just contains the request of a location update:
+````
+locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
+````
+
+The actual initialization is performed in the onActivityCreated method. Since the EventMap is the first Screen the user sees after a login, it might happen on slower devices that the fragment is displayed, while the activity is not fully completed. In this case the app crashes. The onActivityCreated method is executed, as soon as the MainActivity is finished with the code execution. The initialization of the map works as follows:
+````
+try {
+    MapsInitializer.initialize(this.getActivity());
+}catch (Exception e){
+    e.printStackTrace();
+}
+
+...
+
+eventMapView = (MapView) getView().findViewById(R.id.EventMapView);
+eventMapView.onCreate(savedInstanceState);
+map = eventMapView.getMap();
+````
+The try-catch-block takes advantage of the MapInitializer, which does most of the work automaticly. The three dots represent a simple if-statement, which ensures the current view is not null. After that a Android MapView variable is initialized with a MapView, which is declared in the fragment's XML file:
+````
+<com.google.android.gms.maps.MapView
+    android:id="@+id/EventMapView"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"/>
+````
+The in XML declared MapView is passed to an Java variable. This variable can return an actual map, which can be used for further operations, e.g. the drawing og markers.
+
+
+**Receiving Events from Parse***
+
+Before any events can be drawn to the map, the user's settings regarding the event filters have to be downloaded. This will take place in the onResume method. Since this method is called every time before the fragment is displayed, the EventMap will always work with up-to-date settings. The settings are stored as separate objects on the server. For further details regarding events, see FilterFragment. Every settings object has several boolan values for the different event categories and a pointer to the correspoinding user. The concrete implementation for fetching the filters is as follows:
+````
+ParseQuery<ParseObject> query = ParseQuery.getQuery("User_Settings");
+    query.include("user");
+    try {
+        query.whereEqualTo("user", ParseUser.getCurrentUser().fetchIfNeeded());
+    } catch (ParseException e) {
+        e.printStackTrace();
+    }
+    query.findInBackground(new FindCallback<ParseObject>() {
+        public void done(List<ParseObject> retrievedList, ParseException e) {
+            if (e == null) {
+                try {
+                    filter = retrievedList.get(0).fetchIfNeeded();
+                } catch (ParseException e1) {
+                    e1.printStackTrace();
+                }
+
+                drawEvents();
+            } else {
+                Log.d("Main", e.getMessage());
+            }
+        }
+});
+````
+After declating the type of objects which are looked up ("User_Settings"), a simple "whereEqualsTo(...)" is performed. But instead of a common data type, the parse user is passed to the server. Parse will look up the settigs column with the user pointer, until it finds a match with the passed user object. As return WhereU receives a settings object. The reveived object is stored in an external variable. This allows the use in other methods. E.g. drawEvents, which is the heart of the EventMap.
+
+
+**Drawing events to the map**
+
+All events are stored on the server. This means that the events have to be downloaded as well to the client. But first the filters, which were fetched before have to be extracted to boolean variables for further use:
+````
+final boolean sport = filter.getBoolean("sport");
+...
+````
+The variables have to be declared final because they will be used in a callback. After that the query parameters are defined:
+````
+Location userLocation = getUserPosition();
+ParseGeoPoint point = new ParseGeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
+ParseObject user = new ParseObject("User");
+user.put("location", point)
+````
+The use of a ParseGeoPoint is pretty important. Goal of WhereU is providing as much events as possible. It is obvious that there is no sense in fetching all available events from the server and draw them to a map. So before the actual download a filter has to be used. This filter is the user's current location. Fortunately Parse provides a special query parameter for searching for geo coordinates, which are in a certain range:
+````
+query.whereWithinKilometers("geoPoint", queryParameter, 5);
+````
+geoPoint is the column, in which the query can expect ParseGeoPoints, queryParameter is the user's location, which will be the center point of the query. The last number is the radius, in which events shall be downloaded. After a list of event objects is reveived, a for loop is started, which handles every single object in the list. One possible option for users is to filter for events, in which both genders participate. This option has to be handled first:
+````
+boolean tmpMale=false;
+boolean tmpFemale=false;
+for(int j=0; j<participantList.size();j++){
+    try {
+        if (participantList.get(j).fetchIfNeeded().getString("gender").equals("male")) {
+            tmpMale = true;
+        } else {
+            tmpFemale = true;
+        }
+    }catch (ParseException exception){
+        exception.printStackTrace();
+    }
+}
+````
+
+
+The 
+
+
 
 #EventDetail(Fragment)
 
