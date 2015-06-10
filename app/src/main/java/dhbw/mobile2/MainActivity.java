@@ -420,19 +420,21 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
         invalidateOptionsMenu();
         if(mLocation != null) {
             String requestId = mLocation.getLongitude() + ";" + mLocation.getLatitude() + ";" + currentUser.getObjectId();
+            Log.d("Main", "Creating Geofence at: " + mLocation.getLongitude() + ";" + mLocation.getLatitude());
             mGeoFenceList.add(new Geofence.Builder()
                     .setRequestId(requestId)
-                    .setCircularRegion(mLocation.getLongitude(), mLocation.getLatitude(), 500) //long,lat,radius
+                    .setCircularRegion(mLocation.getLatitude(), mLocation.getLongitude(), 500) //lat, long, radius
                     .setExpirationDuration(Geofence.NEVER_EXPIRE)//millis
                     .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
                     .build());
             mPendingRequestId = requestId;
-
+            PendingIntent geofencePendingINtent = PendingIntent.getService(this,0,new Intent(this, GeofenceTransitionsIntentService.class),PendingIntent.FLAG_UPDATE_CURRENT);
             LocationServices.GeofencingApi.addGeofences(
                     mGoogleApiClient,
-                    getGeofencingRequest(),
-                    getGeofencePendingIntent()
+                    mGeoFenceList,
+                    geofencePendingINtent //getGeofencePendingIntent()
             ).setResultCallback(this);
+
             mCreatingGeoFence = true;
         }else{
             Toast.makeText(getApplicationContext(), "Please wait until GPS works...", Toast.LENGTH_LONG).show();
@@ -503,13 +505,11 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
 
     @Override
     public void onResult(Status status) {
-        Toast.makeText(getApplicationContext(), "Result: " + status.toString(), Toast.LENGTH_LONG).show();
+        Log.d("MAIN", "Result: " + status.toString());
         if (mCreatingGeoFence) {
             submitGeofenceToDatabase();
         } else if (mDeletingGeoFence) {
             removeGeoFenceFromDatabase();
-        } else {
-            Toast.makeText(getApplicationContext(), "Error Error Error", Toast.LENGTH_LONG).show();
         }
         mDeletingGeoFence = false;
         mCreatingGeoFence = false;
@@ -519,8 +519,8 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
         if (mGeoFencePendingIntent != null) {
             return mGeoFencePendingIntent;
         }
-        Intent intent = new Intent(getApplicationContext(), GeofenceTransitionsIntentService.class);
-        return PendingIntent.getService(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent intent = new Intent(this, GeofenceTransitionsIntentService.class);
+        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     private GeofencingRequest getGeofencingRequest() {

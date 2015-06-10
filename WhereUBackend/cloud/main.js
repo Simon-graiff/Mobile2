@@ -1,3 +1,32 @@
+Parse.Cloud.job("deleteExpiredEvents", function (request, response) {
+    console.log("Called at: ")
+    var now = new Date()
+    console.log(now)
+
+    var query = new Parse.Query("Event")
+    query.lessThan("duration", now)
+    query.find().then(function (events) {
+        console.log(events)
+
+        //What do I do HERE to delete the posts?
+        events.forEach(function (event) {
+            event.destroy({
+                success: function () {
+                    console.log("deleted:")
+                    console.log(event)
+                },
+                error: function (error) {
+                    console.log(error)
+                }
+            })
+        })
+        response.success("successfully done")
+    }, function (error) {
+        console.log(error)
+        response.error(error)
+    })
+})
+
 Parse.Cloud.define("getNearEvents", function (request, response) {
 
     console.log(request)
@@ -20,7 +49,7 @@ Parse.Cloud.define("getNearEvents", function (request, response) {
             })
             return
         }
-        
+
         var settingsQuery = new Parse.Query("User_Settings")
         settingsQuery.equalTo("user", user)
         settingsQuery.find().then(function (settings) {
@@ -32,9 +61,16 @@ Parse.Cloud.define("getNearEvents", function (request, response) {
                 }
             }
 
+            console.log(result)
+            console.log(result.length)
+
             if (result.length > 0) {
+                console.log("Push called")
+                var pushQuery = new Parse.Query(Parse.User);
+                query.equalTo('objectId', userId);
+
                 Parse.Push.send({
-                    //where: query,
+                    where: pushQuery,
                     data: {
                         alert: "There is an awesome event in this area!"
                     }
@@ -42,8 +78,8 @@ Parse.Cloud.define("getNearEvents", function (request, response) {
             }
 
             response.success({
-    events: result
-})
+                events: result
+            })
         })
     })
 })
@@ -122,35 +158,36 @@ Parse.Cloud.define("removeGeoFence", function (request, response) {
 
 })
 
-Parse.Cloud.define("initializeNewUser", function(request, response) { 
-var UserSettings = Parse.Object.extend("User_Settings")
-var userSettings = new UserSettings()
+Parse.Cloud.define("initializeNewUser", function (request, response) { 
+    var UserSettings = Parse.Object.extend("User_Settings")
+    var userSettings = new UserSettings()
 
-//userSettings.set("user", user)
+    //userSettings.set("user", user)
 
 
-userSettings.save({
+    userSettings.save({
 
-chilling: true,
-dancing: true,
-food: true,
-music: true,
-sport: true,
-videogames:true,
-mixedgenders: true,
-user: request.user
-},
-           {  success: function(userSettings) {
-               // The object was saved successfully.
-               response.success({
-                   result: "deleted"
-               })
-             },
-             error: function(userSettings, error) {
-               // The save failed.
-                console.log(error)
-                response.error({
+        chilling: true,
+        dancing: true,
+        food: true,
+        music: true,
+        sport: true,
+        videogames: true,
+        mixedgenders: true,
+        user: request.user
+    },   {
+        success: function (userSettings) {
+            // The object was saved successfully.
+            response.success({
+                result: "deleted"
+            })
+        },
+        error: function (userSettings, error) {
+            // The save failed.
+            console.log(error)
+            response.error({
                 result: "error"
-             })}
-             })
-  })
+            })
+        }
+    }) 
+})
