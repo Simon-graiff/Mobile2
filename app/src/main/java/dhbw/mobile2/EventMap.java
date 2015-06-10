@@ -27,7 +27,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.FindCallback;
-import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
@@ -41,7 +40,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
 
     private LocationManager locationManager;
     private GoogleMap map = null;
-    MapView myMapView = null;
+    MapView eventMapView = null;
     public List<EventManagerItem> eventManager = new ArrayList<>();
     public List<ParseUser> participantList = new ArrayList<>();
     private ParseObject filter = ParseObject.create("User_Settings");
@@ -51,8 +50,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
         @Override
         public void onLocationChanged(Location location) {
 
-            Log.d("Main", "Location changed");
-
+            //Execute camera update and animation
             double lat = location.getLatitude();
             double lon = location.getLongitude();
             LatLng position = new LatLng(lat, lon);
@@ -64,34 +62,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                     .build();
 
             map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
-            ParseQuery<ParseObject> query = ParseQuery.getQuery("User_Settings");
-            query.include("user");
-            try {
-                query.whereEqualTo("user", ParseUser.getCurrentUser().fetchIfNeeded());
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-            query.findInBackground(new FindCallback<ParseObject>() {
-                public void done(List<ParseObject> retrievedList, ParseException e) {
-                    if (e == null) {
-                        try {
-                            filter = retrievedList.get(0).fetchIfNeeded();
-                        } catch (ParseException e1) {
-                            e1.printStackTrace();
-                        }
-                        Log.d("Main", "RetrievedID: " + filter.getObjectId());
-                        Log.d("Main", "Filter for Sport: " + filter.getBoolean("sport"));
-
-                        drawEvents();
-                    } else {
-                        Log.d("Main", e.getMessage());
-                    }
-                }
-            });
         }
-
-
 
         @Override
         public void onStatusChanged(String s, int i, Bundle bundle) {
@@ -99,14 +70,10 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
         }
 
         @Override
-        public void onProviderEnabled(String s) {
-
-        }
+        public void onProviderEnabled(String s) {}
 
         @Override
-        public void onProviderDisabled(String s) {
-
-        }
+        public void onProviderDisabled(String s) {}
     };
 
     public EventMap(){}
@@ -133,10 +100,10 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
         }
 
         if(getView()!=null) {
-            myMapView = (MapView) getView().findViewById(R.id.myMapView);
-            myMapView.onCreate(savedInstanceState);
+            eventMapView = (MapView) getView().findViewById(R.id.EventMapView);
+            eventMapView.onCreate(savedInstanceState);
 
-            map = myMapView.getMap();
+            map = eventMapView.getMap();
         }
 
         if(map!=null) {
@@ -144,7 +111,6 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
 
             map.setMyLocationEnabled(true);
             map.setOnMarkerClickListener(this);
-
             setUpMap();
         }
     }
@@ -152,11 +118,11 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
     @Override
     public void onResume(){
         super.onResume();
-        if(myMapView!=null){
-            myMapView.onResume();
+        if(eventMapView !=null){
+            eventMapView.onResume();
         }
-        locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
 
+        //Fetching user filter, to prepare event draw according to settings
         ParseQuery<ParseObject> query = ParseQuery.getQuery("User_Settings");
         query.include("user");
         try {
@@ -172,8 +138,6 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                     } catch (ParseException e1) {
                         e1.printStackTrace();
                     }
-                    Log.d("Main", "RetrievedID: " + filter.getObjectId());
-                    Log.d("Main", "Filter for Sport: " + filter.getBoolean("sport"));
 
                     drawEvents();
                 } else {
@@ -199,7 +163,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
     @Override
     public void onPause() {
         if (map != null)
-            myMapView.onPause();
+            eventMapView.onPause();
         super.onPause();
         locationManager.removeUpdates(locationListener);
 
@@ -210,7 +174,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
     @Override
     public void onDestroy(){
         if(map!=null) {
-            myMapView.onDestroy();
+            eventMapView.onDestroy();
         }
         super.onDestroy();
     }
@@ -219,7 +183,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
     public void onLowMemory(){
         super.onLowMemory();
         if(map!=null) {
-            myMapView.onLowMemory();
+            eventMapView.onLowMemory();
         }
     }
 
@@ -241,11 +205,8 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                         .build();
 
                 map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
                 drawEvents();
 
-            }else{
-                Log.d("Main", "No last position found");
             }
         }
     }//End of setUpMap
@@ -264,17 +225,11 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
         );
 
         eventManager.add(new EventManagerItem(m.getId(), eventID, position));
-
     }
 
     private void drawEvents(){
 
-        //Create ParseGeoPoint with user's current location
-        Location userLocation = getUserPosition();
-        ParseGeoPoint point = new ParseGeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
-        ParseObject user = new ParseObject("User");
-        user.put("location", point);
-
+        //Initialize filters
         final boolean sport = filter.getBoolean("sport");
         final boolean music = filter.getBoolean("music");
         final boolean chilling = filter.getBoolean("chilling");
@@ -283,10 +238,16 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
         final boolean food = filter.getBoolean("food");
         final boolean mixedGenders = filter.getBoolean("mixedgenders");
 
+        //Create ParseGeoPoint with user's current location
+        Location userLocation = getUserPosition();
+        ParseGeoPoint point = new ParseGeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
+        ParseObject user = new ParseObject("User");
+        user.put("location", point);
+
         //Prepare query
         ParseGeoPoint queryParameter = (ParseGeoPoint) user.get("location");
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
-        query.whereWithinKilometers("geoPoint", queryParameter, 5);
+        query.whereWithinKilometers("geoPoint", queryParameter, 2);
 
         Log.d("Main", "Waiting for Callback...");
 
@@ -320,6 +281,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                                 }
                             }
                         });
+
                         for (int i = 0; i < eventList.size(); i++) {
                             //Extraction of latitude and longitude from received GeoPoints
                             ParseGeoPoint tmpPoint = (ParseGeoPoint) eventList.get(i).get("geoPoint");
