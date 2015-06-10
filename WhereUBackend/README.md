@@ -113,6 +113,7 @@ settingsQuery.find().then(function (settings) {
 ````
 
 **initializeNewUser**
+
 When a user first signs up there are several settings that needs to be initialized and set to a default value.
 This function creates a user_Settings object and sets all event filters to true. This ensures that the user will retrive all kind of events near by as default.
 This function is called by the LoginActivity.
@@ -148,6 +149,7 @@ Parse.Cloud.define("initializeNewUser", function(request, response) { 
 `````
 
 **retriveFacebookPicture**
+
 This function retrieves the facebook profile picture and saves it to the PraseUserObject.
 This function calls the facebook graph api to get the url of the picture.
 
