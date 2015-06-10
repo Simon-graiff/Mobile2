@@ -67,11 +67,19 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
 
             ParseQuery<ParseObject> query = ParseQuery.getQuery("User_Settings");
             query.include("user");
-            query.whereEqualTo("user", ParseUser.getCurrentUser());
+            try {
+                query.whereEqualTo("user", ParseUser.getCurrentUser().fetchIfNeeded());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
             query.findInBackground(new FindCallback<ParseObject>() {
                 public void done(List<ParseObject> retrievedList, ParseException e) {
                     if (e == null) {
-                        filter = retrievedList.get(0);
+                        try {
+                            filter = retrievedList.get(0).fetchIfNeeded();
+                        } catch (ParseException e1) {
+                            e1.printStackTrace();
+                        }
                         Log.d("Main", "RetrievedID: " + filter.getObjectId());
                         Log.d("Main", "Filter for Sport: " + filter.getBoolean("sport"));
 
@@ -148,6 +156,31 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
             myMapView.onResume();
         }
         locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("User_Settings");
+        query.include("user");
+        try {
+            query.whereEqualTo("user", ParseUser.getCurrentUser().fetchIfNeeded());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        query.findInBackground(new FindCallback<ParseObject>() {
+            public void done(List<ParseObject> retrievedList, ParseException e) {
+                if (e == null) {
+                    try {
+                        filter = retrievedList.get(0).fetchIfNeeded();
+                    } catch (ParseException e1) {
+                        e1.printStackTrace();
+                    }
+                    Log.d("Main", "RetrievedID: " + filter.getObjectId());
+                    Log.d("Main", "Filter for Sport: " + filter.getBoolean("sport"));
+
+                    drawEvents();
+                } else {
+                    Log.d("Main", e.getMessage());
+                }
+            }
+        });
 
         ((MainActivity) getActivity()).setMapShown(true);
         getActivity().invalidateOptionsMenu();

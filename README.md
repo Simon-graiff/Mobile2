@@ -24,7 +24,7 @@ The app uses the ParseFacebookUtils library to call the Facebook SDK ([more info
                     ParseUser.logOut();
                 } else if (user.isNew()) {
                     Log.d("MyApp", "User signed up and logged in through Facebook!");
-                    retriveFacebookData();
+                    retrieveFacebookData();
                     Intent intent = new Intent(LogInActivity.this, MainScreen.class);
                     startActivity(intent);
                 } else {
@@ -38,11 +38,11 @@ The app uses the ParseFacebookUtils library to call the Facebook SDK ([more info
 The user can now sign up with Facebook or if he already has signed up with Facebook log in with his connected Facebook account.
 If the user has already signed up and just logs in he will be linked back to the MainScreen to use the App.
 
-If the user needs to sign up with his Facebook account his Facebook profile data are retrived by calling the function `retriveFacebookData()` and after that the user is linked to the MainScreen as well.
+If the user needs to sign up with his Facebook account his Facebook profile data are retrieved by calling the function `retrieveFacebookData()` and after that the user is linked to the MainScreen as well.
 
-**retriveFacebookData()**
+**retrieveFacebookData()**
 
-This function uses the Facebook GraphAPI and sends a Me-Request to retrive the needed Facebook data. ([For more information see Facebook Graph API] (https://developers.facebook.com/docs/graph-api))
+This function uses the Facebook GraphAPI and sends a Me-Request to retrieve the needed Facebook data. ([For more information see Facebook Graph API] (https://developers.facebook.com/docs/graph-api))
 The Facebook GrahphAPI returns the username and the gender of the the user which then is saved to Parse by calling:
 ````
            @Override
@@ -62,7 +62,7 @@ The Facebook GrahphAPI returns the username and the gender of the the user which
             }
 ````
 
-To retrive the Facebook profile picture a similar call to the Facebook GraphAPI can be sent which returns the URL of the Facebook picture.
+To retrieve the Facebook profile picture a similar call to the Facebook GraphAPI can be sent which returns the URL of the Facebook picture.
 This picture is downloaded by the function 
 **DownloadPictureTask()**
 This method uses the BufferedInputStream which can then by saved as a byte array.
@@ -182,7 +182,7 @@ In both cases the Parse-backend is changed only if the client and the internal a
 
 **ActionBar Buttons**
 
-On the AppMapFragment there should be shown a list symbol to switch to the list of events and on the list there hould be a map symbol to switch to the map. Just on the AppMapFragment there should be the possibility to create a geofence or remove it. The button for it should be a symbol in the ActionBar. These ActionBar Buttons are implemented in the MainScreen.
+On the EventMap there should be shown a list symbol to switch to the list of events and on the list there hould be a map symbol to switch to the map. Just on the EventMap there should be the possibility to create a geofence or remove it. The button for it should be a symbol in the ActionBar. These ActionBar Buttons are implemented in the MainScreen.
 
 The Menu File for the ActionBar is in app/res/menu/menu_app.xml. In this the four relevant Action Buttons "List", "Map", "Notify Me" and "Don't Notify Me" are stored. In the MainScreen they are imported in the onCreateOptionsMenu method with
 
@@ -194,7 +194,7 @@ In onPrepareOptionsMenu the visibility of the Action Buttons is controlled. All 
 
 "Map Button": 
 
-- dependent on the boolean mapShown(). It is activated when the AppMapFragment is put to the screen (onResume() of EventMap) and deactivated when the AppMapFragement is not active (onPause() of EventMap).
+- dependent on the boolean mapShown(). It is activated when the EventMap is put to the screen (onResume() of EventMap) and deactivated when the AppMapFragement is not active (onPause() of EventMap).
 
 #ProfileScreen
 The ProfileScreen is used for the own user to show his information and to see other users information.
@@ -455,6 +455,22 @@ The method getTimeScopeString(ParseObject object) takes an EventObject and build
 
 The method switchToFragment switches to the specified fragment. It uses the strategy explained in the capter "MainScreen". switchToProfileFragement switches to the Profile Fragement which is slightly another strategy than the other fragments as explained in the chapter "Profile Page". It creates the ProfileFragment and then calls switchToFragment().
 
+**getParticipants**
+
+Extracts the participants (attribute "participants") from an Event ParseObject and shows them with the maximum amount (attribute "maxMembers") of participants in this event. It creates a String in the format "currentParticipants/maximumParticipants".
+
+**calculateDistance**
+
+CalculateDistance calculates distance between two ParseGeoPoints. Therefore the ParseGeoPoint method distanceInKilometersTo is used, which returns the distance as a double. In the application a distance with one digit behind the comma is wanted, so distance is multiplied by 10 and then divided by an integer 10.
+
+**setCategoryImage**
+
+setCategoryImage sets the ImageResource of a given ImageView to an icon image of the given category. These categories and images are defined in the switch statement of the method. For the string category the respective icon is selected. These were downloaded to the project in all relevant sizes. If no valid category is given, the sport icon will be selected to prevent errors.
+
+**putEventIdToSharedPref**
+
+The EventDetailFragment needs the objectId of the event it is supposed to display as described in the chapter of EventDetail. The method putEventIdToSharedPref saves the given Event-ID as a SharedPrefences in the activity. It need a SharedPreferences object and a SharedPreferences Editor object of the SharedPreferences objekt. It then saved the Event-ID as the variable "eventId" as SharedPreferences and uses "apply" to save it asynchronously. 
+
 #ParticipantsList(Fragment)
 
 On the ParticipantsList Screen every user who takes part in an event is shown with his picture and his name. The screen works with a ListView, in which each List Item represents one user with his name and his profile picture. Each List Item is clickable and redirects to the Profile Page of the user. The screen is composed out of the files:
@@ -488,7 +504,7 @@ The ListEvents Page is composed of the files:
 
 `java/dhbw.mobile2/EventListAdapter.java`:
 
-Contains the data of the ListView of all events
+Contains the data of the ListView of all events. The Textfields are filled with the data given by the ListEventsFragment-Class. The image of the category is filled dependent on the category with the HelperClass method setCategoryImage.
 
 `java/dhbw.mobile2/ListEventsFragment.java`:
 
@@ -500,11 +516,20 @@ Contains the logic of the Page. This page has two main goals:
 
 To 1.:
 
-The data for the relevant events is taken from the AppMapFragment. The EventList Page is opened through an ActionBar Item that is shown only on the MapView. When the MapView fetches events and filters them, they are saved in a localDataStore ParseObject. This object is fetched in getEventData() and the the relevant data for the ListView is then extracted in the callback to pass it to the EventListAdapter.
+The data for the relevant events is taken from the EventMap. The EventList Page is opened through an ActionBar Item that is shown only on the EventMap. When the EventMap fetches events and filters them, they are saved in a localDataStore-ParseObject. This object is fetched in getEventData() and the the relevant data for the ListView is then extracted in the callback to pass it to the EventListAdapter.
+
+To fetch the event data from the local DataStore the query needs to add the specification: 
+````
+query.fromLocalDatastore();
+````
+The name of the ParseObject containing a List with the events is called "FilteredEvents". 
+
 
 To 2.:
 
-The EventListAdapter takes the data of the events with ArrayLists containing the single data items. Apart from the category, only strings are passed to the Adapter, which are just shown to the user. The Adapter can easily iterate through these arrays. For the category the EventListFragement sends the String name of the category to the Adapter and the Adapter looks for the matching icon. Apart from the String objects, the ID of the Events objects has to be send as well, so the user can be redirected to the EventDetail Page of this ID when it is called. 
+The EventListAdapter takes the data of the events with ArrayLists containing the single data items. Apart from the category, only strings are passed to the Adapter, which are just shown to the user. The Adapter can easily iterate through these arrays. For the category the EventListFragement sends the String name of the category to the Adapter and the Adapter looks for the matching icon. Apart from the String objects, the ID of the Events objects has to be send as well, so the user can be redirected to the EventDetail Page of this ID when it is called.
+
+Lastly the EventListAdapter with the data is linked to the ListView.
 
 `res/layout/fragment_events_list.xml`:
 

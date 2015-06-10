@@ -149,13 +149,12 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
         LocationManager locationManager =  (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         Location userLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         final ParseGeoPoint point = new ParseGeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
-        Log.d("Main", point.getLatitude() + ", " + point.getLongitude());
 
         //Query: Get all events in the reach of five kilometers
         ParseQuery<ParseObject> query = ParseQuery.getQuery("FilteredEvents");
         query.fromLocalDatastore();
 
-        //Executing query
+        //Get the List of Filtered Events from EventMap Page
         query.findInBackground(new FindCallback<ParseObject>() {
             public void done(List<ParseObject> listOfEventList, ParseException e) {
                 Log.d("Main", "Received " + listOfEventList.size() + " events");
@@ -175,15 +174,15 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
 
                                 //add title to Event List object
                                 titleArray.add(event.getString("title"));
-                                Log.d("Main", "title: " + event.getString("title"));
                                 //add id to Event List object
                                 idArray.add(event.getObjectId());
                                 //add category to Event List object
                                 categoryArray.add(event.getString("category"));
 
                                 //calculate distance and add it to Event List object
-                                double distance = helperObject.calculateDistance(point, event.getParseGeoPoint("geoPoint"));
-                                distanceArray.add(distance);
+                                distanceArray.add(
+                                        helperObject.calculateDistance(
+                                                point, event.getParseGeoPoint("geoPoint")));
 
                                 //start: get the time of the event, create a string out of it and add it to Event List object
                                 timeArray.add(helperObject.getTimeScopeString(event));
@@ -210,7 +209,7 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
                 listOfEventList.get(0).unpinInBackground();
 
                 //add all event object content to the Event List
-                mAdapter = new EventlistAdapter(getActivity(),
+                mAdapter = new EventListAdapter(getActivity(),
                         titleArray,
                         categoryArray,
                         distanceArray,

@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class EventlistAdapter extends ArrayAdapter<String> {
+public class EventListAdapter extends ArrayAdapter<String> {
     private final Activity context;
     private final ArrayList<String> itemname;
     private final ArrayList<String> category;
@@ -18,8 +18,7 @@ public class EventlistAdapter extends ArrayAdapter<String> {
     private ArrayList<String> participantCount;
 
     private HelperClass helperObject = new HelperClass();
-
-    public EventlistAdapter(Activity context,
+    public EventListAdapter(Activity context,
                             ArrayList<String> itemname,
                             ArrayList<String> category,
                             ArrayList<Double> distance,
