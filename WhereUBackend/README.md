@@ -111,3 +111,82 @@ settingsQuery.find().then(function (settings) {
   })
 })
 ````
+
+**initializeNewUser**
+When a user first signs up there are several settings that needs to be initialized and set to a default value.
+This function creates a user_Settings object and sets all event filters to true. This ensures that the user will retrive all kind of events near by as default.
+This function is called by the LoginActivity.
+
+`````
+Parse.Cloud.define("initializeNewUser", function(request, response) { 
+    var UserSettings = Parse.Object.extend("User_Settings")
+    var userSettings = new UserSettings()
+    userSettings.save({
+        chilling: true,
+        dancing: true,
+        food: true,
+        music: true,
+        sport: true,
+        videogames:true,
+        mixedgenders: true,
+        user: request.user
+        },
+           {  success: function(userSettings) {
+           // The object was saved successfully.
+           response.success({
+               result: "created settings"
+           })
+         },
+             error: function(userSettings, error) {
+               // The save failed.
+                console.log(error)
+                response.error({
+                result: "error"
+                })}
+         })
+ })
+`````
+
+**retriveFacebookPicture**
+This function retrieves the facebook profile picture and saves it to the PraseUserObject.
+This function calls the facebook graph api to get the url of the picture.
+
+`````
+Parse.Cloud.define("retriveFacebookPicture", function (request, response) {
+    Parse.Cloud.httpRequest({
+    url: request.params.url,
+         followRedirects: true,
+         params: {
+             type : 'large'
+         },
+    success: function(httpImgFile)
+    {
+    var myFile = new Parse.File("profilepicture.jpg", {base64: httpImgFile.buffer.toString('base64', 0, httpImgFile.buffer.length)});
+        myFile.save().then(function() {
+        var currentUser = request.user;
+        currentUser.set("profilepicture", myFile);
+        currentUser.save();
+        console.log("saved picture as file")
+          // The file has been saved to Parse.
+        response.success("successfull saved fb profile picture")
+        }, function(error) {
+        response.error(error)
+        });
+
+
+
+    },
+    error: function(httpResponse)
+    {
+        console.log("unsuccessful http request");
+        response.error(httpResponse);
+    }
+
+});
+
+})
+````
+
+
+
+
