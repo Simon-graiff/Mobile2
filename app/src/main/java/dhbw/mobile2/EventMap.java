@@ -225,7 +225,6 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
         );
 
         eventManager.add(new EventManagerItem(m.getId(), eventID, position));
-
     }
 
     private void drawEvents(){

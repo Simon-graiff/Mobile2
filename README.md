@@ -226,7 +226,7 @@ EventMap is the fragment, the user sees first after performing a login. This fra
 
 **Map initialization**
 
-The realization of a map is implemented by using a MapView, not a MapFragment. Actually an implementation with an MapFragment would be possible, too. But it turned out that the handling of a MapView is easier, since the alternative would implcate the handling of a fragment, inside a fragment. Before the user can see any events or even the map, it has to be initialized. The onCreateMethod is not suitable for that. The reason for this is that maps are highly sensetive in Android. A wrong initialization leads to a NullPointerException, which crashes the app. This is why the onCreateMethod just contains the request of a location update:
+The realization of a map is implemented by using a MapView, not a MapFragment. Actually an implementation with an MapFragment would be possible, too. But it turned out that the handling of a MapView is easier, since the alternative would implcate the handling of a fragment, inside a fragment. Before the user can see any events or even the map, it has to be initialized. The onCreateMethod is not suitable for that. The reason for this is that maps are highly sensitive in Android. A wrong initialization leads to a NullPointerException, which crashes the app. This is why the onCreateMethod just contains the request of a location update:
 ````
 locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
@@ -246,19 +246,19 @@ eventMapView = (MapView) getView().findViewById(R.id.EventMapView);
 eventMapView.onCreate(savedInstanceState);
 map = eventMapView.getMap();
 ````
-The try-catch-block takes advantage of the MapInitializer, which does most of the work automaticly. The three dots represent a simple if-statement, which ensures the current view is not null. After that a Android MapView variable is initialized with a MapView, which is declared in the fragment's XML file:
+The try-catch-block takes advantage of the MapInitializer, which does most of the work automatically. The three dots represent a simple if-statement, which ensures the current view is not null. After that a Android MapView variable is initialized with a MapView, which is declared in the fragment's XML file:
 ````
 <com.google.android.gms.maps.MapView
     android:id="@+id/EventMapView"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"/>
 ````
-The in XML declared MapView is passed to an Java variable. This variable can return an actual map, which can be used for further operations, e.g. the drawing og markers.
+The in XML declared MapView is passed to an Java variable. This variable can return an actual map, which can be used for further operations, e.g. the drawing of markers.
 
 
 **Receiving Events from Parse***
 
-Before any events can be drawn to the map, the user's settings regarding the event filters have to be downloaded. This will take place in the onResume method. Since this method is called every time before the fragment is displayed, the EventMap will always work with up-to-date settings. The settings are stored as separate objects on the server. For further details regarding events, see FilterFragment. Every settings object has several boolan values for the different event categories and a pointer to the correspoinding user. The concrete implementation for fetching the filters is as follows:
+Before any events can be drawn to the map, the user's settings regarding the event filters have to be downloaded. This will take place in the onResume method. Since this method is called every time before the fragment is displayed, the EventMap will always work with up-to-date settings. The settings are stored as separate objects on the server. For further details regarding events, see FilterFragment. Every settings object has several boolean values for the different event categories and a pointer to the corresponding user. The concrete implementation for fetching the filters is as follows:
 ````
 ParseQuery<ParseObject> query = ParseQuery.getQuery("User_Settings");
     query.include("user");
@@ -283,7 +283,7 @@ ParseQuery<ParseObject> query = ParseQuery.getQuery("User_Settings");
         }
 });
 ````
-After declating the type of objects which are looked up ("User_Settings"), a simple "whereEqualsTo(...)" is performed. But instead of a common data type, the parse user is passed to the server. Parse will look up the settigs column with the user pointer, until it finds a match with the passed user object. As return WhereU receives a settings object. The reveived object is stored in an external variable. This allows the use in other methods. E.g. drawEvents, which is the heart of the EventMap.
+After declaring the type of objects which are looked up ("User_Settings"), a simple "whereEqualsTo(...)" is performed. But instead of a common data type, the parse user is passed to the server. Parse will look up the settings column with the user pointer, until it finds a match with the passed user object. As return WhereU receives a settings object. The retrieved object is stored in an external variable. This allows the use in other methods. E.g. drawEvents, which is the heart of the EventMap.
 
 
 **Drawing events to the map**
@@ -304,7 +304,9 @@ The use of a ParseGeoPoint is pretty important. Goal of WhereU is providing as m
 ````
 query.whereWithinKilometers("geoPoint", queryParameter, 5);
 ````
-geoPoint is the column, in which the query can expect ParseGeoPoints, queryParameter is the user's location, which will be the center point of the query. The last number is the radius, in which events shall be downloaded. After a list of event objects is reveived, a for loop is started, which handles every single object in the list. One possible option for users is to filter for events, in which both genders participate. This option has to be handled first:
+geoPoint is the column, in which the query can expect ParseGeoPoints, queryParameter is the user's location, which will be the center point of the query. The last number is the radius, in which events shall be downloaded. After a list of event objects is retrieved, a for-loop is started, which handles every single object in the list.
+
+One possible option for users is to filter for events, in which both genders participate. This option has to be handled first:
 ````
 boolean tmpMale=false;
 boolean tmpFemale=false;
@@ -320,10 +322,64 @@ for(int j=0; j<participantList.size();j++){
     }
 }
 ````
+Every event has a list of participating users. This is why this for-loop is dealing with the participant list of a single event, not with the event list. In case a male user is participating, the male variable changes its status. Same thing for the female one. A simple if-statement decides, if the event should be considered for drawing into the map, or not: ````tmpMale && tmpFemale && !mixedGenders````.
+
+In case the event shall be considered for further processing, its category has to be checked:
+````
+String tmpTitle = eventList.get(i).getString("title");
+String category = eventList.get(i).getString("category");
+String eventID = eventList.get(i).getObjectId();
+
+switch (category){
+    case "Sport":
+        if (sport){
+            try {
+                eventArray.add(eventList.get(i).fetchIfNeeded());
+            } catch (ParseException e1) {
+                e1.printStackTrace();
+            }
+            drawMarker(tmpLatLng, tmpTitle, eventID);
+        }
+        break;
+...
+````
+First the title, category and ID have to be extracted from the event. Then a simple switch is performed, since special restrictions have to be processed for every event. Every event category has its own switch statement. After processing the code in a certain case, the event is only drawn, if the before fetched filter option is true. Before drawing the event, using the drawMarker(...) method, the event is stored to another event list. This list is used by the EventList, which displays all received events in a single list. The advantage of this processing is that the events have just to be downloaded and filtered once.
 
 
-The 
+**Draw markers to the map**
 
+The drawMarker method is a pretty short and simple method:
+````
+private void drawMarker(LatLng position, String title, String eventID){
+
+    Marker m = map.addMarker(new MarkerOptions()
+                    .title(title)
+                    .position(position)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+    );
+
+    eventManager.add(new EventManagerItem(m.getId(), eventID, position));
+}
+````
+Special about this method is the eventManager line. The eventManager is an ArrayList, which consists of EventManagerItems. These items are own data types, which hold a marker ID, an event ID and a position. The reason for this can be seen in the onMarkerClickMethod:
+````
+for(int i=0; i<eventManager.size(); i++){
+    if(eventManager.get(i).getMarkerID().equals(markerID)){
+        eventID = eventManager.get(i).getEventID();
+    }
+}
+````
+Since the ID of a marker on the map does not match with the ID of the event it is representing, both have to be saved. If the user taps a marker, a for loop searches in the custom marker list for an object, which marker ID corresponds to the marker ID, which was tapped. If there is a match, the correct event ID can be restored for the marker. This is necessary, since a tap on a marker shall open the EventDetailFragment. But this fragment needs an event ID, if any information shall be displayed.
+````
+if(!eventID.equals("Not found")){
+    SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+    SharedPreferences.Editor editor = sharedPref.edit();
+    editor.putString("eventId", eventID);
+    editor.apply();
+    
+    ...
+````
+The event ID will be stored in the SharedPreferences. From there the EventDetailFragment can retrieve the id and load the necessary information. After the event ID is stored as String, a FragmentTransaction is performed, to redirect the user to the detail view. The transaction is similar to the transaction in the MainActivity.
 
 
 #EventDetail(Fragment)
