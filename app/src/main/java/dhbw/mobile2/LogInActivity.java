@@ -2,7 +2,6 @@ package dhbw.mobile2;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
@@ -20,18 +19,10 @@ import com.parse.LogInCallback;
 import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
-import com.parse.ParseFile;
 import com.parse.ParseUser;
 
-import org.apache.commons.io.IOUtils;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -40,8 +31,10 @@ import java.util.Map;
 
 public class LogInActivity extends ActionBarActivity {
 
-    private int callbackCount = 0;
+    private boolean saveFacebookPicture=false;
+    private boolean saveFacebookData=false;
     private boolean errorOccured=false;
+    private boolean isLogin=false;
 
 
     @Override
@@ -89,6 +82,7 @@ public class LogInActivity extends ActionBarActivity {
     //Is called by the User if he hits the Button FacebookLogin
     public void linkFacebookLogIn(View view) {
         final List<String> permissions = Arrays.asList("public_profile", "email");
+        isLogin=true;
 
 
         ParseFacebookUtils.logInWithReadPermissionsInBackground(LogInActivity.this, permissions, new LogInCallback() {
@@ -102,7 +96,8 @@ public class LogInActivity extends ActionBarActivity {
                     Log.d("MyApp", "User signed up and logged in through Facebook!");
                     ProgressDialog.show(LogInActivity.this, "Creating Account", "Please wait.."); //Show loading dialog until data has been pulled from parse
                     inizialieSettings();
-                    retriveFacebookData();
+                    retriveFacebookInformation();
+                    saveFacebookProfilePicture();
                     redirectToMainScreen();
                     //Redirect to MainActivity is executed in redirectToMainScreen()
                     //=> This task takes the longest and only if all Data is retrived its supposed to be redirected
@@ -131,7 +126,6 @@ public class LogInActivity extends ActionBarActivity {
                     Toast.makeText(getApplicationContext(), "error in CloudCode", Toast.LENGTH_LONG).show();
                     errorOccured=true;
                     //Delete created user to sign up again
-                    ParseUser.getCurrentUser().deleteInBackground();
                     Log.e("CloudCode", e.getMessage());
                 }
             }
@@ -143,23 +137,21 @@ public class LogInActivity extends ActionBarActivity {
     This method checks if all callbacks retruned with a positive result and redirects to main screen
      */
     private void redirectToMainScreen(){
-        callbackCount++;
-        if(!errorOccured){
-            if(callbackCount >3){
+        if(errorOccured){
+            //Reload Activity to start over with signup or login and delete user
+            ParseUser.getCurrentUser().deleteInBackground();
+            Intent intent = new Intent(getApplicationContext(), LogInActivity.class);
+            startActivity(intent);
+        }else{
+            if(saveFacebookData&&saveFacebookPicture&&isLogin){
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(intent);
             }
-        }else{
-            //Reload Activity to start over with signup or login
-            Intent intent = new Intent(getApplicationContext(), LogInActivity.class);
-            startActivity(intent);
         }
     }
 
-    public void retriveFacebookData() {
-        //Retrive Facebook ProfilePicutre from Facebook API & Save it to Parse
-        saveFacebookProfilePicture();
 
+    public void retriveFacebookInformation() {
         // make request to the /me API retrive and save Facebook User infos to Parse
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
         GraphRequest.newMeRequest(accessToken, new GraphRequest.GraphJSONObjectCallback() {
@@ -167,14 +159,16 @@ public class LogInActivity extends ActionBarActivity {
             public void onCompleted(JSONObject user, GraphResponse response) {
                 if (user != null) {
                     try {
-                        ParseUser.getCurrentUser().put("username", user.getString("name"));
+                       ParseUser.getCurrentUser().put("username", user.getString("name"));
                         ParseUser.getCurrentUser().put("gender", user.getString("gender"));
                         ParseUser.getCurrentUser().put("aboutMe", "");
                         ParseUser.getCurrentUser().saveInBackground();
+                        saveFacebookData=true;
                         redirectToMainScreen();
 
                     } catch (Exception e) {
                         errorOccured=true;
+                        redirectToMainScreen();
                         Log.e("Error from FB Data", e.getMessage());
                     }
                 }
@@ -185,75 +179,31 @@ public class LogInActivity extends ActionBarActivity {
 
     }
 
-    private void saveFacebookProfilePicture() {
-        // make request to the /me API
+    public void saveFacebookProfilePicture() {
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
-        GraphRequest graph = GraphRequest.newMeRequest(accessToken, new GraphRequest.GraphJSONObjectCallback() {
+        String facebookId = accessToken.getUserId();
+        Map<String, Object> param = new HashMap<>();
+        param.put("url", "http://graph.facebook.com/"+facebookId+"/picture");
+
+
+        //Call Cloud Function that downloads the Facebook picture and saves it to user in background
+        ParseCloud.callFunctionInBackground("retriveFacebookPicture", param, new FunctionCallback<Object>() {
             @Override
-            public void onCompleted(JSONObject user, GraphResponse response) {
-                if (user != null) {
-
-                        //Retrive URL from Facebook profile picture
-                    String pictureURL = null;
-                    try {
-                        pictureURL = user.getJSONObject("picture").getJSONObject("data").getString("url");
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+            public void done(Object o, ParseException e) {
+                        if (e == null) {
+                            Log.d("savePorofilePicture", "successfull");
+                            saveFacebookPicture = true;
+                            redirectToMainScreen();
+                        } else {
+                            errorOccured = true;
+                            redirectToMainScreen();
+                            Log.e("CloudCode", e.getMessage());
+                        }
                     }
-                    URL url = null;
-                    try {
-                        url = new URL(pictureURL);
-                    } catch (MalformedURLException e) {
-                        e.printStackTrace();
-                    }
-                    //Download the Picture from provided URL and Save it as ByteArray to Parse
-                        new DownloadPictureTask().execute(url);
-                        redirectToMainScreen();
 
-                }
-            }
-        });
-
-        // Set paramaters for MeRequest to retrive the profile pricutre in correct size.
-        Bundle bundle = new Bundle();
-        bundle.putString("fields", "name,picture.width(800).height(800)");
-                graph.setParameters(bundle);
-        graph.executeAsync();
+                });
 
 
     }
-
-    /**
-     * This Method starts a Thread to download the pictures from the provided URLs and saves
-     * them as a File attached to the ParseUser.
-     */
-    private class DownloadPictureTask extends AsyncTask<URL, Void, Void> {
-        @Override
-        protected Void doInBackground(URL... urls) {
-            int count = urls.length;
-            for (int i = 0; i < count; i++) {
-
-                InputStream in = null;
-                try {
-                    in = new BufferedInputStream(urls[i].openStream());
-                    //Transfer InputStream in ByteArray
-                    byte[] data = IOUtils.toByteArray(in);
-
-                    //Saves the ByteArray to Parse as a File
-                    ParseFile file = new ParseFile("profilepicture.jpg", data);
-                    ParseUser.getCurrentUser().put("profilepicture", file);
-                    ParseUser.getCurrentUser().saveInBackground();
-                    redirectToMainScreen();
-
-                } catch (IOException e) {
-                    errorOccured=true;
-                    e.printStackTrace();
-                }
-                if (isCancelled()) break;
-            }
-            return null;
-        }
-    }
-
 
 }

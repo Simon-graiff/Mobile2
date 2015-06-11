@@ -249,7 +249,10 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
 
         }
         else{
-            new LogInActivity().retriveFacebookData();
+           LogInActivity logInActivity=  new LogInActivity();
+            logInActivity.retriveFacebookInformation();
+            logInActivity.saveFacebookProfilePicture();
+
             Toast.makeText(getActivity().getWindow().getContext(), "Your profile was updated", Toast.LENGTH_LONG).show();
             //Save aboutMe before reloading Layout
             EditText aboutMeTextField = (EditText) rootView.findViewById(id.editText_about);
