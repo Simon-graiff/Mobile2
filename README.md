@@ -782,3 +782,45 @@ toEdit.setText("Until: " + hourFiller + hourOfDay + ":" + minuteFiller + minute)
 ``````
 
 The next few lines collect all these data together into a single event-object, which is then saved via the "saveInBackground" method provided by Parse. Afterwards the user is headed to the eventDetail-Screen in which he can see his recently created event.
+
+
+#EventFilter
+
+**Structure and function**
+
+The EventDetail fragment is kind of a settings view. This fragment allows users to set and release different filters for event categories. E.g. if an user is not interested in dancing events, all events from this category won't be shown on the map, by using  a filter. WhereU provides seven different filter options, six of them are related to the six event categories sport, music, chilling, dancing, food and video games. The seventh is the mixed gender option. By using this option, only events which participants belong entirely to one gender, will be displayed. The idea behind this filter is to provide users a better thought on what to expect from the event. E.g. a male user likes sport events and is also having an aggressive game play, an opponent team which consists just out of girls <i>might</i> not be the best choice. WhereU will display mixed gender groups by default.
+
+
+**Initialization**
+
+The visual representation of the filters is implemented with switches, since these elements represent the two states of a filter (true and false) in an intuitive way. The initialization works as follows in the onCreateMethod, the switches are declared global, since they are used by different methods:
+````
+sport_switch = (Switch) rootView.findViewById(R.id.sport_switch);
+...
+sport_switch.setOnCheckedChangeListener(this);
+...
+````
+The state of the filters is stored in Parse, like mentioned in EventMap. The download of the with the user corresponding filter object works like shown in EventMap. As soon as the object is received by the client, a method called initializeSwitches is called. This method sets the stored state of the switch elements, it is just necessary to check if a boolean value is false because the switches initialized by Android with true.:
+´´´´
+final boolean sport = filter.getBoolean("sport");
+...
+if(!sport){
+    sport_switch.setChecked(false);
+}
+...
+````
+
+**Handling toggle interaction and syncing result back to parse**
+
+As soon as the user toggles a switch, the onCheckedChanged method is performed. Parameters a view and a boolean value, which represents the <i>new</i> state. Since every toggle performs an individual action, the switch has to be identified. This is possible using the R-class:
+````
+int id = buttonView.getId();
+
+if(id == R.id.sport_switch){
+    if(isChecked){
+        filter.put("sport", true);
+    }else{
+        filter.put("sport", false);
+    }
+````
+Is the switch and the category it is representing identified, the filter object is assigned with the new value. If the user leaves the fragment, the onPause method is called auomatically. In this method the actual synchronization with Parse is done: ````filter.saveInBackground();````.
