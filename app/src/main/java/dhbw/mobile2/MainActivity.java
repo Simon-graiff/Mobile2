@@ -39,6 +39,7 @@ import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import java.util.ArrayList;
@@ -73,7 +74,7 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
     private Boolean mInGeofence = false;
 
     //currentUser
-    ParseUser currentUser;
+    private ParseUser currentUser;
 
     //HelperObject
     HelperClass helperObject = new HelperClass();
@@ -92,15 +93,14 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
             //If the user is not logged in call the loginActiviy
             Intent intent = new Intent(getApplicationContext(), LogInActivity.class);
             startActivity(intent);
+            finish();
         } else {
-            try {
-                currentUser = ParseUser.getCurrentUser().fetchIfNeeded();
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+            currentUser = ParseUser.getCurrentUser();
         }
 
 
+
+        //Only run the rest of the code if User != null
         mTitle = mDrawerTitle = getTitle();
 
         //Load slide menu items & icons
@@ -129,10 +129,9 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
         navMenuIcons.recycle();
 
         //Setting the nav drawer list adapter
-        if(ParseUser.getCurrentUser()!=null){
-            adapter = new NavDrawerListAdapter(getApplicationContext(), navDrawerItems);
-            mDrawerList.setAdapter(adapter);
-        }
+        adapter = new NavDrawerListAdapter(getApplicationContext(), navDrawerItems);
+        mDrawerList.setAdapter(adapter);
+
 
 
         //Enabling action bar app icon and behaving it as toggle button
@@ -183,6 +182,7 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
                 .addApi(LocationServices.API)
                 .build();
         mGoogleApiClient.connect();
+
     }
 
     @Override
@@ -206,8 +206,9 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
 
         Fragment fragment = null;
 
+
         if(position==0) {
-            fragment = ProfileFragment.newInstance(ParseUser.getCurrentUser().getObjectId());
+            fragment = ProfileFragment.newInstance(currentUser.getObjectId());
         }else if(position==1){
             fragment = new EventMap();
         }else if(position==2){
@@ -220,12 +221,9 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.putBoolean("myEventActivated", true);
                 String eventId = "";
-                try {
-                    eventId = ParseUser.getCurrentUser().fetch().getString("eventId");
-                    editor.putString("eventId", eventId);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+                eventId = currentUser.getString("eventId");
+                editor.putString("eventId", eventId);
+
                 editor.apply();
                 Log.d("Main", "eventId: " + eventId);
 
@@ -279,7 +277,7 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
         }
 
     private void checkParticipation(){
-        String eventIdOfUser = ParseUser.getCurrentUser().getString("eventId");
+        String eventIdOfUser = currentUser.getString("eventId");
         if (eventIdOfUser != null){
             statusParticipation = !eventIdOfUser.equals("no_event");
         }

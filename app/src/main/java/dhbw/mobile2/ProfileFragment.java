@@ -1,5 +1,6 @@
 package dhbw.mobile2;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.ProgressDialog;
@@ -30,18 +31,24 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.parse.FunctionCallback;
 import com.parse.GetCallback;
 import com.parse.Parse;
+import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import static android.widget.Toast.LENGTH_SHORT;
 import static dhbw.mobile2.R.*;
 
 public class ProfileFragment extends Fragment implements View.OnClickListener, View.OnTouchListener {
 
-    private String userID;
+
     private String username;
     private String gender;
     private String aboutMe;
@@ -49,25 +56,19 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
     private Bitmap profilepictureFileBitmap;
     private View rootView = null;
     private ProgressDialog progressDialog;
+    private String userID;
 
 
-    public static ProfileFragment newInstance(String UserID) {
+    public static ProfileFragment newInstance(String userID) {
         ProfileFragment f = new ProfileFragment();
-
         // Supply index input as an argument.
         Bundle args = new Bundle();
-        args.putString("UserID", UserID);
+        args.putString("UserID", userID);
         f.setArguments(args);
         return f;
     }
 
-
-
-
-
-
-
-    @Override
+ @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         progressDialog = ProgressDialog.show(getActivity(), "Loading", "Please wait.."); //Show loading dialog until data has been pulled from parse
         rootView = inflater.inflate(layout.fragment_profile, container, false);
@@ -94,22 +95,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
         }else{
             pullUserDataFromParse();
         }
-
-/*
-        rootView.findViewById(id.editText_about).setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-
-                    }
-                }
-            }
-        });*/
-
-
-
-
-        return rootView;
+       return rootView;
     }
 
     private void hideSoftKeyboard() {
@@ -120,7 +106,6 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
 
 
     private void updateLayout() {
-
         //Update Profile Picutre
         ImageView imageView = (ImageView) rootView.findViewById(id.imageView_ProfilePicuture);
         // Get the Pixesl of the Screen to Scale the ProfilePicture according to the Screen Size
@@ -142,9 +127,6 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
                 rootView.findViewById(id.editText_about).setVisibility(View.VISIBLE);
             }
 
-
-
-
         if(gender.equalsIgnoreCase("male")){
             //Disable female Button
             ImageButton femaleButton =(ImageButton) rootView.findViewById(id.imageButton_female);
@@ -160,9 +142,6 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
             //Show the Change Profile data Fields
             rootView.findViewById(id.layout_change).setVisibility(View.VISIBLE);
         }
-
-
-
         //Update Done! Close Loading Dialog
         progressDialog.dismiss();
     }
@@ -227,12 +206,6 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
         canvas.drawBitmap(bitmap, rect, rect, paint);
 
         return output;
-
-    }
-
-
-    public void changeProfile(View view){
-        Log.d("Profile", "Go to changes");
     }
 
 
@@ -249,11 +222,10 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
 
         }
         else{
-           LogInActivity logInActivity=  new LogInActivity();
-            logInActivity.retriveFacebookInformation();
-            logInActivity.saveFacebookProfilePicture();
-
-            Toast.makeText(getActivity().getWindow().getContext(), "Your profile was updated", Toast.LENGTH_LONG).show();
+            //Loading Screen while reloading changes in background
+            progressDialog= ProgressDialog.show(getActivity(), "Loading Data", "Please wait..");
+            //Save changes
+            reloadFacebookInformation();
             //Save aboutMe before reloading Layout
             EditText aboutMeTextField = (EditText) rootView.findViewById(id.editText_about);
             String aboutMe = aboutMeTextField.getText().toString();
@@ -261,17 +233,28 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
                 ParseUser.getCurrentUser().put("aboutMe", aboutMe);
                 ParseUser.getCurrentUser().saveInBackground();
             }
-            FragmentManager fragmentManager = getFragmentManager();
-            Fragment fragment = ProfileFragment.newInstance(ParseUser.getCurrentUser().getObjectId());
-            fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
+            updateFragmentScreen();
               }
-
     }
 
+    private void updateFragmentScreen(){
+        //fetch new Data of Database
+        ParseUser.getCurrentUser().fetchInBackground(new GetCallback<ParseUser>() {
+            public void done(ParseUser user, ParseException e) {
+                if (e == null) {
+                    //Reload Screen
+                    FragmentManager fragmentManager = getFragmentManager();
+                    fragmentManager.beginTransaction().replace(R.id.frame_container, newInstance(userID)).commit();
+                    progressDialog.dismiss();
+                } else {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
     @Override
     public void onResume(){
         super.onResume();
-
         ListView mDrawerList;
         mDrawerList = (ListView) getActivity().findViewById(R.id.list_slidermenu);
         mDrawerList.setItemChecked(0, true);
@@ -301,5 +284,26 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
         }
 
         return false;
+    }
+
+
+    /*
+This function calls a cloud code function which updates the parse user with the facebook user
+ */
+    private void reloadFacebookInformation(){
+        Map<String, Object> param = new HashMap<>();
+        ParseCloud.callFunctionInBackground("reloadFacebookInformation", param, new FunctionCallback<Object>() {
+            @Override
+            public void done(Object stringObjectMap, ParseException e) {
+                if (e == null) {
+                    Toast.makeText(getActivity(), "Your profile was updated", Toast.LENGTH_LONG).show();
+                    Log.d("reloadFacebookInformation", "successful");
+                } else {
+                    Toast.makeText(getActivity(), "Error relloading Data", LENGTH_SHORT).show();
+                    e.printStackTrace();
+                }
+            }
+
+        });
     }
 }
