@@ -12,9 +12,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
-import android.util.Log;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
@@ -25,9 +23,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-/**
- * Created by Vincent on 08.06.2015.
- */
+
 public class HelperClass {
 
     /*
@@ -56,10 +52,9 @@ public class HelperClass {
         creationTime = object.getCreatedAt();
         finishTime = object.getDate("duration");
 
-        String timeScopeString = this.convertDateToString(creationTime)
+        return this.convertDateToString(creationTime)
                 + " - " +
                 this.convertDateToString(finishTime);
-        return timeScopeString;
 
     }
 
@@ -76,14 +71,22 @@ public class HelperClass {
         switchToFragment(fragmentManager, ProfileFragment.newInstance(userId));
     }
 
+    //Get the number of participants of the event in the format:
+    //currentParticipants/maximumParticipants
     public String getParticipantsString(ParseObject object){
         List<ParseUser> listParticipants = object.getList("participants");
         int maxMembers = object.getInt("maxMembers");
-        String textParticipants = listParticipants.size() + "/" + maxMembers;
-        return textParticipants;
+        return listParticipants.size() + "/" + maxMembers;
 
     }
 
+    /*
+    CalculateDistance calculates distance between two ParseGeoPoints.
+    Therefore the ParseGeoPoint method distanceInKilometersTo is used,
+    which returns the distance as a double. In the application a distance with
+    one digit behind the comma is wanted, so distance is
+    multiplied by 10 and then divided by an integer 10.
+     */
     public Double calculateDistance(ParseGeoPoint userLocation, ParseGeoPoint eventPoint){
         double distance = userLocation.distanceInKilometersTo(eventPoint);
         //get just the kilometer amount with one digit behind the comma
@@ -92,7 +95,7 @@ public class HelperClass {
     }
 
     // add an image depending on the category of the event,
-    // return sport of category cannot be detected
+    // return sport if category cannot be detected
     public void setCategoryImage(ImageView categoryImage, String category){
         switch (category){
             case "Sport":
@@ -119,6 +122,13 @@ public class HelperClass {
         }
     }
 
+    /*
+    The EventDetailFragment needs the objectId of the event it is supposed to display as described
+    in the chapter of EventDetail. The method putEventIdToSharedPref saves the given Event-ID as a
+    SharedPrefences in the activity. It need a SharedPreferences object and a SharedPreferences
+     Editor object of the SharedPreferences objekt. It then saved the Event-ID as the variable
+     "eventId" as SharedPreferences and uses "apply" to save it asynchronously.
+     */
     public void putEventIdToSharedPref(Activity activity, String eventId){
         SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
@@ -126,7 +136,7 @@ public class HelperClass {
         editor.apply();
     }
 
-    //get a cropped circle out of the image, copied from the internet
+    //get a cropped circle out of the image
     public Bitmap getCroppedCircleBitmap(Bitmap bitmap) {
         Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
                 bitmap.getHeight(), Bitmap.Config.ARGB_8888);

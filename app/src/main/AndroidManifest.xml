@@ -81,6 +81,7 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
         <service android:name="com.parse.PushService" />
+        <service android:name=".GeofenceTransitionsIntentService"/>
 
         <receiver
             android:name="com.parse.GcmBroadcastReceiver"

@@ -44,7 +44,7 @@ public class LogoutFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), AlertDialog.THEME_HOLO_LIGHT);
         builder.setTitle("Logout").setMessage("Do you really want to logout?").setPositiveButton("Yes", dialogClickListener)
                 .setNegativeButton("No", dialogClickListener).show();
 

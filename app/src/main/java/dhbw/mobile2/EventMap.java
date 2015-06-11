@@ -40,17 +40,17 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
 
     private LocationManager locationManager;
     private GoogleMap map = null;
-    MapView myMapView = null;
+    MapView eventMapView = null;
     public List<EventManagerItem> eventManager = new ArrayList<>();
     public List<ParseUser> participantList = new ArrayList<>();
+    private ParseObject filter = ParseObject.create("User_Settings");
 
     private final LocationListener locationListener = new LocationListener() {
 
         @Override
         public void onLocationChanged(Location location) {
 
-            Log.d("Main", "Location changed");
-
+            //Execute camera update and animation
             double lat = location.getLatitude();
             double lon = location.getLongitude();
             LatLng position = new LatLng(lat, lon);
@@ -62,10 +62,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                     .build();
 
             map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-            drawEvents();
         }
-
-
 
         @Override
         public void onStatusChanged(String s, int i, Bundle bundle) {
@@ -73,14 +70,10 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
         }
 
         @Override
-        public void onProviderEnabled(String s) {
-
-        }
+        public void onProviderEnabled(String s) {}
 
         @Override
-        public void onProviderDisabled(String s) {
-
-        }
+        public void onProviderDisabled(String s) {}
     };
 
     public EventMap(){}
@@ -107,10 +100,10 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
         }
 
         if(getView()!=null) {
-            myMapView = (MapView) getView().findViewById(R.id.myMapView);
-            myMapView.onCreate(savedInstanceState);
+            eventMapView = (MapView) getView().findViewById(R.id.EventMapView);
+            eventMapView.onCreate(savedInstanceState);
 
-            map = myMapView.getMap();
+            map = eventMapView.getMap();
         }
 
         if(map!=null) {
@@ -118,7 +111,6 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
 
             map.setMyLocationEnabled(true);
             map.setOnMarkerClickListener(this);
-
             setUpMap();
         }
     }
@@ -126,10 +118,33 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
     @Override
     public void onResume(){
         super.onResume();
-        if(myMapView!=null){
-            myMapView.onResume();
+        if(eventMapView !=null){
+            eventMapView.onResume();
         }
-        locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
+
+        //Fetching user filter, to prepare event draw according to settings
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("User_Settings");
+        query.include("user");
+        try {
+            query.whereEqualTo("user", ParseUser.getCurrentUser().fetchIfNeeded());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        query.findInBackground(new FindCallback<ParseObject>() {
+            public void done(List<ParseObject> retrievedList, ParseException e) {
+                if (e == null) {
+                    try {
+                        filter = retrievedList.get(0).fetchIfNeeded();
+                    } catch (ParseException e1) {
+                        e1.printStackTrace();
+                    }
+
+                    drawEvents();
+                } else {
+                    Log.d("Main", e.getMessage());
+                }
+            }
+        });
 
         ((MainActivity) getActivity()).setMapShown(true);
         getActivity().invalidateOptionsMenu();
@@ -148,7 +163,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
     @Override
     public void onPause() {
         if (map != null)
-            myMapView.onPause();
+            eventMapView.onPause();
         super.onPause();
         locationManager.removeUpdates(locationListener);
 
@@ -159,7 +174,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
     @Override
     public void onDestroy(){
         if(map!=null) {
-            myMapView.onDestroy();
+            eventMapView.onDestroy();
         }
         super.onDestroy();
     }
@@ -168,7 +183,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
     public void onLowMemory(){
         super.onLowMemory();
         if(map!=null) {
-            myMapView.onLowMemory();
+            eventMapView.onLowMemory();
         }
     }
 
@@ -190,11 +205,8 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                         .build();
 
                 map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
                 drawEvents();
 
-            }else{
-                Log.d("Main", "No last position found");
             }
         }
     }//End of setUpMap
@@ -213,10 +225,18 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
         );
 
         eventManager.add(new EventManagerItem(m.getId(), eventID, position));
-
     }
 
     private void drawEvents(){
+
+        //Initialize filters
+        final boolean sport = filter.getBoolean("sport");
+        final boolean music = filter.getBoolean("music");
+        final boolean chilling = filter.getBoolean("chilling");
+        final boolean dancing = filter.getBoolean("dancing");
+        final boolean videoGames = filter.getBoolean("videogames");
+        final boolean food = filter.getBoolean("food");
+        final boolean mixedGenders = filter.getBoolean("mixedgenders");
 
         //Create ParseGeoPoint with user's current location
         Location userLocation = getUserPosition();
@@ -224,20 +244,10 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
         ParseObject user = new ParseObject("User");
         user.put("location", point);
 
-        //Prepare filter options
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        final String sport = sharedPref.getString("Sport", null);
-        final String music = sharedPref.getString("Music", null);
-        final String chilling = sharedPref.getString("Chilling", null);
-        final String dancing = sharedPref.getString("Dancing", null);
-        final String videoGames = sharedPref.getString("Video Games", null);
-        final String food = sharedPref.getString("Food", null);
-        final boolean mixedGenders = sharedPref.getBoolean("MixedGenders", true);
-
         //Prepare query
         ParseGeoPoint queryParameter = (ParseGeoPoint) user.get("location");
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Event");
-        query.whereWithinKilometers("geoPoint", queryParameter, 5);
+        query.whereWithinKilometers("geoPoint", queryParameter, 2);
 
         Log.d("Main", "Waiting for Callback...");
 
@@ -271,8 +281,9 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                                 }
                             }
                         });
+
                         for (int i = 0; i < eventList.size(); i++) {
-                            //Extraction of latitude and longitude from recieved GeoPoints
+                            //Extraction of latitude and longitude from received GeoPoints
                             ParseGeoPoint tmpPoint = (ParseGeoPoint) eventList.get(i).get("geoPoint");
                             double tmpLat = tmpPoint.getLatitude();
                             double tmpLng = tmpPoint.getLongitude();
@@ -296,7 +307,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                             //If tmpMale & tmpFemale are both true then the participants of the
                             //event are from both genders. In case the user wants to avoid that
                             //a preference check is needed
-                            if(tmpMale && tmpFemale && mixedGenders){
+                            if(tmpMale && tmpFemale && !mixedGenders){
                                 Log.d("Main", "There is a mixed gender group");
                             }else{
                                 Log.d("Main", "In der if");
@@ -307,29 +318,86 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                                 String eventID = eventList.get(i).getObjectId();
                                 Log.d("Main", "eventID =" + eventID);
 
-                                //An event can only belong to one category. If any of the following
-                                //conditions fails, there is no need for checking the others.
-
-                                if(!category.equals(sport)){
-                                    if(!category.equals(music)){
-                                        if(!category.equals(chilling)){
-                                            if(!category.equals(dancing)){
-                                                if(!category.equals(videoGames)){
-                                                    if(!category.equals(food)){
-                                                        try {
-                                                            eventArray.add(eventList.get(i).fetchIfNeeded());
-                                                            Log.d("Main", "geoPoint: " + eventArray.get(eventArray.size() - 1).getParseGeoPoint("geoPoint"));
-                                                        } catch (ParseException e1) {
-                                                            e1.printStackTrace();
-                                                        }
-                                                        Log.d("Main", "Drew marker: "+tmpTitle);
-                                                        drawMarker(tmpLatLng, tmpTitle, eventID);
-                                                    }
-                                                }
+                                switch (category){
+                                    case "Sport":
+                                        if (sport){
+                                            try {
+                                                eventArray.add(eventList.get(i).fetchIfNeeded());
+                                                Log.d("Main", "geoPoint: " + eventArray.get(eventArray.size() - 1).getParseGeoPoint("geoPoint"));
+                                            } catch (ParseException e1) {
+                                                e1.printStackTrace();
                                             }
+                                            Log.d("Main", "Drew marker: "+tmpTitle);
+                                            drawMarker(tmpLatLng, tmpTitle, eventID);
                                         }
-                                    }
+                                        break;
+
+                                    case "Music":
+                                        if(music) {
+                                            try {
+                                                eventArray.add(eventList.get(i).fetchIfNeeded());
+                                                Log.d("Main", "geoPoint: " + eventArray.get(eventArray.size() - 1).getParseGeoPoint("geoPoint"));
+                                            } catch (ParseException e1) {
+                                                e1.printStackTrace();
+                                            }
+                                            Log.d("Main", "Drew marker: " + tmpTitle);
+                                            drawMarker(tmpLatLng, tmpTitle, eventID);
+                                        }
+                                        break;
+
+                                    case "Chilling":
+                                        if(chilling){
+                                            try {
+                                                eventArray.add(eventList.get(i).fetchIfNeeded());
+                                                Log.d("Main", "geoPoint: " + eventArray.get(eventArray.size() - 1).getParseGeoPoint("geoPoint"));
+                                            } catch (ParseException e1) {
+                                                e1.printStackTrace();
+                                            }
+                                            Log.d("Main", "Drew marker: "+tmpTitle);
+                                            drawMarker(tmpLatLng, tmpTitle, eventID);
+                                        }
+                                        break;
+
+                                    case "Dancing":
+                                        if(dancing) {
+                                            try {
+                                                eventArray.add(eventList.get(i).fetchIfNeeded());
+                                                Log.d("Main", "geoPoint: " + eventArray.get(eventArray.size() - 1).getParseGeoPoint("geoPoint"));
+                                            } catch (ParseException e1) {
+                                                e1.printStackTrace();
+                                            }
+                                            Log.d("Main", "Drew marker: " + tmpTitle);
+                                            drawMarker(tmpLatLng, tmpTitle, eventID);
+                                        }
+                                        break;
+
+                                    case "Food":
+                                        if(food){
+                                            try {
+                                                eventArray.add(eventList.get(i).fetchIfNeeded());
+                                                Log.d("Main", "geoPoint: " + eventArray.get(eventArray.size() - 1).getParseGeoPoint("geoPoint"));
+                                            } catch (ParseException e1) {
+                                                e1.printStackTrace();
+                                            }
+                                            Log.d("Main", "Drew marker: "+tmpTitle);
+                                            drawMarker(tmpLatLng, tmpTitle, eventID);
+                                        }
+                                        break;
+
+                                    case "Video Games":
+                                        if(videoGames){
+                                            try {
+                                                eventArray.add(eventList.get(i).fetchIfNeeded());
+                                                Log.d("Main", "geoPoint: " + eventArray.get(eventArray.size() - 1).getParseGeoPoint("geoPoint"));
+                                            } catch (ParseException e1) {
+                                                e1.printStackTrace();
+                                            }
+                                            Log.d("Main", "Drew marker: "+tmpTitle);
+                                            drawMarker(tmpLatLng, tmpTitle, eventID);
+                                        }
+                                        break;
                                 }
+
                             }
                         }//End for-loop for eventList
                         ParseObject listOfFilteredEvents = new ParseObject("FilteredEvents");

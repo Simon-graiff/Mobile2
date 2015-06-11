@@ -10,12 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -137,7 +132,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         return rootView;
     }
 
-    //the following have to be implemented for the map, especially myMapView.onPause()
+    //the following have to be implemented for the map, especially eventMapView.onPause()
 
     @Override
     public void onResume(){

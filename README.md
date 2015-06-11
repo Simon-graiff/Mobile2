@@ -24,7 +24,7 @@ The app uses the ParseFacebookUtils library to call the Facebook SDK ([more info
                     ParseUser.logOut();
                 } else if (user.isNew()) {
                     Log.d("MyApp", "User signed up and logged in through Facebook!");
-                    retriveFacebookData();
+                    retrieveFacebookData();
                     Intent intent = new Intent(LogInActivity.this, MainScreen.class);
                     startActivity(intent);
                 } else {
@@ -38,11 +38,11 @@ The app uses the ParseFacebookUtils library to call the Facebook SDK ([more info
 The user can now sign up with Facebook or if he already has signed up with Facebook log in with his connected Facebook account.
 If the user has already signed up and just logs in he will be linked back to the MainScreen to use the App.
 
-If the user needs to sign up with his Facebook account his Facebook profile data are retrived by calling the function `retriveFacebookData()` and after that the user is linked to the MainScreen as well.
+If the user needs to sign up with his Facebook account his Facebook profile data are retrieved by calling the function `retrieveFacebookData()` and after that the user is linked to the MainScreen as well.
 
-**retriveFacebookData()**
+**retrieveFacebookData()**
 
-This function uses the Facebook GraphAPI and sends a Me-Request to retrive the needed Facebook data. ([For more information see Facebook Graph API] (https://developers.facebook.com/docs/graph-api))
+This function uses the Facebook GraphAPI and sends a Me-Request to retrieve the needed Facebook data. ([For more information see Facebook Graph API] (https://developers.facebook.com/docs/graph-api))
 The Facebook GrahphAPI returns the username and the gender of the the user which then is saved to Parse by calling:
 ````
            @Override
@@ -62,7 +62,7 @@ The Facebook GrahphAPI returns the username and the gender of the the user which
             }
 ````
 
-To retrive the Facebook profile picture a similar call to the Facebook GraphAPI can be sent which returns the URL of the Facebook picture.
+To retrieve the Facebook profile picture a similar call to the Facebook GraphAPI can be sent which returns the URL of the Facebook picture.
 This picture is downloaded by the function 
 **DownloadPictureTask()**
 This method uses the BufferedInputStream which can then by saved as a byte array.
@@ -182,7 +182,7 @@ In both cases the Parse-backend is changed only if the client and the internal a
 
 **ActionBar Buttons**
 
-On the AppMapFragment there should be shown a list symbol to switch to the list of events and on the list there hould be a map symbol to switch to the map. Just on the AppMapFragment there should be the possibility to create a geofence or remove it. The button for it should be a symbol in the ActionBar. These ActionBar Buttons are implemented in the MainScreen.
+On the EventMap there should be shown a list symbol to switch to the list of events and on the list there hould be a map symbol to switch to the map. Just on the EventMap there should be the possibility to create a geofence or remove it. The button for it should be a symbol in the ActionBar. These ActionBar Buttons are implemented in the MainScreen.
 
 The Menu File for the ActionBar is in app/res/menu/menu_app.xml. In this the four relevant Action Buttons "List", "Map", "Notify Me" and "Don't Notify Me" are stored. In the MainScreen they are imported in the onCreateOptionsMenu method with
 
@@ -194,7 +194,7 @@ In onPrepareOptionsMenu the visibility of the Action Buttons is controlled. All 
 
 "Map Button": 
 
-- dependent on the boolean mapShown(). It is activated when the AppMapFragment is put to the screen (onResume() of EventMap) and deactivated when the AppMapFragement is not active (onPause() of EventMap).
+- dependent on the boolean mapShown(). It is activated when the EventMap is put to the screen (onResume() of EventMap) and deactivated when the AppMapFragement is not active (onPause() of EventMap).
 
 #ProfileScreen
 The ProfileScreen is used for the own user to show his information and to see other users information.
@@ -215,7 +215,172 @@ If the current user sees his own profile he can edit the about me textfield whic
             ParseUser.getCurrentUser().saveInBackground();
             Toast.makeText(getActivity().getWindow().getContext(), "Your changes are saved!", Toast.LENGTH_LONG).show();
         }
-`````
+````
+
+#EventMap
+
+**Structure**
+
+EventMap is the fragment, the user sees first after performing a login. This fragment displays a Map, on which markers are drawn. Each marker represents an event, which is close to the user. The intention of this screen is to provide the user an intuitive way for looking nearby events up. Since every event has a category, the user shall be able to filter events, in which he doesn't want to participate. By clicking on a marker, the user is redirected to the EventDetailFragment, which displays further information on the tapped event.
+
+
+**Map initialization**
+
+The realization of a map is implemented by using a MapView, not a MapFragment. Actually an implementation with an MapFragment would be possible, too. But it turned out that the handling of a MapView is easier, since the alternative would implcate the handling of a fragment, inside a fragment. Before the user can see any events or even the map, it has to be initialized. The onCreateMethod is not suitable for that. The reason for this is that maps are highly sensitive in Android. A wrong initialization leads to a NullPointerException, which crashes the app. This is why the onCreateMethod just contains the request of a location update:
+````
+locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
+````
+
+The actual initialization is performed in the onActivityCreated method. Since the EventMap is the first Screen the user sees after a login, it might happen on slower devices that the fragment is displayed, while the activity is not fully completed. In this case the app crashes. The onActivityCreated method is executed, as soon as the MainActivity is finished with the code execution. The initialization of the map works as follows:
+````
+try {
+    MapsInitializer.initialize(this.getActivity());
+}catch (Exception e){
+    e.printStackTrace();
+}
+
+...
+
+eventMapView = (MapView) getView().findViewById(R.id.EventMapView);
+eventMapView.onCreate(savedInstanceState);
+map = eventMapView.getMap();
+````
+The try-catch-block takes advantage of the MapInitializer, which does most of the work automatically. The three dots represent a simple if-statement, which ensures the current view is not null. After that a Android MapView variable is initialized with a MapView, which is declared in the fragment's XML file:
+````
+<com.google.android.gms.maps.MapView
+    android:id="@+id/EventMapView"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"/>
+````
+The in XML declared MapView is passed to an Java variable. This variable can return an actual map, which can be used for further operations, e.g. the drawing of markers.
+
+
+**Receiving Events from Parse***
+
+Before any events can be drawn to the map, the user's settings regarding the event filters have to be downloaded. This will take place in the onResume method. Since this method is called every time before the fragment is displayed, the EventMap will always work with up-to-date settings. The settings are stored as separate objects on the server. For further details regarding events, see FilterFragment. Every settings object has several boolean values for the different event categories and a pointer to the corresponding user. The concrete implementation for fetching the filters is as follows:
+````
+ParseQuery<ParseObject> query = ParseQuery.getQuery("User_Settings");
+    query.include("user");
+    try {
+        query.whereEqualTo("user", ParseUser.getCurrentUser().fetchIfNeeded());
+    } catch (ParseException e) {
+        e.printStackTrace();
+    }
+    query.findInBackground(new FindCallback<ParseObject>() {
+        public void done(List<ParseObject> retrievedList, ParseException e) {
+            if (e == null) {
+                try {
+                    filter = retrievedList.get(0).fetchIfNeeded();
+                } catch (ParseException e1) {
+                    e1.printStackTrace();
+                }
+
+                drawEvents();
+            } else {
+                Log.d("Main", e.getMessage());
+            }
+        }
+});
+````
+After declaring the type of objects which are looked up ("User_Settings"), a simple "whereEqualsTo(...)" is performed. But instead of a common data type, the parse user is passed to the server. Parse will look up the settings column with the user pointer, until it finds a match with the passed user object. As return WhereU receives a settings object. The retrieved object is stored in an external variable. This allows the use in other methods. E.g. drawEvents, which is the heart of the EventMap.
+
+
+**Drawing events to the map**
+
+All events are stored on the server. This means that the events have to be downloaded as well to the client. But first the filters, which were fetched before have to be extracted to boolean variables for further use:
+````
+final boolean sport = filter.getBoolean("sport");
+...
+````
+The variables have to be declared final because they will be used in a callback. After that the query parameters are defined:
+````
+Location userLocation = getUserPosition();
+ParseGeoPoint point = new ParseGeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
+ParseObject user = new ParseObject("User");
+user.put("location", point)
+````
+The use of a ParseGeoPoint is pretty important. Goal of WhereU is providing as much events as possible. It is obvious that there is no sense in fetching all available events from the server and draw them to a map. So before the actual download a filter has to be used. This filter is the user's current location. Fortunately Parse provides a special query parameter for searching for geo coordinates, which are in a certain range:
+````
+query.whereWithinKilometers("geoPoint", queryParameter, 5);
+````
+geoPoint is the column, in which the query can expect ParseGeoPoints, queryParameter is the user's location, which will be the center point of the query. The last number is the radius, in which events shall be downloaded. After a list of event objects is retrieved, a for-loop is started, which handles every single object in the list.
+
+One possible option for users is to filter for events, in which both genders participate. This option has to be handled first:
+````
+boolean tmpMale=false;
+boolean tmpFemale=false;
+for(int j=0; j<participantList.size();j++){
+    try {
+        if (participantList.get(j).fetchIfNeeded().getString("gender").equals("male")) {
+            tmpMale = true;
+        } else {
+            tmpFemale = true;
+        }
+    }catch (ParseException exception){
+        exception.printStackTrace();
+    }
+}
+````
+Every event has a list of participating users. This is why this for-loop is dealing with the participant list of a single event, not with the event list. In case a male user is participating, the male variable changes its status. Same thing for the female one. A simple if-statement decides, if the event should be considered for drawing into the map, or not: ````tmpMale && tmpFemale && !mixedGenders````.
+
+In case the event shall be considered for further processing, its category has to be checked:
+````
+String tmpTitle = eventList.get(i).getString("title");
+String category = eventList.get(i).getString("category");
+String eventID = eventList.get(i).getObjectId();
+
+switch (category){
+    case "Sport":
+        if (sport){
+            try {
+                eventArray.add(eventList.get(i).fetchIfNeeded());
+            } catch (ParseException e1) {
+                e1.printStackTrace();
+            }
+            drawMarker(tmpLatLng, tmpTitle, eventID);
+        }
+        break;
+...
+````
+First the title, category and ID have to be extracted from the event. Then a simple switch is performed, since special restrictions have to be processed for every event. Every event category has its own switch statement. After processing the code in a certain case, the event is only drawn, if the before fetched filter option is true. Before drawing the event, using the drawMarker(...) method, the event is stored to another event list. This list is used by the EventList, which displays all received events in a single list. The advantage of this processing is that the events have just to be downloaded and filtered once.
+
+
+**Draw markers to the map**
+
+The drawMarker method is a pretty short and simple method:
+````
+private void drawMarker(LatLng position, String title, String eventID){
+
+    Marker m = map.addMarker(new MarkerOptions()
+                    .title(title)
+                    .position(position)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+    );
+
+    eventManager.add(new EventManagerItem(m.getId(), eventID, position));
+}
+````
+Special about this method is the eventManager line. The eventManager is an ArrayList, which consists of EventManagerItems. These items are own data types, which hold a marker ID, an event ID and a position. The reason for this can be seen in the onMarkerClickMethod:
+````
+for(int i=0; i<eventManager.size(); i++){
+    if(eventManager.get(i).getMarkerID().equals(markerID)){
+        eventID = eventManager.get(i).getEventID();
+    }
+}
+````
+Since the ID of a marker on the map does not match with the ID of the event it is representing, both have to be saved. If the user taps a marker, a for loop searches in the custom marker list for an object, which marker ID corresponds to the marker ID, which was tapped. If there is a match, the correct event ID can be restored for the marker. This is necessary, since a tap on a marker shall open the EventDetailFragment. But this fragment needs an event ID, if any information shall be displayed.
+````
+if(!eventID.equals("Not found")){
+    SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+    SharedPreferences.Editor editor = sharedPref.edit();
+    editor.putString("eventId", eventID);
+    editor.apply();
+    
+    ...
+````
+The event ID will be stored in the SharedPreferences. From there the EventDetailFragment can retrieve the id and load the necessary information. After the event ID is stored as String, a FragmentTransaction is performed, to redirect the user to the detail view. The transaction is similar to the transaction in the MainActivity.
+
 
 #EventDetail(Fragment)
 
@@ -455,6 +620,22 @@ The method getTimeScopeString(ParseObject object) takes an EventObject and build
 
 The method switchToFragment switches to the specified fragment. It uses the strategy explained in the capter "MainScreen". switchToProfileFragement switches to the Profile Fragement which is slightly another strategy than the other fragments as explained in the chapter "Profile Page". It creates the ProfileFragment and then calls switchToFragment().
 
+**getParticipants**
+
+Extracts the participants (attribute "participants") from an Event ParseObject and shows them with the maximum amount (attribute "maxMembers") of participants in this event. It creates a String in the format "currentParticipants/maximumParticipants".
+
+**calculateDistance**
+
+CalculateDistance calculates distance between two ParseGeoPoints. Therefore the ParseGeoPoint method distanceInKilometersTo is used, which returns the distance as a double. In the application a distance with one digit behind the comma is wanted, so distance is multiplied by 10 and then divided by an integer 10.
+
+**setCategoryImage**
+
+setCategoryImage sets the ImageResource of a given ImageView to an icon image of the given category. These categories and images are defined in the switch statement of the method. For the string category the respective icon is selected. These were downloaded to the project in all relevant sizes. If no valid category is given, the sport icon will be selected to prevent errors.
+
+**putEventIdToSharedPref**
+
+The EventDetailFragment needs the objectId of the event it is supposed to display as described in the chapter of EventDetail. The method putEventIdToSharedPref saves the given Event-ID as a SharedPrefences in the activity. It need a SharedPreferences object and a SharedPreferences Editor object of the SharedPreferences objekt. It then saved the Event-ID as the variable "eventId" as SharedPreferences and uses "apply" to save it asynchronously. 
+
 #ParticipantsList(Fragment)
 
 On the ParticipantsList Screen every user who takes part in an event is shown with his picture and his name. The screen works with a ListView, in which each List Item represents one user with his name and his profile picture. Each List Item is clickable and redirects to the Profile Page of the user. The screen is composed out of the files:
@@ -488,7 +669,7 @@ The ListEvents Page is composed of the files:
 
 `java/dhbw.mobile2/EventListAdapter.java`:
 
-Contains the data of the ListView of all events
+Contains the data of the ListView of all events. The Textfields are filled with the data given by the ListEventsFragment-Class. The image of the category is filled dependent on the category with the HelperClass method setCategoryImage.
 
 `java/dhbw.mobile2/ListEventsFragment.java`:
 
@@ -500,11 +681,20 @@ Contains the logic of the Page. This page has two main goals:
 
 To 1.:
 
-The data for the relevant events is taken from the AppMapFragment. The EventList Page is opened through an ActionBar Item that is shown only on the MapView. When the MapView fetches events and filters them, they are saved in a localDataStore ParseObject. This object is fetched in getEventData() and the the relevant data for the ListView is then extracted in the callback to pass it to the EventListAdapter.
+The data for the relevant events is taken from the EventMap. The EventList Page is opened through an ActionBar Item that is shown only on the EventMap. When the EventMap fetches events and filters them, they are saved in a localDataStore-ParseObject. This object is fetched in getEventData() and the the relevant data for the ListView is then extracted in the callback to pass it to the EventListAdapter.
+
+To fetch the event data from the local DataStore the query needs to add the specification: 
+````
+query.fromLocalDatastore();
+````
+The name of the ParseObject containing a List with the events is called "FilteredEvents". 
+
 
 To 2.:
 
-The EventListAdapter takes the data of the events with ArrayLists containing the single data items. Apart from the category, only strings are passed to the Adapter, which are just shown to the user. The Adapter can easily iterate through these arrays. For the category the EventListFragement sends the String name of the category to the Adapter and the Adapter looks for the matching icon. Apart from the String objects, the ID of the Events objects has to be send as well, so the user can be redirected to the EventDetail Page of this ID when it is called. 
+The EventListAdapter takes the data of the events with ArrayLists containing the single data items. Apart from the category, only strings are passed to the Adapter, which are just shown to the user. The Adapter can easily iterate through these arrays. For the category the EventListFragement sends the String name of the category to the Adapter and the Adapter looks for the matching icon. Apart from the String objects, the ID of the Events objects has to be send as well, so the user can be redirected to the EventDetail Page of this ID when it is called.
+
+Lastly the EventListAdapter with the data is linked to the ListView.
 
 `res/layout/fragment_events_list.xml`:
 
