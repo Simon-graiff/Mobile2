@@ -48,7 +48,6 @@ import static dhbw.mobile2.R.*;
 
 public class ProfileFragment extends Fragment implements View.OnClickListener, View.OnTouchListener {
 
-
     private String username;
     private String gender;
     private String aboutMe;
@@ -57,7 +56,6 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
     private View rootView = null;
     private ProgressDialog progressDialog;
     private String userID;
-
 
     public static ProfileFragment newInstance(String userID) {
         ProfileFragment f = new ProfileFragment();
@@ -68,13 +66,11 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
         return f;
     }
 
- @Override
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         progressDialog = ProgressDialog.show(getActivity(), "Loading", "Please wait.."); //Show loading dialog until data has been pulled from parse
         rootView = inflater.inflate(layout.fragment_profile, container, false);
         userID= getArguments().getString("UserID");
-        rootView.setBackgroundColor(Color.rgb(240, 240, 240));
-
 
         //Add OnClickListener to the Profile data Change Entry
         rootView.findViewById(id.layout_change).setOnClickListener(this);
@@ -85,6 +81,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
         rootView.findViewById(id.editText_username).setOnTouchListener(this);
 
 
+         //Check if the current's user profile is called or another users profile
         if(userID.equals(ParseUser.getCurrentUser().getObjectId())){
             username = ParseUser.getCurrentUser().getUsername();
             gender= ParseUser.getCurrentUser().getString("gender");
@@ -98,12 +95,11 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
        return rootView;
     }
 
+    //Hiding the Keyboard if not needed
     private void hideSoftKeyboard() {
         InputMethodManager inputMethodManager = (InputMethodManager)  getActivity().getSystemService(getActivity().INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
     }
-
-
 
     private void updateLayout() {
         //Update Profile Picutre
@@ -146,13 +142,13 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
         progressDialog.dismiss();
     }
 
+    //Fetching all information of an other user from parse
     private void pullUserDataFromParse(){
         ParseQuery<ParseUser> query = ParseUser.getQuery();
         query.whereEqualTo("objectId", userID);
         query.getFirstInBackground(new GetCallback<ParseUser>() {
             @Override
             public void done(ParseUser parseUser, ParseException e) {
-
                 if (e == null) {
                     username = parseUser.getUsername();
                     gender = parseUser.getString("gender");
@@ -161,7 +157,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
                     profilepictureFileBitmap = getRoundedCornerBitmap(); //Transfer ParseFile to Bitmap
                     updateLayout();
                 } else {
-                    Log.e("ParseUser", "Cannot retrive User with UserID= " + userID + " from Parse");
+                    Log.e("ParseUser", "Cannot retrive User with UserID= " + userID);
+                    e.printStackTrace();
                 }
 
             }
@@ -169,14 +166,10 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
 
     }
 
-
-
-
     /**
      * This Function returns a Bitmap that thats cut to a circle
      * @return
      */
-
     private Bitmap getRoundedCornerBitmap() {
         byte [] data = new byte[0];
         try {
@@ -207,7 +200,6 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
 
         return output;
     }
-
 
     @Override
     public void onClick(View v) {
@@ -285,11 +277,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
 
         return false;
     }
-
-
-    /*
-This function calls a cloud code function which updates the parse user with the facebook user
- */
+    
+    //This function calls a cloud code function which updates the parse user with the facebook user
     private void reloadFacebookInformation(){
         Map<String, Object> param = new HashMap<>();
         ParseCloud.callFunctionInBackground("reloadFacebookInformation", param, new FunctionCallback<Object>() {

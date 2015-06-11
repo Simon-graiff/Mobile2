@@ -202,10 +202,12 @@ Parse.Cloud.define("loadFacebookInformation", function(request, response) { 
         url: url,
         params: {
             access_token : access_token,
+            //Define the information that are requested from facebook
             fields: "name,gender"
         },
         success: function(result)
         {
+            //saving the retrieved facebook information to the parse user
             var data = result.data;
             currentUser.set("username", data.name);
             currentUser.set("gender", data.gender);
@@ -223,6 +225,7 @@ Parse.Cloud.define("reloadFacebookInformation", function(request, response) { 
     var retrieveFacebookPicture = false;
     var loadFacebookInformation = false;
 
+    //this helper function ensures that all the promises are returned successfully before responding to the client
     function allConditionsTrue(){
     if(loadFacebookInformation && retrieveFacebookPicture){
         return true;
@@ -258,6 +261,7 @@ Parse.Cloud.define("initializeNewUser", function(request, response) { 
     var initializeSettings=false;
     var loadFacebookInformation = false;
 
+    //this helper function ensures that all the promises are returned successfully before responding to the client
     function allConditionsTrue(){
     if(loadFacebookInformation && initializeSettings && retrieveFacebookPicture){
         return true;
@@ -302,7 +306,7 @@ Parse.Cloud.define("initializeNewUser", function(request, response) { 
         })
  })
 
- 
+
 Parse.Cloud.define("retrieveFacebookPicture", function (request, response) {
     //Get the facebook id of the current user
     var fId = Parse.User.current().get('authData')['facebook'].id;
@@ -316,12 +320,14 @@ Parse.Cloud.define("retrieveFacebookPicture", function (request, response) {
         },
         success: function(httpImgFile)
         {
+            //This part uses a input buffer to buffer the bytes of a picture and transfer it to a byteArray to save it as ParseFile
             var myFile = new Parse.File("profilepicture.jpg", {base64: httpImgFile.buffer.toString('base64', 0, httpImgFile.buffer.length)});
             myFile.save().then(function() {
+                //When the picture was saved to parse as parseFile a reference to the picture is saved in the ParseUser
                 var currentUser = request.user;
                 currentUser.set("profilepicture", myFile);
                 currentUser.save();
-                // The file has been saved to Parse.
+                // The file has been saved to the user.
                 response.success("successfull saved fb profile picture")
                 },
                  function(error) {
