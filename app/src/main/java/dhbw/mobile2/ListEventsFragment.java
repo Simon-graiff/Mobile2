@@ -166,6 +166,7 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
                         List<ParseObject> listEvents;
                         try {
                             listEvents = listOfEventList.get(0).fetchIfNeeded().getList("list");
+                            Log.d("Main","Size: " + listEvents.size());
                             if (listEvents.size() > 0){
                             for (int i = 0; i < listEvents.size(); i++) {
 
@@ -193,20 +194,23 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
                                 participantCountArray.add(helperObject.getParticipantsString(event));
                             }
 
+                            } else {
+                                Log.d("Main","Empty will be visible");
                             }
 
 
                         } catch (ParseException e1) {
                             e1.printStackTrace();
+
                         }
 
 
 
                     }
-                }else {
-                    Log.d("Main", "Exception: "+e);
+                } else {
+                    getActivity().findViewById(R.id.empty).setVisibility(View.VISIBLE);
                 }
-                listOfEventList.get(0).unpinInBackground();
+
 
                 //add all event object content to the Event List
                 mAdapter = new EventListAdapter(getActivity(),

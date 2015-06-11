@@ -7,6 +7,7 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
@@ -14,6 +15,11 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.widget.ImageView;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
@@ -120,6 +126,40 @@ public class HelperClass {
                 categoryImage.setImageResource(R.drawable.ic_sport_blue);
                 break;
         }
+    }
+
+    public int findCategoryPictureInt(String category){
+        switch (category){
+            case "Sport":
+                return R.drawable.ic_sport_blue;
+            case "Chilling":
+                return R.drawable.ic_chilling_blue;
+            case "Dancing":
+                return R.drawable.ic_dance_blue;
+            case "Food":
+                return R.drawable.ic_food_blue;
+            case "Music":
+                return R.drawable.ic_music_blue;
+            case "Video Games":
+                return R.drawable.ic_videogames_blue;
+            default:
+                return R.drawable.ic_sport_blue;
+        }
+    }
+
+    public Marker drawMarker(LatLng position, String title, String eventID, String category, Activity activity, GoogleMap map){
+        //set the icon for the marker
+        Bitmap icon = BitmapFactory.decodeResource(activity.getApplicationContext().getResources(),
+                findCategoryPictureInt(category));
+        BitmapDescriptorFactory.fromBitmap(icon);
+        Marker m = map.addMarker(new MarkerOptions()
+                        .title(title)
+                        .position(position)
+                                //.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                        .icon(BitmapDescriptorFactory.fromBitmap(icon))
+        );
+
+        return m;
     }
 
     /*
