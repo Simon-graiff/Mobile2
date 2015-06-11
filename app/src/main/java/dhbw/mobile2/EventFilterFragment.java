@@ -2,8 +2,6 @@ package dhbw.mobile2;
 
 import android.app.Fragment;
 import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -26,8 +24,6 @@ import java.util.List;
 
 public class EventFilterFragment extends Fragment implements CompoundButton.OnCheckedChangeListener {
 
-    SharedPreferences sharedPref;
-    SharedPreferences.Editor editor;
     private ParseObject filter = ParseObject.create("User_Settings");
     private ProgressDialog progressDialog;
 
@@ -62,9 +58,6 @@ public class EventFilterFragment extends Fragment implements CompoundButton.OnCh
         videoGames_switch.setOnCheckedChangeListener(this);
         food_switch.setOnCheckedChangeListener(this);
         mixedGenderSwitch.setOnCheckedChangeListener(this);
-
-        sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        editor = sharedPref.edit();
 
         return rootView;
     }
@@ -123,7 +116,6 @@ public class EventFilterFragment extends Fragment implements CompoundButton.OnCh
     public void onPause() {
         super.onPause();
         filter.saveInBackground();
-
     }
 
     @Override
@@ -156,7 +148,7 @@ public class EventFilterFragment extends Fragment implements CompoundButton.OnCh
     }
 
     public void initializeSwitches(){
-        Log.d("Main", "Inizialisation");
+
         final boolean sport = filter.getBoolean("sport");
         final boolean music = filter.getBoolean("music");
         final boolean chilling = filter.getBoolean("chilling");

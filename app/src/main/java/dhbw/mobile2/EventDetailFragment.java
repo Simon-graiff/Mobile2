@@ -458,7 +458,7 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
             ParseUser.getCurrentUser().put("eventId", R.string.detail_no_event);
             ParseUser.getCurrentUser().saveInBackground();
 
-            helperObject.switchToFragment(getFragmentManager(), new MapFragment());
+            helperObject.switchToFragment(getFragmentManager(), new EventMap());
         }
     }
 
@@ -506,7 +506,8 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
             map.setOnMarkerClickListener(this);
 
-            Location userPosition = getUserPosition();
+            Location userPosition =
+                    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
             if(userPosition != null){
 
@@ -533,31 +534,12 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         }
     }//End of setUpMap
 
-    private Location getUserPosition(){
-        return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-    }
-
-    private void drawMarker(LatLng position, String title, String color, String eventID){
-
-        if(color.equals("red")) {
-            Marker m = map.addMarker(new MarkerOptions()
-                            .title(title)
-                            .position(position)
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-            );
-            markers.add(m);
-            Log.d("Main", "Creates red marker");
-
-            eventManager.add(new EventManagerItem(m.getId(), eventID, position));
-
-        }
-    }
-
     //same as in EventMap
     public void drawEvent(){
         //Creating ParseGeoPoint with user's current location
-        Location userLocation = getUserPosition();
-        ParseGeoPoint point = new ParseGeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
+        Location userLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);;
+        ParseGeoPoint point =
+                new ParseGeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
         ParseObject user = new ParseObject("User");
         user.put("location", point);
 
@@ -568,7 +550,10 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         String tmpTitle = eventObject.getString("title");
         String color = "red";
         String eventID = eventObject.getObjectId();
-        drawMarker(tmpLatLng, tmpTitle, color, eventID);
+        Marker m = helperObject.drawMarker(
+                tmpLatLng, tmpTitle, eventID,
+                eventObject.getString("category"), getActivity(), map);
+        markers.add(m);
 
         fillDistance();
     }
@@ -577,8 +562,10 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
         //fill distance
         ParseGeoPoint currentLocation =
                 new ParseGeoPoint (
-                        getUserPosition().getLatitude(),
-                        getUserPosition().getLongitude());
+                        locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).
+                                getLatitude(),
+                        locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).
+                                getLongitude());
         TextView distanceView = (TextView) rootView.findViewById(R.id.detail_distance_dynamic);
         distanceView.setText(helperObject.calculateDistance(
                 currentLocation,
@@ -640,9 +627,6 @@ public class EventDetailFragment extends Fragment implements OnMapReadyCallback,
 
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         setUpMap();
-
-
-
     }
 }
 
