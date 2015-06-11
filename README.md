@@ -15,66 +15,72 @@ WhereU consists of two activities. The LoginActivity and the MainScreen. The Log
 #LoginActivity
 The app uses the ParseFacebookUtils library to call the Facebook SDK ([more information see Parse Doku] (https://www.parse.com/docs/android/guide#users-facebook-users))
 ````
-        ParseFacebookUtils.logInWithReadPermissionsInBackground(LogInActivity.this, permissions, new LogInCallback() {
-            @Override
-            public void done(final ParseUser user, ParseException err) {
-                if (user == null) {
-                    Log.d("MyApp", "Uh oh. The user cancelled the Facebook login.");
-                    Toast.makeText(getApplicationContext(), "Please Log-in with Facebook!", Toast.LENGTH_LONG).show();
-                    ParseUser.logOut();
-                } else if (user.isNew()) {
-                    Log.d("MyApp", "User signed up and logged in through Facebook!");
-                    retrieveFacebookData();
-                    Intent intent = new Intent(LogInActivity.this, MainScreen.class);
-                    startActivity(intent);
-                } else {
-                    Log.d("MyApp", "User logged in with Facebook!");
-                    Intent intent = new Intent(LogInActivity.this, MainScreen.class);
-                    startActivity(intent);
-                }
-            }
-        });
+    //Is called by the User if he hits the Button FacebookLogin
+    public void linkFacebookLogIn(View view) {
+        final List<String> permissions = Arrays.asList("public_profile");
+              ParseFacebookUtils.logInWithReadPermissionsInBackground(LogInActivity.this, permissions, new LogInCallback() {
+                  @Override
+                  public void done(final ParseUser user, ParseException err) {
+                      if (user == null) {
+                          //If the user cancels that LoginDialoge
+                          Log.d("MyApp", "Uh oh. The user cancelled the Facebook login.");
+                          Toast.makeText(getApplicationContext(), "Please Log-in with Facebook!", Toast.LENGTH_LONG).show();
+                          ParseUser.logOut();
+                      } else if (user.isNew()) {
+                          Log.d("MyApp", "User signed up and logged in through Facebook!");
+                          //Show loading dialog until user is created completely
+                          ProgressDialog.show(LogInActivity.this, "Creating Account", "Please wait.."); initializeNewUser();
+                      } else {
+                          //If the user has already signed up and now logs in
+                          ProgressDialog.show(LogInActivity.this, "Loading", "Please wait..");
+                          Log.d("MyApp", "User logged in with Facebook!");
+                          redirectToMainScreen();
+                      }
+                  }
+              });
+    }
 ````
 The user can now sign up with Facebook or if he already has signed up with Facebook log in with his connected Facebook account.
 If the user has already signed up and just logs in he will be linked back to the MainScreen to use the App.
 
-If the user needs to sign up with his Facebook account his Facebook profile data are retrieved by calling the function `retrieveFacebookData()` and after that the user is linked to the MainScreen as well.
+If the user needs to sign up with his Facebook account a new parse account is created an connected to his Facebook account. 
+Creating a new account means to create a new user object, initialize defaut settings, retrieve facebook data and to retrieve the current facebook profile picture. All this is handled by the Backend to minimize the data traffic of the phone and save the battery.
+The function `initializeNewUser()` takes care of calling the Parse Backend and redirects to the MainActivity as soon as all tasks were performed successfully.
 
-**retrieveFacebookData()**
-
-This function uses the Facebook GraphAPI and sends a Me-Request to retrieve the needed Facebook data. ([For more information see Facebook Graph API] (https://developers.facebook.com/docs/graph-api))
-The Facebook GrahphAPI returns the username and the gender of the the user which then is saved to Parse by calling:
-````
-           @Override
-            public void onCompleted(JSONObject user, GraphResponse response) {
-                if (user != null) {
-                    try {
-                        ParseUser.getCurrentUser().put("username", user.getString("name"));
-                        ParseUser.getCurrentUser().put("gender", user.getString("gender"));
-                        ParseUser.getCurrentUser().put("aboutMe", "");
-                        ParseUser.getCurrentUser().saveInBackground();
-                        redirectToMainScreen();
-
-                    } catch (Exception e) {
-                        Log.e("Error from FB Data", e.getMessage());
-                    }
+`````
+   //This function calls a cloud code function which initializes a user and creates the default settings for a new user
+    private void initializeNewUser(){
+        Map<String, Object> param = new HashMap<>();
+        ParseCloud.callFunctionInBackground("initializeNewUser", param, new FunctionCallback<Object>() {
+            @Override
+            public void done(Object stringObjectMap, ParseException e) {
+                if (e == null) {
+                    Log.d("CreateUser", "successful");
+                    //Fetch all userData from Parse Backend so they do not need to be fetched for further use again
+                    ParseUser.getCurrentUser().fetchInBackground(new GetCallback<ParseUser>() {
+                        @Override
+                        public void done(ParseUser user, ParseException e) {
+                            redirectToMainScreen();
+                        }
+                    });
+                } else {
+                    Toast.makeText(getApplicationContext(), "Error creating User. Try again!", Toast.LENGTH_LONG).show();
+                    Log.e("CloudCode", e.getMessage());
+                    //If the user could not be created correctly (initialize all settings and retrive all facebook data)
+                    // delete the ParseUser to rerun the whole procedure
+                    ParseUser.getCurrentUser().deleteInBackground();
                 }
             }
+
+        });
+    }
+}
+
 ````
 
-To retrieve the Facebook profile picture a similar call to the Facebook GraphAPI can be sent which returns the URL of the Facebook picture.
-This picture is downloaded by the function 
-**DownloadPictureTask()**
-This method uses the BufferedInputStream which can then by saved as a byte array.
+If the user was not created successfully, an error message is displayed and the process is cleaned up as it used to be at the beginning to give the user the opportunity to restart the whole process.
+Please look at the detailed description how the Parse Backend works in the extra ([Backend Readme] (https://github.com/Simon-graiff/WhereU/blob/master/WhereUBackend/README.md))
 
-This byte array can be saved as a ParseFile to the Parse database
-`````
-byte[] data = IOUtils.toByteArray(in);
-//Saves the ByteArray to Parse as a File
-ParseFile file = new ParseFile("profilepicture.jpg", data);
-ParseUser.getCurrentUser().put("profilepicture", file);
-ParseUser.getCurrentUser().saveInBackground();
-`````
 
 #Main Screen
 The MainScreen is the actual activity behind WhereU. It extends an ActionBarActivity and displays only an ActionBar. The more it is responsible for handling clicks in the side menu or sliding gestures, which open the SideBar. Most of the screen belongs to the contentView, in which fragments are placed in by FragmentTransactions. The FragmentTransactions are mostly activated by the user, by pressing an element from the sidebar, or the Android back button. So every screen in the app is a fragment and not an activity. This has several advantages. One is a performance optimization because there is no need for stating intends. This can especially be seen in an emulator environment, but has also a huge impact on real devices. Another advantage is the differentiation between a controller - which handles the navigation through the app - and the UI, which is represented by the fragments (except the ActionBar). Another benefit of this architecture is the use and easy implementation of a back navigation. This is possible by the use of the Android BackStack.
