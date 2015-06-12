@@ -614,6 +614,28 @@ Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + ", " + longitud
                       EventDetailFragment.this.startActivity(mapIntent);
 ````
 
+**Show Marker and user on Map**
+
+On the EventDetailFragment the user and the marker of the event are always shown and the map zoom will adjust to the distance of both. For this a LatLngBounds Object is used in the method setUpMap(). When the marker of the event is drawn, it is saved into a MarkerArray. Every marker that is on the screen (in this case only one) is included in the LatLngBounds.Builder Object. Furthermore the user coordinates are added. A padding is set how far the marker of the event and user position should be away from the borders of the map. It is set to 50. In the last step a CameraUpdate Objject is created with the given bounds and padding. With map.animateCamera and the CameraUpdate object in it the map zooms to the event and user.
+
+````
+ //fit the event and the user both on the screen and move the camera to this setting
+                LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+                for (Marker marker : markers) {
+                    builder.include(marker.getPosition());
+                }
+                LatLng coordinates = new LatLng(userPosition.getLatitude(),
+                        userPosition.getLongitude());
+                builder.include(coordinates);
+                LatLngBounds bounds = builder.build();
+                int padding = 50; // offset from edges of the map in pixels
+                CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+                map.animateCamera(cu);
+````
+
+
+
 #HelperClass
 
 **convertDateToString and getTimeScopeString**
