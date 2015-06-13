@@ -188,6 +188,8 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
 
         if(map!=null){
 
+            locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
+
             Location userPosition =
                     locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
@@ -227,6 +229,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
         final boolean mixedGenders = filter.getBoolean("mixedgenders");
 
         //Create ParseGeoPoint with user's current location
+        locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
         Location userLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         ParseGeoPoint point = new ParseGeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
         ParseObject user = new ParseObject("User");
