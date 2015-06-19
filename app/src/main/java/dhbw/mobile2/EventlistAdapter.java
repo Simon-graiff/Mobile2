@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class EventListAdapter extends ArrayAdapter<String> {
+class EventListAdapter extends ArrayAdapter<String> {
     private final Activity context;
     private final ArrayList<String> itemname;
     private final ArrayList<String> category;

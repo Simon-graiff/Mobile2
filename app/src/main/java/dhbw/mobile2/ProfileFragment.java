@@ -157,7 +157,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, V
                     profilepictureFileBitmap = getRoundedCornerBitmap(); //Transfer ParseFile to Bitmap
                     updateLayout();
                 } else {
-                    Log.e("ParseUser", "Cannot retrive User with UserID= " + userID);
+                    Log.e("ParseUser", "Cannot retrieve User with UserID= " + userID);
                     e.printStackTrace();
                 }
 
