@@ -29,22 +29,16 @@ public class LoginTest extends ActivityInstrumentationTestCase2<MainActivity> {
      * Tests if the the AutoLogin works and if the user is redirected automatically without any errors
      */
     public void testAutoLoginBySession() throws Exception{
-
         //If the user is not logged in login with testUser
         if(ParseUser.getCurrentUser()==null){
             ParseUser.logIn("TestUser", "1234");
+            getActivity().onResume();
         }
         onView(withText("WhereU")).check(matches(isDisplayed()));
 
     }
-
     public void testLoginScreenIfNotLoggedIn() throws Exception{
         onView(withText("Login with Facebook")).check(matches(isDisplayed()));
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        ParseUser.logOut();
-    }
 }

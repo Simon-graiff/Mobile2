@@ -34,7 +34,6 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="35dp"
-            android:onClick="changeProfile"
             android:id="@+id/textView_change"
             android:text="Change profile data"
             android:background="#ffffff"
@@ -132,14 +131,12 @@
             android:layout_height="match_parent"
             android:id="@+id/imageView_facebookIcon"
             android:layout_gravity="center"
-            android:tintMode="src_over"
             android:tint="@color/com_facebook_blue"
             android:src="@drawable/com_facebook_button_icon"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="35dp"
-            android:onClick="changeProfile"
             android:id="@+id/textView_reloadFacebookData"
             android:text="Reload data from Facebook"
             android:background="#ffffff"

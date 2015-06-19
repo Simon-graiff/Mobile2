@@ -54,7 +54,6 @@ public class CreateEventFragment extends Fragment
     private EditText mEditText_description;
     private Spinner mSpinner_category;
     private Button mButton_createEvent;
-    private Button mButton_test;
     private ParseObject event = null;
     private View rootView;
     private GoogleApiClient mGoogleApiClient;
@@ -75,8 +74,7 @@ public class CreateEventFragment extends Fragment
         mEditText_description = (EditText) rootView.findViewById(R.id.editText_FeedbackBody);
         mButton_createEvent = (Button) rootView.findViewById(R.id.button_CreateEvent);
         mButton_createEvent.setOnClickListener(this);
-        mButton_test = (Button) rootView.findViewById(R.id.button_test);
-        mButton_test.setOnClickListener(this);
+
 
         mUser = ParseUser.getCurrentUser();
 
@@ -202,8 +200,6 @@ public class CreateEventFragment extends Fragment
                     getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
             createEvent();
-        } else if (view == mButton_test) {
-            sendEventRequest();
         } else if (view == mEditText_duration) {
             showTimePickerDialog();
         }

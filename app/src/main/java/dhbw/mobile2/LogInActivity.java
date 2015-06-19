@@ -57,7 +57,8 @@ public class LogInActivity extends ActionBarActivity {
                       } else if (user.isNew()) {
                           Log.d("MyApp", "User signed up and logged in through Facebook!");
                           //Show loading dialog until user is created completely
-                          ProgressDialog.show(LogInActivity.this, "Creating Account", "Please wait.."); initializeNewUser();
+                          ProgressDialog.show(LogInActivity.this, "Creating Account", "Please wait..");
+                          initializeNewUser();
                       } else {
                           //If the user has already signed up and now logs in
                           ProgressDialog.show(LogInActivity.this, "Loading", "Please wait..");
