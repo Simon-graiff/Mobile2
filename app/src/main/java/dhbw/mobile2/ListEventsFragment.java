@@ -208,7 +208,9 @@ public class ListEventsFragment extends Fragment implements AdapterView.OnItemCl
 
                     }
                 } else {
-                    getActivity().findViewById(R.id.empty).setVisibility(View.VISIBLE);
+                    if (getActivity().findViewById(R.id.empty) != null) {
+                        getActivity().findViewById(R.id.empty).setVisibility(View.VISIBLE);
+                    }
                 }
 
 

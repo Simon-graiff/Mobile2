@@ -192,9 +192,9 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
 
             Location userPosition =
                     locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
+            Log.d("Main", "check if user Position is null");
             if(userPosition != null){
-
+            Log.d("Main", "userPosition is not null");
                 LatLng coordinates = new LatLng(userPosition.getLatitude(),
                         userPosition.getLongitude());
 
@@ -212,9 +212,10 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
 
 
     private void drawMarker(LatLng position, String title, String eventID, String category){
-        Marker m = helperObject.drawMarker(position, title, eventID, category, getActivity(), map);
-
-        eventManager.add(new EventManagerItem(m.getId(), eventID, position));
+        if (getActivity() != null) {
+            Marker m = helperObject.drawMarker(position, title, eventID, category, getActivity(), map);
+            eventManager.add(new EventManagerItem(m.getId(), eventID, position));
+        }
     }
 
     private void drawEvents(){
