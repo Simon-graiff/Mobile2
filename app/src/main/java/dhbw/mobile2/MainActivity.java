@@ -595,7 +595,7 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
                 }
             });
             ParseObject locationObject = new ParseObject("LocationObject");
-            locationObject.put("mLong", locationClient.getLastLocation(mGoogleApiClient).getLongitude());
+            locationObject.put("mLong",locationClient.getLastLocation(mGoogleApiClient).getLongitude());
             locationObject.put("mLat", locationClient.getLastLocation(mGoogleApiClient).getLatitude());
             Log.d("Main", "" + locationObject.getObjectId());
             locationObject.pinInBackground();

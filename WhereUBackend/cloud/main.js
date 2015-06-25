@@ -1,50 +1,77 @@
 Parse.Cloud.job("deleteExpiredEvents", function (request, response) {
-    console.log("Called at: ")
     var now = new Date()
-    console.log(now)
+    var deletedEvents = 0
+    var deletedEventIds = []
 
     var query = new Parse.Query("Event")
     query.lessThan("duration", now)
     query.find().then(function (events) {
-        console.log(events)
+        if (events.length == 0)
+            response.success("Nothing to delete")
 
         events.forEach(function (event) {
-            var userQuery = new Parse.Query(Parse.User)
-            userQuery.equalTo("eventId", event.id)
-            console.log(event)
-            console.log("EVENT ID:")
-            console.log(event.id)
-            userQuery.find().then(function (users) {
-                console.log("USERS")
-                console.log(users)
-                users.forEach(function (user) {
-                    user.set("eventId", null)
-                    console.log(user)
-                    user.save(null, {
-                        success: function () {},
-                        error: function (error) {
-                            console.log("Error saving data!")
-                        }
-                    })
-                })
-
-                event.destroy({
-                    success: function () {
-                        console.log("deleted:")
-                        console.log(event)
-                    },
-                    error: function (error) {
-                        console.log(error)
-                    }
-                })
-                response.success("successfully done")
+            deletedEventIds.push(event.id)
+            event.destroy({
+                success: function () {
+                    console.log("deleted:")
+                    console.log(event)
+                },
+                error: function (error) {
+                    console.log(error)
+                }
+            }).then(function () {
+                deletedEvents++
+                if (deletedEvents == events.length) {
+                    updateEventsInUserObjects(deletedEventIds, response)
+                }
             })
         })
+
     }, function (error) {
         console.log(error)
         response.error(error)
     })
 })
+
+updateEventsInUserObjects = function (events, response) {
+    console.log("called for events: ")
+    console.log(events)
+    if (events.length == 0) {
+        response.success("Deleted Successfully")
+    } else {
+
+        var updatedUsers = 0
+        var query = new Parse.Query(Parse.User)
+
+        //building query
+        //        for (var i = 0; i < events.length; i++) {
+        //            query.equalTo('eventId', events[i])
+        //        }
+
+        query.find().then(function (users) {
+            if (users.length == 0) {
+                console.log("no users to to update")
+                response.success("Deleted Successfully")
+            } else {
+                console.log(users)
+                users.forEach(function (user) {
+                    user.set("eventId", null)
+                    console.log(user)
+
+                    var readyToContinue = false
+                    user.save().then(function (user) {
+                        updatedUsers++
+                        if (updatedUsers == users.length) {
+                            response.success("Deleted Successfully")
+                        }
+                        readyToContinue = true
+                    })
+                    while (!readyToContinue) {}
+                })
+            }
+        })
+    }
+}
 
 Parse.Cloud.define("getNearEvents", function (request, response) {
 
