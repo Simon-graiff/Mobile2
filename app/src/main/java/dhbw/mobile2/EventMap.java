@@ -177,8 +177,8 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
             public void done(List<ParseObject> objectList, ParseException queryException) {
                 if (queryException == null) {
                     ParseObject object = objectList.get(0);
-                    double mLong = (double) object.get("mLong");
-                    double mLat = (double) object.get("mLat");
+                    double mLong = object.getDouble("mLong");
+                    double mLat = object.getDouble("mLat");
                     Location userLocation = new Location("");
                     userLocation.setLatitude(mLat);
                     userLocation.setLongitude(mLong);
