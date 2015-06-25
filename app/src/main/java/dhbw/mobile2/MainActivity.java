@@ -359,6 +359,8 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
     @Override
     protected void onResume(){
         super.onResume();
+
+        mLocation = getLocation(LocationServices.FusedLocationApi);
     }
 
     public void setMapShown(boolean mapShown) {
@@ -531,30 +533,6 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
         mLocation = getLocation(LocationServices.FusedLocationApi);
         Log.d("API", "" + mLocation);
 
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("LocationObject");
-        query.fromLocalDatastore();
-
-        //Executing query
-        query.findInBackground(new FindCallback<ParseObject>() {
-            public void done(List<ParseObject> list, ParseException e) {
-
-                if (e == null) {
-                    for (int i = 0; i < list.size(); i++) {
-                        list.get(i).unpinInBackground();
-                    }
-
-                } else {
-                    Log.d("Main", "No events existed in background");
-                }
-            }
-        });
-        ParseObject locationObject = new ParseObject("LocationObject");
-        locationObject.put("mLong", mLocation.getLongitude());
-        locationObject.put("mLat", mLocation.getLatitude());
-        Log.d("Main", "" + locationObject.getObjectId());
-        locationObject.pinInBackground();
-        Log.d("Main","" + (double) locationObject.get("mLong"));
-        Log.d("Main", "" + locationObject.getObjectId());
         if(currentUser != null && mLocation != null)
             checkIfInGeoFence(mLocation.getLongitude(),mLocation.getLatitude(),currentUser.getObjectId());
     }
@@ -579,6 +557,31 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
             }
             return getLocation(locationClient);
         }else{
+            ParseQuery<ParseObject> query = ParseQuery.getQuery("LocationObject");
+            query.fromLocalDatastore();
+
+            //Executing query
+            query.findInBackground(new FindCallback<ParseObject>() {
+                public void done(List<ParseObject> list, ParseException e) {
+
+                    if (e == null) {
+                        for (int i = 0; i < list.size(); i++) {
+                            list.get(i).unpinInBackground();
+                        }
+
+                    } else {
+                        Log.d("Main", "No events existed in background");
+                    }
+                }
+            });
+            ParseObject locationObject = new ParseObject("LocationObject");
+            locationObject.put("mLong", locationClient.getLastLocation(mGoogleApiClient).getLongitude());
+            locationObject.put("mLat", locationClient.getLastLocation(mGoogleApiClient).getLatitude());
+            Log.d("Main", "" + locationObject.getObjectId());
+            locationObject.pinInBackground();
+            Log.d("Main","" + (double) locationObject.get("mLong"));
+            Log.d("Main", "" + locationObject.getObjectId());
+
             return locationClient.getLastLocation(mGoogleApiClient);
         }
     }

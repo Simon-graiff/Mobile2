@@ -10,25 +10,36 @@ Parse.Cloud.job("deleteExpiredEvents", function (request, response) {
 
         events.forEach(function (event) {
             var userQuery = new Parse.Query(Parse.User)
-            userQuery.equalTo("eventId", event.get("objectId"))
+            userQuery.equalTo("eventId", event.id)
+            console.log(event)
+            console.log("EVENT ID:")
+            console.log(event.id)
             userQuery.find().then(function (users) {
+                console.log("USERS")
+                console.log(users)
                 users.forEach(function (user) {
-                    user.eventId = null
-                    user.saveInBackground()
+                    user.set("eventId", null)
+                    console.log(user)
+                    user.save(null, {
+                        success: function () {},
+                        error: function (error) {
+                            console.log("Error saving data!")
+                        }
+                    })
                 })
-            })
 
-            event.destroy({
-                success: function () {
-                    console.log("deleted:")
-                    console.log(event)
-                },
-                error: function (error) {
-                    console.log(error)
-                }
+                event.destroy({
+                    success: function () {
+                        console.log("deleted:")
+                        console.log(event)
+                    },
+                    error: function (error) {
+                        console.log(error)
+                    }
+                })
+                response.success("successfully done")
             })
         })
-        response.success("successfully done")
     }, function (error) {
         console.log(error)
         response.error(error)
@@ -167,32 +178,32 @@ Parse.Cloud.define("removeGeoFence", function (request, response) {
 })
 
 
-Parse.Cloud.define("initializeSettings", function(request, response) { 
-        var UserSettings = Parse.Object.extend("User_Settings")
-        var userSettings = new UserSettings()
-        userSettings.save({
-            chilling: true,
-            dancing: true,
-            food: true,
-            music: true,
-            sport: true,
-            videogames:true,
-            mixedgenders: true,
-            user: request.user
-        }, {
-        success: function(result) {
+Parse.Cloud.define("initializeSettings", function (request, response) { 
+    var UserSettings = Parse.Object.extend("User_Settings")
+    var userSettings = new UserSettings()
+    userSettings.save({
+        chilling: true,
+        dancing: true,
+        food: true,
+        music: true,
+        sport: true,
+        videogames: true,
+        mixedgenders: true,
+        user: request.user
+    },   {
+        success: function (result) {
             // The object was saved successfully.
             response.success(result)
         },
-        error: function(result, error) {
+        error: function (result, error) {
             // The save failed.
             response.error(error)
         }
-        })
     })
+})
 
 
-Parse.Cloud.define("loadFacebookInformation", function(request, response) { 
+Parse.Cloud.define("loadFacebookInformation", function (request, response) { 
     //Get the facebook facebook acccess_token of the current user
     var access_token = Parse.User.current().get('authData')['facebook'].access_token;
     var currentUser = request.user;
@@ -201,12 +212,11 @@ Parse.Cloud.define("loadFacebookInformation", function(request, response) { 
     Parse.Cloud.httpRequest({
         url: url,
         params: {
-            access_token : access_token,
+            access_token: access_token,
             //Define the information that are requested from facebook
             fields: "name,gender"
         },
-        success: function(result)
-        {
+        success: function (result) {
             //saving the retrieved facebook information to the parse user
             var data = result.data;
             currentUser.set("username", data.name);
@@ -214,97 +224,97 @@ Parse.Cloud.define("loadFacebookInformation", function(request, response) { 
             currentUser.save();
             response.success(result)
         },
-        error: function(error){
+        error: function (error) {
             response.error(error);
         }
     });
- })
+})
 
 
-Parse.Cloud.define("reloadFacebookInformation", function(request, response) { 
+Parse.Cloud.define("reloadFacebookInformation", function (request, response) { 
     var retrieveFacebookPicture = false;
     var loadFacebookInformation = false;
 
     //this helper function ensures that all the promises are returned successfully before responding to the client
-    function allConditionsTrue(){
-    if(loadFacebookInformation && retrieveFacebookPicture){
-        return true;
-    }
-    }
-
-      Parse.Cloud.run("retrieveFacebookPicture").then(
-        function(result) {
-          retrieveFacebookPicture = true;
-          if(allConditionsTrue()){
-             response.success(result);
-          }
-        },
-        function(result, error) {
-          response.error(error);
-        })
-
-      Parse.Cloud.run("loadFacebookInformation").then(
-        function(result) {
-          loadFacebookInformation = true;
-          if(allConditionsTrue()){
-             response.success(result);
-          }
-        },
-        function(result, error) {
-          response.error(error);
-        })
- })
-
-
-Parse.Cloud.define("initializeNewUser", function(request, response) { 
-    var retrieveFacebookPicture = false;
-    var initializeSettings=false;
-    var loadFacebookInformation = false;
-
-    //this helper function ensures that all the promises are returned successfully before responding to the client
-    function allConditionsTrue(){
-    if(loadFacebookInformation && initializeSettings && retrieveFacebookPicture){
-        return true;
-    }
+    function allConditionsTrue() {
+        if (loadFacebookInformation && retrieveFacebookPicture) {
+            return true;
+        }
     }
 
-      Parse.Cloud.run("initializeSettings").then(
-        function(result) {
-            initializeSettings=true;
-            if(allConditionsTrue()){
-               response.success(result);
+    Parse.Cloud.run("retrieveFacebookPicture").then(
+        function (result) {
+            retrieveFacebookPicture = true;
+            if (allConditionsTrue()) {
+                response.success(result);
             }
         },
-        function(result, error) {
-          response.error(error);
+        function (result, error) {
+            response.error(error);
         })
 
-
-      Parse.Cloud.run("retrieveFacebookPicture").then(
-        function(result) {
-          retrieveFacebookPicture = true;
-          if(allConditionsTrue()){
-             response.success(result);
-          }
+    Parse.Cloud.run("loadFacebookInformation").then(
+        function (result) {
+            loadFacebookInformation = true;
+            if (allConditionsTrue()) {
+                response.success(result);
+            }
         },
-        function(result, error) {
-          response.error(error);
+        function (result, error) {
+            response.error(error);
+        })
+})
+
+
+Parse.Cloud.define("initializeNewUser", function (request, response) { 
+    var retrieveFacebookPicture = false;
+    var initializeSettings = false;
+    var loadFacebookInformation = false;
+
+    //this helper function ensures that all the promises are returned successfully before responding to the client
+    function allConditionsTrue() {
+        if (loadFacebookInformation && initializeSettings && retrieveFacebookPicture) {
+            return true;
+        }
+    }
+
+    Parse.Cloud.run("initializeSettings").then(
+        function (result) {
+            initializeSettings = true;
+            if (allConditionsTrue()) {
+                response.success(result);
+            }
+        },
+        function (result, error) {
+            response.error(error);
         })
 
-      Parse.Cloud.run("loadFacebookInformation").then(
-        function(result) {
-          loadFacebookInformation = true;
-          //Initialize about me as empty String to avoid errors
-          request.user.set("aboutMe", "");
-          request.user.save();
-          if(allConditionsTrue()){
-             response.success(result);
-          }
+
+    Parse.Cloud.run("retrieveFacebookPicture").then(
+        function (result) {
+            retrieveFacebookPicture = true;
+            if (allConditionsTrue()) {
+                response.success(result);
+            }
         },
-        function(result, error) {
-          response.error(error);
+        function (result, error) {
+            response.error(error);
         })
- })
+
+    Parse.Cloud.run("loadFacebookInformation").then(
+        function (result) {
+            loadFacebookInformation = true;
+            //Initialize about me as empty String to avoid errors
+            request.user.set("aboutMe", "");
+            request.user.save();
+            if (allConditionsTrue()) {
+                response.success(result);
+            }
+        },
+        function (result, error) {
+            response.error(error);
+        })
+})
 
 
 Parse.Cloud.define("retrieveFacebookPicture", function (request, response) {
@@ -316,26 +326,27 @@ Parse.Cloud.define("retrieveFacebookPicture", function (request, response) {
         url: url,
         followRedirects: true,
         params: {
-            type : 'large'
+            type: 'large'
         },
-        success: function(httpImgFile)
-        {
+        success: function (httpImgFile) {
             //This part uses a input buffer to buffer the bytes of a picture and transfer it to a byteArray to save it as ParseFile
-            var myFile = new Parse.File("profilepicture.jpg", {base64: httpImgFile.buffer.toString('base64', 0, httpImgFile.buffer.length)});
-            myFile.save().then(function() {
-                //When the picture was saved to parse as parseFile a reference to the picture is saved in the ParseUser
-                var currentUser = request.user;
-                currentUser.set("profilepicture", myFile);
-                currentUser.save();
-                // The file has been saved to the user.
-                response.success("successfull saved fb profile picture")
+            var myFile = new Parse.File("profilepicture.jpg", {
+                base64: httpImgFile.buffer.toString('base64', 0, httpImgFile.buffer.length)
+            });
+            myFile.save().then(function () {
+                    //When the picture was saved to parse as parseFile a reference to the picture is saved in the ParseUser
+                    var currentUser = request.user;
+                    currentUser.set("profilepicture", myFile);
+                    currentUser.save();
+                    // The file has been saved to the user.
+                    response.success("successfull saved fb profile picture")
                 },
-                 function(error) {
+                function (error) {
                     response.error(error)
-                  }
+                }
             );
         },
-        error: function(error){
+        error: function (error) {
             console.log("unsuccessful http request");
             response.error(error);
         }
