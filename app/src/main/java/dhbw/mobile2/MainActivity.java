@@ -39,7 +39,6 @@ import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
-import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import java.util.ArrayList;
@@ -532,6 +531,15 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
     public void onConnected(Bundle bundle) {
         Log.d("API", "Connected");
         mLocation = getLocation(LocationServices.FusedLocationApi);
+        Log.d("API",""+mLocation);
+        ParseObject locationObject = new ParseObject("LocationObject");
+        locationObject.put("mLong", mLocation.getLongitude());
+        locationObject.put("mLat", mLocation.getLatitude());
+        locationObject.pinInBackground();
+        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("locationId", locationObject.getObjectId());
+        editor.apply();
         if(currentUser != null && mLocation != null)
             checkIfInGeoFence(mLocation.getLongitude(),mLocation.getLatitude(),currentUser.getObjectId());
     }
