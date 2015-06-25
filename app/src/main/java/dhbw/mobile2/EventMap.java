@@ -233,22 +233,21 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
         //Create ParseGeoPoint with user's current location
         //locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
         //Location userLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        String locationId = sharedPref.getString("locationId", "no_location");
 
         ParseQuery<ParseObject> query = ParseQuery.getQuery("LocationObject");
         query.fromLocalDatastore();
-        query.getInBackground(locationId, new GetCallback<ParseObject>() {
+        query.findInBackground(new FindCallback<ParseObject>() {
             @Override
-            public void done(ParseObject object, ParseException queryException) {
+            public void done(List<ParseObject> objectList, ParseException queryException) {
                 if (queryException == null) {
-
-                    double mLong =  (double) object.get("mLong");
+                    ParseObject object = objectList.get(0);
+                    double mLong = (double) object.get("mLong");
                     double mLat = (double) object.get("mLat");
                     Location userLocation = new Location("");
                     userLocation.setLatitude(mLat);
                     userLocation.setLongitude(mLong);
 
+                    Log.d("Main", userLocation.toString());
                     LatLng position = new LatLng(mLat, mLong);
 
                     CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -448,7 +447,9 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                             getActivity().invalidateOptionsMenu();
                         }
                     });
-                }}});
+                }
+            }
+        });
                 }
 
                 @Override

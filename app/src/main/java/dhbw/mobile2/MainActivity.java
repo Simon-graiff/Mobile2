@@ -34,15 +34,18 @@ import com.google.android.gms.location.FusedLocationProviderApi;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
+import com.parse.FindCallback;
 import com.parse.FunctionCallback;
 import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -531,15 +534,32 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
     public void onConnected(Bundle bundle) {
         Log.d("API", "Connected");
         mLocation = getLocation(LocationServices.FusedLocationApi);
-        Log.d("API",""+mLocation);
+        Log.d("API", "" + mLocation);
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("LocationObject");
+        query.fromLocalDatastore();
+
+        //Executing query
+        query.findInBackground(new FindCallback<ParseObject>() {
+            public void done(List<ParseObject> list, ParseException e) {
+
+                if (e == null) {
+                    for (int i = 0; i < list.size(); i++) {
+                        list.get(i).unpinInBackground();
+                    }
+
+                } else {
+                    Log.d("Main", "No events existed in background");
+                }
+            }
+        });
         ParseObject locationObject = new ParseObject("LocationObject");
         locationObject.put("mLong", mLocation.getLongitude());
         locationObject.put("mLat", mLocation.getLatitude());
+        Log.d("Main", "" + locationObject.getObjectId());
         locationObject.pinInBackground();
-        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString("locationId", locationObject.getObjectId());
-        editor.apply();
+        Log.d("Main","" + (double) locationObject.get("mLong"));
+        Log.d("Main", "" + locationObject.getObjectId());
         if(currentUser != null && mLocation != null)
             checkIfInGeoFence(mLocation.getLongitude(),mLocation.getLatitude(),currentUser.getObjectId());
     }
