@@ -134,8 +134,6 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
         adapter = new NavDrawerListAdapter(getApplicationContext(), navDrawerItems);
         mDrawerList.setAdapter(adapter);
 
-
-
         //Enabling action bar app icon and behaving it as toggle button
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
@@ -207,7 +205,6 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
     private void displayView(int position) {
 
         Fragment fragment = null;
-
 
         if(position==0) {
             fragment = ProfileFragment.newInstance(currentUser.getObjectId());
@@ -320,8 +317,6 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
                 return super.onOptionsItemSelected(item);
         }
     }
-
-
 
     //Called when invalidateOptionsMenu() is triggered
     @Override

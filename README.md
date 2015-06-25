@@ -107,7 +107,7 @@ navMenuIcons = getResources().obtainTypedArray(R.array.nav_drawer_icons);
 navDrawerItems.add(new NavDrawerItem(navMenuTitles[0], navMenuIcons.getResourceId(0, -1)));
 ```
 
-NavDrawerItem is a special class which makes it possible to display an icon and a text in the SideBar. This class consists just of a constructor and getters/setters. After that a second class is used, the NavDrawerListAdapter. This class extends BaseAdapter and is returning Views - the SideBar elements. It also converts the icons (which are to this point drawables) to ImageViews, which can be seen below:
+NavDrawerItem is a special class which makes it possible to display an icon and a text in the SideBar. This class consists just of a constructor and getters/setters. After that a second class is used, the NavDrawerListAdapter. This class extends BaseAdapter and is returning views - the SideBar elements. It also converts the icons (which are to this point drawables) to ImageViews, which can be seen below:
 ````
 if(position==0){
     imgIcon.setImageBitmap(Bitmap.createScaledBitmap(bitmap, heightPixels, heightPixels, false));
@@ -226,7 +226,7 @@ If the current user sees his own profile he can edit the about me textfield whic
 
 **Structure**
 
-EventMap is the fragment, the user sees first after performing a login. This fragment displays a Map, on which markers are drawn. Each marker represents an event, which is close to the user. The intention of this screen is to provide the user an intuitive way for looking nearby events up. Since every event has a category, the user shall be able to filter events, in which he doesn't want to participate. By clicking on a marker, the user is redirected to the EventDetailFragment, which displays further information on the tapped event.
+EventMap is the fragment, the user sees first after performing a login. This fragment displays a map, on which markers are drawn. Each marker represents an event, which is near the user location. The intention of this screen is to provide the user an intuitive way for searching nearby events. Since every event has a category, the user shall be able to filter events, which he or she doesn't want to participate. By clicking on a drawn event, the user is redirected to the EventDetailFragment, which displays further information on the tapped event.
 
 
 **Map initialization**
@@ -237,7 +237,7 @@ locationManager = (LocationManager) getActivity().getSystemService(Context.LOCAT
 locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
 ````
 
-The actual initialization is performed in the onActivityCreated method. Since the EventMap is the first Screen the user sees after a login, it might happen on slower devices that the fragment is displayed, while the activity is not fully completed. In this case the app crashes. The onActivityCreated method is executed, as soon as the MainActivity is finished with the code execution. The initialization of the map works as follows:
+The actual initialization is performed in the onActivityCreated method. Since the EventMap is the first screen the user sees after a login, it might happen on slower devices that the fragment is displayed, while the MainActivity is not yet fully completed. In this case the app crashes. The onActivityCreated method is executed, as soon as the MainActivity is finished with the code execution. This ensures a save build up. The initialization of the map works as follows:
 ````
 try {
     MapsInitializer.initialize(this.getActivity());

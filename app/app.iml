@@ -153,7 +153,6 @@
     <orderEntry type="library" exported="" name="play-services-appstate-7.3.0" level="project" />
     <orderEntry type="library" exported="" name="play-services-games-7.3.0" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="testing-support-lib-0.1" level="project" />
-    <orderEntry type="library" exported="" name="junit-4.10" level="project" />
     <orderEntry type="library" exported="" name="play-services-identity-7.3.0" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="espresso-idling-resource-2.0" level="project" />
   </component>

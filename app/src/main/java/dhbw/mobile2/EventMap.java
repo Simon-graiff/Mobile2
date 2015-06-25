@@ -36,7 +36,6 @@ import java.util.List;
 
 public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListener {
 
-    private LocationManager locationManager;
     private GoogleMap map = null;
     MapView eventMapView = null;
     public List<EventManagerItem> eventManager = new ArrayList<>();
@@ -44,36 +43,6 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
     private ParseObject filter = ParseObject.create("User_Settings");
     private HelperClass helperObject = new HelperClass();
 
-    private final LocationListener locationListener = new LocationListener() {
-
-        @Override
-        public void onLocationChanged(Location location) {
-
-            //Execute camera update and animation
-            double lat = location.getLatitude();
-            double lon = location.getLongitude();
-            LatLng position = new LatLng(lat, lon);
-
-            CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target(position)
-                    .zoom(16)
-                    .tilt(40)
-                    .build();
-
-            map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-        }
-
-        @Override
-        public void onStatusChanged(String s, int i, Bundle bundle) {
-
-        }
-
-        @Override
-        public void onProviderEnabled(String s) {}
-
-        @Override
-        public void onProviderDisabled(String s) {}
-    };
 
     public EventMap(){}
 
@@ -81,10 +50,6 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_app_map, container, false);
-
-        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
-
         return rootView;
     }
 
@@ -110,7 +75,6 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
 
             map.setMyLocationEnabled(true);
             map.setOnMarkerClickListener(this);
-            setUpMap();
         }
     }
 
@@ -163,7 +127,6 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
         if (map != null)
             eventMapView.onPause();
         super.onPause();
-        locationManager.removeUpdates(locationListener);
 
         ((MainActivity) getActivity()).setMapShown(false);
         getActivity().invalidateOptionsMenu();
@@ -184,33 +147,6 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
             eventMapView.onLowMemory();
         }
     }
-
-    private void setUpMap(){
-
-        if(map!=null){
-
-            locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
-
-            Location userPosition =
-                    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            Log.d("Main", "check if user Position is null");
-            if(userPosition != null){
-            Log.d("Main", "userPosition is not null");
-                LatLng coordinates = new LatLng(userPosition.getLatitude(),
-                        userPosition.getLongitude());
-
-                CameraPosition cameraPosition = new CameraPosition.Builder()
-                        .target(coordinates)
-                        .zoom(16)
-                        .tilt(40)
-                        .build();
-
-                map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
-            }
-        }
-    }//End of setUpMap
-
 
     private void drawMarker(LatLng position, String title, String eventID, String category){
         if (getActivity() != null) {
