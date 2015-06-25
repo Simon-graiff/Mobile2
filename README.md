@@ -10,7 +10,7 @@ Just clone this projekt and build it with e.g. AndroidStudio or right away with 
 That's it. You are ready to go!
 
 #App Structure
-WhereU consists of two activities. The LoginActivity and the MainScreen. The LoginActivity is responsible for providing a login, which leads to user identification by the app. The only way to start the MainScreen-activity is a successful login. The MainScrren manages the actual content delivery and is dependent from a successful login. Both activities and their features are documented below.
+WhereU consists of two activities. The LoginActivity and the MainActivity. The LoginActivity is responsible for providing a login, which leads to user identification by the app. The only way to start the MainActivity is a successful login. The MainScrren manages the actual content delivery and is dependent from a successful login. Both activities and their features are documented below.
 
 #LoginActivity
 The app uses the ParseFacebookUtils library to call the Facebook SDK ([more information see Parse Doku] (https://www.parse.com/docs/android/guide#users-facebook-users))
@@ -41,7 +41,7 @@ The app uses the ParseFacebookUtils library to call the Facebook SDK ([more info
     }
 ````
 The user can now sign up with Facebook or if he already has signed up with Facebook log in with his connected Facebook account.
-If the user has already signed up and just logs in he will be linked back to the MainScreen to use the App.
+If the user has already signed up and just logs in he will be linked back to the MainActivity to use the App.
 
 If the user needs to sign up with his Facebook account a new parse account is created an connected to his Facebook account. 
 Creating a new account means to create a new user object, initialize defaut settings, retrieve facebook data and to retrieve the current facebook profile picture. All this is handled by the Backend to minimize the data traffic of the phone and save the battery.
@@ -82,12 +82,11 @@ If the user was not created successfully, an error message is displayed and the 
 Please look at the detailed description how the Parse Backend works in the extra ([Backend Readme] (https://github.com/Simon-graiff/WhereU/blob/master/WhereUBackend/README.md))
 
 
-#Main Screen
-The MainScreen is the actual activity behind WhereU. It extends an ActionBarActivity and displays only an ActionBar. The more it is responsible for handling clicks in the side menu or sliding gestures, which open the SideBar. Most of the screen belongs to the contentView, in which fragments are placed in by FragmentTransactions. The FragmentTransactions are mostly activated by the user, by pressing an element from the sidebar, or the Android back button. So every screen in the app is a fragment and not an activity. This has several advantages. One is a performance optimization because there is no need for stating intends. This can especially be seen in an emulator environment, but has also a huge impact on real devices. Another advantage is the differentiation between a controller - which handles the navigation through the app - and the UI, which is represented by the fragments (except the ActionBar). Another benefit of this architecture is the use and easy implementation of a back navigation. This is possible by the use of the Android BackStack.
+#MainActivity
+The MainActivity is the actual activity behind WhereU. It extends an ActionBarActivity, an ActionBar is the only thing which is visible from the activity. The more it is responsible for handling clicks in the side menu or sliding gestures, which open the SideBar. Most of the screen belongs to the contentView, in which fragments are placed in by FragmentTransactions. The FragmentTransactions are mostly activated by the user, by pressing an element from the sidebar, or the Android back button. So every screen in the app is a fragment and not an activity. This has several advantages. One is a performance optimization because there is no need for starting intends. This can especially be seen in an emulator environment, but has also a huge impact on real devices. Another advantage is the differentiation between a controller - which handles the navigation through the app - and the UI, which is represented by the fragments (except the ActionBar). Another benefit of this architecture is a fast and reliable implementation of a back navigation. This is possible by the use of the Android BackStack.
 
 
-
-The app launches this activity by default. To ensure that the user is logged in the following check is performed:
+WhereU launches the MainActivity by default. To ensure that the user is logged in the following check is performed:
 ````
         //Check if User is logged in
         if(ParseUser.getCurrentUser() == null){
@@ -188,9 +187,9 @@ In both cases the Parse-backend is changed only if the client and the internal a
 
 **ActionBar Buttons**
 
-On the EventMap there should be shown a list symbol to switch to the list of events and on the list there hould be a map symbol to switch to the map. Just on the EventMap there should be the possibility to create a geofence or remove it. The button for it should be a symbol in the ActionBar. These ActionBar Buttons are implemented in the MainScreen.
+On the EventMap there should be shown a list symbol to switch to the list of events and on the list there hould be a map symbol to switch to the map. Just on the EventMap there should be the possibility to create a geofence or remove it. The button for it should be a symbol in the ActionBar. These ActionBar Buttons are implemented in the MainActivity.
 
-The Menu File for the ActionBar is in app/res/menu/menu_app.xml. In this the four relevant Action Buttons "List", "Map", "Notify Me" and "Don't Notify Me" are stored. In the MainScreen they are imported in the onCreateOptionsMenu method with
+The Menu File for the ActionBar is in app/res/menu/menu_app.xml. In this the four relevant Action Buttons "List", "Map", "Notify Me" and "Don't Notify Me" are stored. In the MainActivity they are imported in the onCreateOptionsMenu method with
 
 ````
 getMenuInflater().inflate(R.menu.menu_app, menu);
@@ -544,7 +543,7 @@ With the method deactivateParticipation() the user is removed from the participa
 
 **onResume behavior**
 
-When the fragment is put back to the screen (onResume() is called), it is first checked wether the NavDrawer-Item MyEvent was called, because either this can be the case or that the fragment is called on the map or the list of events. If the NavDrawer-Item was called, the MainScreen Activity will pass a SharedPreferences Item that is fetched in the onResume() method. Depending on its state the NavDrawer-Item 1 (Events) is checked or NavDrawer-Item 2 (My Event) is checked.
+When the fragment is put back to the screen (onResume() is called), it is first checked wether the NavDrawer-Item MyEvent was called, because either this can be the case or that the fragment is called on the map or the list of events. If the NavDrawer-Item was called, the MainActivity Activity will pass a SharedPreferences Item that is fetched in the onResume() method. Depending on its state the NavDrawer-Item 1 (Events) is checked or NavDrawer-Item 2 (My Event) is checked.
 
 ````
 SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
@@ -646,7 +645,7 @@ The method getTimeScopeString(ParseObject object) takes an EventObject and build
 
 **switchToFragment and switchToProfileFragment**
 
-The method switchToFragment switches to the specified fragment. It uses the strategy explained in the capter "MainScreen". switchToProfileFragement switches to the Profile Fragement which is slightly another strategy than the other fragments as explained in the chapter "Profile Page". It creates the ProfileFragment and then calls switchToFragment().
+The method switchToFragment switches to the specified fragment. It uses the strategy explained in the capter "MainActivity". switchToProfileFragement switches to the Profile Fragement which is slightly another strategy than the other fragments as explained in the chapter "Profile Page". It creates the ProfileFragment and then calls switchToFragment().
 
 **getParticipants**
 
@@ -764,7 +763,7 @@ The next method should be explained in a little more detail because it contains 
 
 If the members field isn't convertable a NumberFormatException is thrown and caught showing a toast which informs the user about the problem. In case this Exception is thrown the method returns. Additionally it is checked whether the duration editText-field contains "Until:". The reason for that is that if someone clicks the field a dateTimePicker is shown to select the date, which is afterwards converted into a string starting with "Until: ", that can be analyzed in later steps easily. With that workaround we avoid error concerning the formatting
 
-Assuming those two tests passed the geoPoint is created. Therefore another instance variable mLocation is used. This is set by the callbackHandler of the googleApiClient as soon as it is connected in ca. line 215. At this point we can suppose that getLastLocation() provides a Location because the same method is used in the MainScreen earlier. There it is ensured that this method doesn't return null.
+Assuming those two tests passed the geoPoint is created. Therefore another instance variable mLocation is used. This is set by the callbackHandler of the googleApiClient as soon as it is connected in ca. line 215. At this point we can suppose that getLastLocation() provides a Location because the same method is used in the MainActivity earlier. There it is ensured that this method doesn't return null.
 
 `````
 ParseGeoPoint geoPoint = new ParseGeoPoint();
