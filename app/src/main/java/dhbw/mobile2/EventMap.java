@@ -4,8 +4,6 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
@@ -72,7 +70,6 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
 
         if(map!=null) {
             map.getUiSettings().setMyLocationButtonEnabled(false);
-
             map.setMyLocationEnabled(true);
             map.setOnMarkerClickListener(this);
         }
@@ -94,6 +91,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
             } catch (ParseException e) {
                 e.printStackTrace();
             }
+
             query.findInBackground(new FindCallback<ParseObject>() {
                 public void done(List<ParseObject> retrievedList, ParseException e) {
                     if (e == null) {
@@ -167,11 +165,9 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
         final boolean mixedGenders = filter.getBoolean("mixedgenders");
 
         //Create ParseGeoPoint with user's current location
-        //locationManager.requestSingleUpdate(locationManager.GPS_PROVIDER, locationListener, null);
-        //Location userLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
         ParseQuery<ParseObject> query = ParseQuery.getQuery("LocationObject");
         query.fromLocalDatastore();
+        //Fetching user's current location
         query.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> objectList, ParseException queryException) {
@@ -179,22 +175,18 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                     ParseObject object = objectList.get(0);
                     double mLong = object.getDouble("mLong");
                     double mLat = object.getDouble("mLat");
-                    Location userLocation = new Location("");
-                    userLocation.setLatitude(mLat);
-                    userLocation.setLongitude(mLong);
 
-                    Log.d("Main", userLocation.toString());
-                    LatLng position = new LatLng(mLat, mLong);
+                    LatLng cameraCoordinates = new LatLng(mLat, mLong);
 
                     CameraPosition cameraPosition = new CameraPosition.Builder()
-                            .target(position)
+                            .target(cameraCoordinates)
                             .zoom(16)
                             .tilt(40)
                             .build();
 
                     map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
-                    ParseGeoPoint point = new ParseGeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
+                    ParseGeoPoint point = new ParseGeoPoint(mLong, mLat);
                     ParseObject user = new ParseObject("User");
                     user.put("location", point);
 
@@ -210,7 +202,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                         public void done(List<ParseObject> eventList, ParseException e) {
                             if (e == null) {
 
-                                //Query: Get all events in the reach of five kilometers
+                                //Query: Get all events in a reach of five kilometers
                                 ParseQuery<ParseObject> query = ParseQuery.getQuery("FilteredEvents");
                                 query.fromLocalDatastore();
 
@@ -265,24 +257,19 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                                         if (tmpMale && tmpFemale && !mixedGenders) {
                                             Log.d("Main", "There is a mixed gender group");
                                         } else {
-                                            Log.d("Main", "In der if");
-
                                             //Prepare necessary information and draw markers to map
                                             String tmpTitle = eventList.get(i).getString("title");
                                             String category = eventList.get(i).getString("category");
                                             String eventID = eventList.get(i).getObjectId();
-                                            Log.d("Main", "eventID =" + eventID);
 
                                             switch (category) {
                                                 case "Sport":
                                                     if (sport) {
                                                         try {
                                                             eventArray.add(eventList.get(i).fetchIfNeeded());
-                                                            Log.d("Main", "geoPoint: " + eventArray.get(eventArray.size() - 1).getParseGeoPoint("geoPoint"));
                                                         } catch (ParseException e1) {
                                                             e1.printStackTrace();
                                                         }
-                                                        Log.d("Main", "Drew marker: " + tmpTitle);
                                                         drawMarker(tmpLatLng, tmpTitle, eventID, category);
                                                     }
                                                     break;
@@ -291,11 +278,9 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                                                     if (music) {
                                                         try {
                                                             eventArray.add(eventList.get(i).fetchIfNeeded());
-                                                            Log.d("Main", "geoPoint: " + eventArray.get(eventArray.size() - 1).getParseGeoPoint("geoPoint"));
                                                         } catch (ParseException e1) {
                                                             e1.printStackTrace();
                                                         }
-                                                        Log.d("Main", "Drew marker: " + tmpTitle);
                                                         drawMarker(tmpLatLng, tmpTitle, eventID, category);
                                                     }
                                                     break;
@@ -304,11 +289,9 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                                                     if (chilling) {
                                                         try {
                                                             eventArray.add(eventList.get(i).fetchIfNeeded());
-                                                            Log.d("Main", "geoPoint: " + eventArray.get(eventArray.size() - 1).getParseGeoPoint("geoPoint"));
                                                         } catch (ParseException e1) {
                                                             e1.printStackTrace();
                                                         }
-                                                        Log.d("Main", "Drew marker: " + tmpTitle);
                                                         drawMarker(tmpLatLng, tmpTitle, eventID, category);
                                                     }
                                                     break;
@@ -317,11 +300,9 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                                                     if (dancing) {
                                                         try {
                                                             eventArray.add(eventList.get(i).fetchIfNeeded());
-                                                            Log.d("Main", "geoPoint: " + eventArray.get(eventArray.size() - 1).getParseGeoPoint("geoPoint"));
                                                         } catch (ParseException e1) {
                                                             e1.printStackTrace();
                                                         }
-                                                        Log.d("Main", "Drew marker: " + tmpTitle);
                                                         drawMarker(tmpLatLng, tmpTitle, eventID, category);
                                                     }
                                                     break;
@@ -330,11 +311,9 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                                                     if (food) {
                                                         try {
                                                             eventArray.add(eventList.get(i).fetchIfNeeded());
-                                                            Log.d("Main", "geoPoint: " + eventArray.get(eventArray.size() - 1).getParseGeoPoint("geoPoint"));
                                                         } catch (ParseException e1) {
                                                             e1.printStackTrace();
                                                         }
-                                                        Log.d("Main", "Drew marker: " + tmpTitle);
                                                         drawMarker(tmpLatLng, tmpTitle, eventID, category);
                                                     }
                                                     break;
@@ -343,11 +322,9 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                                                     if (videoGames) {
                                                         try {
                                                             eventArray.add(eventList.get(i).fetchIfNeeded());
-                                                            Log.d("Main", "geoPoint: " + eventArray.get(eventArray.size() - 1).getParseGeoPoint("geoPoint"));
                                                         } catch (ParseException e1) {
                                                             e1.printStackTrace();
                                                         }
-                                                        Log.d("Main", "Drew marker: " + tmpTitle);
                                                         drawMarker(tmpLatLng, tmpTitle, eventID, category);
                                                     }
                                                     break;
@@ -372,10 +349,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                                             break;
                                         }
                                     }
-
                                 }
-
-
                             } else {
                                 Log.d("Main", "Error on callback: " + e.getMessage());
                             }
@@ -386,37 +360,37 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
                 }
             }
         });
-                }
+    }
 
-                @Override
-                public boolean onMarkerClick ( final Marker m){
+    @Override
+    public boolean onMarkerClick ( final Marker m){
 
-                    String markerID = m.getId();
-                    String eventID = "Not found";
+        String markerID = m.getId();
+        String eventID = "Not found";
 
-                    //Retrieve eventID from eventManager with markerID
-                    for (int i = 0; i < eventManager.size(); i++) {
-                        if (eventManager.get(i).getMarkerID().equals(markerID)) {
-                            eventID = eventManager.get(i).getEventID();
-                        }
-                    }
-
-                    if (!eventID.equals("Not found")) {
-                        //Save eventID in SharedPreferences
-                        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPref.edit();
-                        editor.putString("eventId", eventID);
-                        editor.apply();
-
-                        //Direction to EventDetailFragment
-                        Fragment eventDetailFragment = new EventDetailFragment();
-                        helperObject.switchToFragment(getFragmentManager(), eventDetailFragment);
-                    }
-
-                    return true;
-                }
-
-            public void showListAsActionItem() {
-                MenuInflater actionBar = getActivity().getMenuInflater();
+        //Retrieve eventID from eventManager with markerID
+        for (int i = 0; i < eventManager.size(); i++) {
+            if (eventManager.get(i).getMarkerID().equals(markerID)) {
+                eventID = eventManager.get(i).getEventID();
             }
         }
+
+        if (!eventID.equals("Not found")) {
+            //Save eventID in SharedPreferences
+            SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString("eventId", eventID);
+            editor.apply();
+
+            //Direction to EventDetailFragment
+            Fragment eventDetailFragment = new EventDetailFragment();
+            helperObject.switchToFragment(getFragmentManager(), eventDetailFragment);
+        }
+
+        return true;
+    }
+
+    public void showListAsActionItem() {
+        MenuInflater actionBar = getActivity().getMenuInflater();
+    }
+}

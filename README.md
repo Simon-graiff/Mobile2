@@ -263,7 +263,7 @@ The in XML declared MapView is passed to an Java variable. This variable can ret
 
 **Receiving Events from Parse***
 
-Before any events can be drawn to the map, the user's settings regarding the event filters have to be downloaded. This will take place in the onResume method. Since this method is called every time before the fragment is displayed, the EventMap will always work with up-to-date settings. The settings are stored as separate objects on the server. For further details regarding events, see FilterFragment. Every settings object has several boolean values for the different event categories and a pointer to the corresponding user. The concrete implementation for fetching the filters is as follows:
+Before any events can be drawn to the map, the user's settings regarding the event filters have to be downloaded. This takes place in the onResume method. Since this method is called every time before the fragment is displayed, the EventMap will always work with up-to-date settings. The settings are stored as separate objects on the server. For further details regarding events, see FilterFragment. Every settings object has several boolean values for the different event categories and a pointer to the corresponding user. The concrete implementation for fetching the filters is as follows:
 ````
 ParseQuery<ParseObject> query = ParseQuery.getQuery("User_Settings");
     query.include("user");
@@ -300,12 +300,16 @@ final boolean sport = filter.getBoolean("sport");
 ````
 The variables have to be declared final because they will be used in a callback. After that the query parameters are defined:
 ````
-Location userLocation = getUserPosition();
-ParseGeoPoint point = new ParseGeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
+ParseObject object = objectList.get(0);
+double mLong = object.getDouble("mLong");
+double mLat = object.getDouble("mLat");
+
+ParseGeoPoint point = new ParseGeoPoint(mLong, mLat);
 ParseObject user = new ParseObject("User");
 user.put("location", point)
 ````
-The use of a ParseGeoPoint is pretty important. Goal of WhereU is providing as much events as possible. It is obvious that there is no sense in fetching all available events from the server and draw them to a map. So before the actual download a filter has to be used. This filter is the user's current location. Fortunately Parse provides a special query parameter for searching for geo coordinates, which are in a certain range:
+The ParseObject object, mentioned in above code contains the latitude and longitude of the user's current position. Since the MainActivity works like a controller, this activity is responsible for fetching the current location, not the single fragments.
+The use of a ParseGeoPoint is pretty important. Goal of WhereU is providing as much events as possible. It is obvious that there is no sense in fetching all available events from the server and draw them to a map. So before the actual download, a filter has to be used. This filter is the user's current location. Fortunately Parse provides a special query parameter for searching for geo coordinates, which are in a certain range:
 ````
 query.whereWithinKilometers("geoPoint", queryParameter, 5);
 ````
@@ -315,7 +319,7 @@ One possible option for users is to filter for events, in which both genders par
 ````
 boolean tmpMale=false;
 boolean tmpFemale=false;
-for(int j=0; j<participantList.size();j++){
+for(int j=0; j<participantList.size(); j++){
     try {
         if (participantList.get(j).fetchIfNeeded().getString("gender").equals("male")) {
             tmpMale = true;
@@ -327,7 +331,7 @@ for(int j=0; j<participantList.size();j++){
     }
 }
 ````
-Every event has a list of participating users. This is why this for-loop is dealing with the participant list of a single event, not with the event list. In case a male user is participating, the male variable changes its status. Same thing for the female one. A simple if-statement decides, if the event should be considered for drawing into the map, or not: ````tmpMale && tmpFemale && !mixedGenders````.
+Every event has a list of participating users. This is why the for-loop is dealing with the participant list of a single event, not with the event list. In case a male user is participating, the male variable changes its status. Same thing for the female one. A simple if-statement decides, if the event should be considered for drawing into the map, or not: ````tmpMale && tmpFemale && !mixedGenders````.
 
 In case the event shall be considered for further processing, its category has to be checked:
 ````
@@ -348,7 +352,7 @@ switch (category){
         break;
 ...
 ````
-First the title, category and ID have to be extracted from the event. Then a simple switch is performed, since special restrictions have to be processed for every event. Every event category has its own switch statement. After processing the code in a certain case, the event is only drawn, if the before fetched filter option is true. Before drawing the event, using the drawMarker(...) method, the event is stored to another event list. This list is used by the EventList, which displays all received events in a single list. The advantage of this processing is that the events have just to be downloaded and filtered once.
+First the title, category and ID have to be extracted from the event. Then a simple switch is performed, since special restrictions have to be processed for every event. Every event category has its own switch statement. After processing the code in a certain case, the event is only drawn, if the before fetched filter option is true. Upon drawing the event, using the drawMarker(...) method, the event is stored to another event list. This list is used by the EventList, which displays all received events in a single list. The advantage of this processing is that the events have just to be downloaded and filtered once.
 
 
 **Draw markers to the map**
@@ -366,7 +370,7 @@ private void drawMarker(LatLng position, String title, String eventID){
     eventManager.add(new EventManagerItem(m.getId(), eventID, position));
 }
 ````
-Special about this method is the eventManager line. The eventManager is an ArrayList, which consists of EventManagerItems. These items are own data types, which hold a marker ID, an event ID and a position. The reason for this can be seen in the onMarkerClickMethod:
+Special about this method is the eventManager line. The eventManager is an ArrayList, which consists of EventManagerItems. These items are special data types, which hold a marker ID, an event ID and a position. The reason for this can be seen in the onMarkerClickMethod:
 ````
 for(int i=0; i<eventManager.size(); i++){
     if(eventManager.get(i).getMarkerID().equals(markerID)){
@@ -374,7 +378,7 @@ for(int i=0; i<eventManager.size(); i++){
     }
 }
 ````
-Since the ID of a marker on the map does not match with the ID of the event it is representing, both have to be saved. If the user taps a marker, a for loop searches in the custom marker list for an object, which marker ID corresponds to the marker ID, which was tapped. If there is a match, the correct event ID can be restored for the marker. This is necessary, since a tap on a marker shall open the EventDetailFragment. But this fragment needs an event ID, if any information shall be displayed.
+Since the ID of a marker on the map does not match with the ID of the event it is representing, both have to be saved in a list. If the user taps a marker, a for loop searches in the custom marker list for an object, which marker ID corresponds to the marker ID, which was tapped. If there is a match, the correct event ID can be restored for the marker. This is necessary, since a tap on a marker shall open the EventDetailFragment. But this fragment needs an event ID, if any information shall be displayed.
 ````
 if(!eventID.equals("Not found")){
     SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
@@ -384,7 +388,7 @@ if(!eventID.equals("Not found")){
     
     ...
 ````
-The event ID will be stored in the SharedPreferences. From there the EventDetailFragment can retrieve the id and load the necessary information. After the event ID is stored as String, a FragmentTransaction is performed, to redirect the user to the detail view. The transaction is similar to the transaction in the MainActivity.
+The event ID will be stored in the SharedPreferences. From there the EventDetailFragment can retrieve the ID and load the necessary information. After the event ID is stored as String, a FragmentTransaction is performed, to redirect the user to the detail view. The transaction is similar to the transaction in the MainActivity.
 
 
 #EventDetail(Fragment)
@@ -815,7 +819,7 @@ The next few lines collect all these data together into a single event-object, w
 
 **Structure and function**
 
-The EventDetail fragment is kind of a settings view. This fragment allows users to set and release different filters for event categories. E.g. if an user is not interested in dancing events, all events from this category won't be shown on the map, by using  a filter. WhereU provides seven different filter options, six of them are related to the six event categories sport, music, chilling, dancing, food and video games. The seventh is the mixed gender option. By using this option, only events which participants belong entirely to one gender, will be displayed. The idea behind this filter is to provide users a better thought on what to expect from the event. E.g. a male user likes sport events and is also having an aggressive game play, an opponent team which consists just out of girls <i>might</i> not be the best choice. WhereU will display mixed gender groups by default.
+The EventFilter-fragment is kind of a settings view. This fragment allows users to set and release different filters for event categories. E.g. if an user is not interested in dancing events, all events from this category won't be shown on the map, by using a filter. WhereU provides seven different filter options, six of them are related to the six event categories sport, music, chilling, dancing, food and video games. The seventh is the mixed gender option. By using this option, only events which participants belong entirely to one gender, will be displayed. The idea behind this filter is to provide users a better thought on what to expect from the event. E.g. a male user likes sport events and has also an aggressive game play. An opponent team which consists just out of girls <i>might</i> not be the best choice. WhereU will display mixed gender groups by default.
 
 
 **Initialization**
@@ -839,7 +843,7 @@ if(!sport){
 
 **Handling toggle interaction and syncing result back to parse**
 
-As soon as the user toggles a switch, the onCheckedChanged method is performed. Parameters a view and a boolean value, which represents the <i>new</i> state. Since every toggle performs an individual action, the switch has to be identified. This is possible using the R-class:
+As soon as the user toggles a switch, the onCheckedChanged method is performed. Parameters are a view and a boolean value, which represents the <i>new</i> state. Since every toggle performs an individual action, the switch has to be identified. This is possible using the R-class:
 ````
 int id = buttonView.getId();
 
