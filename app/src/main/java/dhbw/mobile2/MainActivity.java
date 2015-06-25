@@ -33,6 +33,8 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderApi;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.parse.FindCallback;
 import com.parse.FunctionCallback;
@@ -356,11 +358,11 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
-    @Override
+   @Override
     protected void onResume(){
         super.onResume();
 
-        mLocation = getLocation(LocationServices.FusedLocationApi);
+        mLocation = getLocation(LocationServices.FusedLocationApi, true);
     }
 
     public void setMapShown(boolean mapShown) {
@@ -530,7 +532,7 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
     @Override
     public void onConnected(Bundle bundle) {
         Log.d("API", "Connected");
-        mLocation = getLocation(LocationServices.FusedLocationApi);
+        mLocation = getLocation(LocationServices.FusedLocationApi, true);
         Log.d("API", "" + mLocation);
 
         if(currentUser != null && mLocation != null)
@@ -547,15 +549,31 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
         Toast.makeText(getApplicationContext(), "ERROR CONNECTING GOOGLE API CLIENT", Toast.LENGTH_LONG).show();
     }
 
-    public Location getLocation(FusedLocationProviderApi locationClient){
+    public Location getLocation(final FusedLocationProviderApi locationClient, Boolean firstCall){
         Log.d("ABC","Called");
         if(locationClient.getLastLocation(mGoogleApiClient) == null){
+
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            return getLocation(locationClient);
+
+            LocationRequest mLocationRequest = new LocationRequest();
+            mLocationRequest.setInterval(10000);
+            mLocationRequest.setFastestInterval(5000);
+            mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+            if(firstCall) {
+                LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, new LocationListener() {
+                    @Override
+                    public void onLocationChanged(Location location) {
+                        Log.d("new Location", "" + location);
+                        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+                    }
+                });
+            }
+            return getLocation(locationClient, false);
         }else{
             ParseQuery<ParseObject> query = ParseQuery.getQuery("LocationObject");
             query.fromLocalDatastore();
