@@ -362,7 +362,9 @@ public class MainActivity extends ActionBarActivity implements ListEventsFragmen
     protected void onResume(){
         super.onResume();
 
-        mLocation = getLocation(LocationServices.FusedLocationApi, true);
+       if(mGoogleApiClient.isConnected()) {
+           mLocation = getLocation(LocationServices.FusedLocationApi, true);
+       }
     }
 
     public void setMapShown(boolean mapShown) {
