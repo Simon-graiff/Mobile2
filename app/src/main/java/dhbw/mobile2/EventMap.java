@@ -186,7 +186,7 @@ public class EventMap extends Fragment implements GoogleMap.OnMarkerClickListene
 
                     map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
-                    ParseGeoPoint point = new ParseGeoPoint(mLong, mLat);
+                    ParseGeoPoint point = new ParseGeoPoint(mLat, mLong);
                     ParseObject user = new ParseObject("User");
                     user.put("location", point);
 
