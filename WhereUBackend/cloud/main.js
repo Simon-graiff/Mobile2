@@ -3,12 +3,14 @@ Parse.Cloud.job("deleteExpiredEvents", function (request, response) {
     var deletedEvents = 0
     var deletedEventIds = []
 
+    //building events query
     var query = new Parse.Query("Event")
     query.lessThan("duration", now)
     query.find().then(function (events) {
         if (events.length == 0)
             response.success("Nothing to delete")
 
+        //destroy each event that is outdated and add its id to an array
         events.forEach(function (event) {
             deletedEventIds.push(event.id)
             event.destroy({
@@ -20,6 +22,7 @@ Parse.Cloud.job("deleteExpiredEvents", function (request, response) {
                     console.log(error)
                 }
             }).then(function () {
+                //if the event is the last one pass all ids to the updateUser method
                 deletedEvents++
                 if (deletedEvents == events.length) {
                     updateEventsInUserObjects(deletedEventIds, response)
@@ -40,13 +43,13 @@ updateEventsInUserObjects = function (events, response) {
         response.success("Deleted Successfully")
     } else {
 
+        //query all users that participated in one of the deleted events
         var updatedUsers = 0
         var query = new Parse.Query(Parse.User)
 
-        //building query
-        //        for (var i = 0; i < events.length; i++) {
-        //            query.equalTo('eventId', events[i])
-        //        }
+        for (var i = 0; i < events.length; i++) {
+            query.equalTo('eventId', events[i])
+        }
 
         query.find().then(function (users) {
             if (users.length == 0) {
@@ -54,20 +57,37 @@ updateEventsInUserObjects = function (events, response) {
                 response.success("Deleted Successfully")
             } else {
                 console.log(users)
-                users.forEach(function (user) {
-                    user.set("eventId", null)
-                    console.log(user)
+                var user = users[0]
+                console.log(user)
 
-                    var readyToContinue = false
-                    user.save().then(function (user) {
-                        updatedUsers++
-                        if (updatedUsers == users.length) {
-                            response.success("Deleted Successfully")
-                        }
-                        readyToContinue = true
-                    })
-                    while (!readyToContinue) {}
+                //set the eventId null and save the user object
+                //somehow this statement throws an error and I have absolutely no idea why
+                user.set("eventId", "")
+                console.log(user)
+                user.save(null, {
+                    success: function () {
+                        response.success("Deleted Successfully")
+                    },
+                    error: function (error) {
+                        console.log(error.mesage)
+                        response.error(error.message)
+                    }
                 })
+
+                //                users.forEach(function (user) {
+                //                    user.eventId = null
+                //                    console.log(user)
+                //
+                //                    var readyToContinue = false
+                //                    user.save().then(function (user) {
+                //                        updatedUsers++
+                //                        if (updatedUsers == users.length) {
+                //                            response.success("Deleted Successfully")
+                //                        }
+                //                        readyToContinue = true
+                //                    })
+                //                    while (!readyToContinue) {}
+                //                })
             }
         })
     }
