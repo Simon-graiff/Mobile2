@@ -304,7 +304,7 @@ ParseObject object = objectList.get(0);
 double mLong = object.getDouble("mLong");
 double mLat = object.getDouble("mLat");
 
-ParseGeoPoint point = new ParseGeoPoint(mLong, mLat);
+ParseGeoPoint point = new ParseGeoPoint(mLat, mLong);
 ParseObject user = new ParseObject("User");
 user.put("location", point)
 ````
