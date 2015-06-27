@@ -1,6 +1,6 @@
 WhereU
 =====
-Link for the presentation held in DHBW Mannheim: http://htmlpreview.github.io/?https://raw.githubusercontent.com/chrizzTs/Who-U/master/Presentation/slides-whou.html#/
+Link for the presentation held in DHBW Mannheim: http://slides.com/matswn/deck
 
 WhereU is a social event platform that gives strangers the opportunity to get notified and join any kinds of events that are around them.
 
